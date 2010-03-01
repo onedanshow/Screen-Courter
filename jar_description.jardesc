@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="MacRoman"?>
+<jardesc>
+<jar path="ScreenRecordingApplet/build/applet.jar"/>
+<options buildIfNeeded="true" compress="true" descriptionLocation="/ScreenRecordingApplet/jar_description.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="true" overwrite="true" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
+<storedRefactorings deprecationInfo="true" structuralOnly="false"/>
+<selectedProjects/>
+<manifest generateManifest="false" manifestLocation="/ScreenRecordingApplet/manifest.mf" manifestVersion="1.0" reuseManifest="false" saveManifest="false" usesManifest="true">
+<sealing sealJar="false">
+<packagesToSeal/>
+<packagesToUnSeal/>
+</sealing>
+</manifest>
+<selectedElements exportClassFiles="true" exportJavaFiles="false" exportOutputFolder="false">
+<file path="/ScreenRecordingApplet/lib/commons-net-ftp-2.0.jar"/>
+<folder path="/ScreenRecordingApplet/build/classes/com"/>
+<file path="/ScreenRecordingApplet/lib/commons-net-2.0.jar"/>
+<folder path="/ScreenRecordingApplet/vlc-bin/lib"/>
+<javaElement handleIdentifier="=ScreenRecordingApplet/src&lt;com.reelfx"/>
+<javaElement handleIdentifier="=ScreenRecordingApplet/src&lt;com.reelfx.util"/>
+<folder path="/ScreenRecordingApplet/vlc-bin/share"/>
+<folder path="/ScreenRecordingApplet/vlc-bin/include"/>
+<folder path="/ScreenRecordingApplet/vlc-bin/modules"/>
+<file path="/ScreenRecordingApplet/vlc-bin/VLC"/>
+</selectedElements>
+</jardesc>
