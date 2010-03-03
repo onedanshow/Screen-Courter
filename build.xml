@@ -1,13 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project default="create_run_jar" name="Create Runnable Jar for Project java-review-tool">
-  <import file="nbproject/build-impl.xml"/>  
-<!--this file was created by Eclipse Runnable JAR Export Wizard-->
-<!--ANT 1.7 is required                                        -->
-<target name="create_run_jar">
-<jar destfile="/Users/daniel/Documents/Java/java-review-tool/build/applet.jar" filesetmanifest="mergewithoutmain">
-<manifest>
-<attribute name="Main-Class" value=".Applet"/>
-</manifest>
-</jar>
-</target>
+<project default="build_jar" name="Create Runnable Jar for Project java-review-tool">
+	
+<!-- To make this project work with NetBeans: <import file="nbproject/build-impl.xml"/> -->  
+<!-- Assumes the class files are already built. -->
+	
+	<target name="build_jar">
+		<jar destfile="build/applet.jar" 
+			filesetmanifest="mergewithoutmain" basedir="build/classes" includes="com/**,org/**">
+			<manifest>
+				<attribute name="Main-Class" value=".Applet"/>
+				<attribute name="REELFX-COMMENT" value="Review Tool v2" />
+			</manifest>
+		</jar>
+	</target>
+		
+	<target name="sign_and_copy_jar" depends="build_jar">
+		<echo message="Signing build/applet.jar ..." />
+		<exec dir="build" executable="jarsigner">
+	     <arg value="-verbose" />
+	     <arg value="-storepass" />
+	     <arg value="password" />
+	     <arg value="-keypass" />
+	     <arg value="password" />
+	     <arg value="applet.jar" />
+	     <arg value="duke" />
+	   </exec>
+		<copy file="build/applet.jar" todir="/Users/daniel/Sites/test2/"/>
+	</target>
 </project>

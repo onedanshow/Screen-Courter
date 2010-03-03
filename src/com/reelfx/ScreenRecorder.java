@@ -30,7 +30,7 @@ public class ScreenRecorder extends Thread {
 	
 	public static String OUTPUT_FILE = RfxApplet.RFX_FOLDER.getAbsolutePath()+File.separator+"output-java.mov";
 	//public static File VLC_JAR = new File(System.getProperty("java.class.path")+File.separator+"bin-mac.jar");
-	public static File VLC_JAR = new File("/Users/daniel/Documents/Java/java-review-tool/lib"+File.separator+"bin-mac.jar");
+	//public static File VLC_JAR = new File("/Users/daniel/Documents/Java/java-review-tool/lib"+File.separator+"bin-mac.jar");
 	protected static File VLC_EXEC = new File(RfxApplet.RFX_FOLDER.getAbsoluteFile()+File.separator+"bin-mac"+File.separator+"VLC");
 	
     Process vlcProcess;
@@ -71,47 +71,11 @@ public class ScreenRecorder extends Thread {
             errorGobbler.start();
             inputGobbler.start();         
             
-            //System.out.println("Waiting for process.");
-            //vlcProcess.waitFor();
-            
-            //System.out.println("Interrupting threads...");
-            //errorGobbler.interrupt();
-            //inputGobbler.interrupt();
-            
-            //System.out.println("Joining threads...");
-            //errorGobbler.join();
-            //inputGobbler.join();
-            
-            //OutputStreamWriter osw = new OutputStreamWriter(vlcProcess.getOutputStream());
-            //osw.write("quit \n");
-            //vlcProcess.getOutputStream().write("stop".getBytes());
-            
       } catch (IOException ioe) {
     	  ioe.printStackTrace();
       } catch (Exception ie) {
     	  ie.printStackTrace();
       }
-	}
-
-	/**
-	 * Return location of this Jar file
-	 * 
-	 * @return
-	 * @throws URISyntaxException
-	 */
-    private static URI getJarURI() throws URISyntaxException
-	{
-	    final ProtectionDomain domain;
-	    final CodeSource       source;
-	    final URL              url;
-	    final URI              uri;
-	
-	    domain = ScreenRecorder.class.getProtectionDomain();
-	    source = domain.getCodeSource();
-	    url    = source.getLocation();
-	    uri    = url.toURI();
-	
-	    return (uri);
 	}
 	
 	public String getVlcJarFile() {
