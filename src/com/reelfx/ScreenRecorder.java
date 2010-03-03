@@ -29,8 +29,8 @@ import java.security.ProtectionDomain;
 public class ScreenRecorder extends Thread {
 	
 	public static String OUTPUT_FILE = RfxApplet.RFX_FOLDER.getAbsolutePath()+File.separator+"output-java.mov";
-	public static File VLC_BIN = new File(System.getProperty("java.class.path")+File.separator+"bin-mac.jar");
-	//protected static File VLC_BIN;
+	//public static File VLC_JAR = new File(System.getProperty("java.class.path")+File.separator+"bin-mac.jar");
+	public static File VLC_JAR = new File("/Users/daniel/Documents/Java/java-review-tool/lib"+File.separator+"bin-mac.jar");
 	protected static File VLC_EXEC = new File(RfxApplet.RFX_FOLDER.getAbsoluteFile()+File.separator+"bin-mac"+File.separator+"VLC");
 	
     Process vlcProcess;
@@ -39,34 +39,18 @@ public class ScreenRecorder extends Thread {
 	public void run() {
     	try {
     		
-      	  	//System.err.println("VLC-BIN: "+RfxApplet.class.getClassLoader().getResource("vlc-bin.jar").toString());
-    		if(VLC_BIN == null) {
-    			VLC_BIN = new File(RfxApplet.class.getClassLoader().getResource(getVlcJarFile()).toURI());
-    		}
-    		
+    		/* might revisit copying the jar locally later
     		if(!VLC_EXEC.exists() && RfxApplet.DEV_MODE) {
-    			if (VLC_BIN.exists()) {
-    				RfxApplet.copyFolderFromJar(VLC_BIN.getPath(), "bin-mac");
-    				Runtime.getRuntime().exec("chmod 755 "+VLC_EXEC.getAbsolutePath()).waitFor();
-    				if(!VLC_EXEC.exists()) throw new IOException("Did not copy VLC to its execution directory!");
-    			}
-    			else {
-    				throw new IOException("Can't find '"+getVlcJarFile()+"' to extract into its execution directory! "+VLC_BIN.getPath());
-    			}
-    		} else if(!VLC_EXEC.exists()) {
-    			URL url = new URL("http://localhost/~daniel/test2/"+getVlcJarFile());
-    			URLConnection urlConnection = url.openConnection();
-    			InputStream is = url.openStream();
-    			FileOutputStream file = new FileOutputStream(RfxApplet.RFX_FOLDER.getAbsoluteFile()+File.separator+getVlcJarFile());
-    			int oneByte;
-    			while ((oneByte=is.read()) != -1)
-    		          file.write(oneByte);
-    		    is.close();
-    		    file.close();
-    		    RfxApplet.copyFolderFromJar(RfxApplet.RFX_FOLDER.getAbsolutePath()+File.separator+getVlcJarFile(), "bin-mac");
-				Runtime.getRuntime().exec("chmod 755 "+VLC_EXEC.getAbsolutePath()).waitFor();
+    			RfxApplet.copyFolderFromRemoteJar(new URL("jar", "", "/Users/daniel/Documents/Java/java-review-tool/lib"+File.separator+"bin-mac.jar" + "!/"), "bin-mac");
+    			Runtime.getRuntime().exec("chmod 755 "+VLC_EXEC.getAbsolutePath()).waitFor();
+				if(!VLC_EXEC.exists()) throw new IOException("Did not copy VLC to its execution directory!");
+    		} else */
+    		if(!VLC_EXEC.exists()){
+    			RfxApplet.copyFolderFromRemoteJar(new URL("http://localhost/~daniel/test2/"+getVlcJarFile()), "bin-mac");
+    			Runtime.getRuntime().exec("chmod 755 "+VLC_EXEC.getAbsolutePath()).waitFor();
 				if(!VLC_EXEC.exists()) throw new IOException("Did not copy VLC to its execution directory!");
     		}
+    		
     		// TODO disable UI while copying; move to RfxApplet?
     		
         	List<String> vlcArgs = new ArrayList<String>();
@@ -104,8 +88,6 @@ public class ScreenRecorder extends Thread {
             
       } catch (IOException ioe) {
     	  ioe.printStackTrace();
-      } catch (URISyntaxException urie) {
-    	  urie.printStackTrace();
       } catch (Exception ie) {
     	  ie.printStackTrace();
       }

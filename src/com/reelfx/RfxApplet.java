@@ -6,13 +6,20 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.JarURLConnection;
 import java.net.URL;
+import java.net.URLClassLoader;
+import java.net.URLConnection;
 import java.util.Enumeration;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import javax.swing.JApplet;
 import javax.swing.SwingUtilities;
+
+import com.sun.JarClassLoader;
 
 /**
  * INSTALL:
@@ -86,7 +93,7 @@ public class RfxApplet extends JApplet {
 	 * @param jarName     Path and name of the jar to extract from
 	 * @param folderName  Single name, not path, of the folder to pull from the root of the jar.
 	 */
-     public static void copyFolderFromJar(String jarName, String folderName) {
+     public static void copyFolderFromCurrentJar(String jarName, String folderName) {
     	if(jarName == null || folderName == null) return;
     	
 		try {
@@ -116,6 +123,46 @@ public class RfxApplet extends JApplet {
 			e.printStackTrace();
 		}
 	}
+     
+     /**
+      * Use this one or loading from a remote jar and extracting it.
+      * 
+      * @param jar
+      * @param folderName
+      */
+     public static void copyFolderFromRemoteJar(URL jar, String folderName) {
+    	 if(jar == null || folderName == null) return;
+    	 
+    	 try {
+    		JarClassLoader jarLoader = new JarClassLoader(jar);
+    		URL u = new URL("jar", "", jar + "!/");
+			JarURLConnection uc = (JarURLConnection)u.openConnection();
+			JarFile jarFile = uc.getJarFile();
+			Enumeration<? extends JarEntry> entries = jarFile.entries();
+			while (entries.hasMoreElements()) {
+				ZipEntry entry = (ZipEntry)entries.nextElement();
+				if (entry.getName().contains(folderName)) {
+					File f = new File(RFX_FOLDER.getAbsolutePath()+File.separator+entry.getName());
+					if (entry.isDirectory() && f.mkdir()) { 
+						System.out.println("Created folder "+f.getAbsolutePath()+" for "+entry.getName());
+					}
+					else if (!f.exists()) {
+						if (copyFileFromJar(entry.getName(), f, jarLoader)) {
+							System.out.println("Copied file: " + entry.getName());
+						} else {
+							System.err.println("Could not copy file: "+entry.getName());
+						}
+					}
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+     }
+     
+     protected static boolean copyFileFromJar(String sResource, File fDest) {
+    	 return copyFileFromJar(sResource, fDest, RfxApplet.class.getClassLoader());
+     }
 	
 	/** 
 	 * Copies a file out of the jar to a physical location.  
@@ -126,7 +173,7 @@ public class RfxApplet extends JApplet {
 	 * Helpful: http://mindprod.com/jgloss/getresourceasstream.html
 	 * Helpful: http://stackoverflow.com/questions/810284/putting-bat-file-inside-a-jar-file
 	 */
-	public static boolean copyFileFromJar(String sResource, File fDest) {
+     protected static boolean copyFileFromJar(String sResource, File fDest, ClassLoader loader) {
 		if (sResource == null || fDest == null) return false;
 		
 		InputStream sIn = null;
@@ -143,7 +190,7 @@ public class RfxApplet extends JApplet {
 		
 		try {
 			int nLen = 0;
-			sIn = RfxApplet.class.getClassLoader().getResourceAsStream(sResource);
+			sIn = loader.getResourceAsStream(sResource);
 			if (sIn == null)
 				throw new IOException("Could not get resource as stream to copy " + sResource + " from the jar to " + fDest.getAbsolutePath() + ")");
 			sOut = new FileOutputStream(fDest);
