@@ -26,12 +26,15 @@ import javax.swing.JLabel;
 
 import org.apache.commons.net.telnet.TelnetClient;
 
-public class Interface extends JWindow {
+import com.reelfx.util.ProcessListener;
+
+public class Interface extends JWindow implements ProcessListener {
 
     private static final long serialVersionUID = 4803377343174867777L;
     TelnetClient telnet = new TelnetClient();
     AudioRecorder audio;
     ScreenRecorder screen;
+    PostProcessor postProcess;
     JButton recordBtn, stopBtn, previewBtn, saveBtn, closeBtn;
     JLabel status;
     
@@ -44,6 +47,7 @@ public class Interface extends JWindow {
         setBackground(Color.white);
         //setPreferredSize(dim); // full screen
         setPreferredSize(new Dimension(500, 50));
+        setLocation(100, 100);
         setLayout(new BorderLayout());
         setAlwaysOnTop(true);
 
@@ -99,7 +103,6 @@ public class Interface extends JWindow {
             }
         });
         buttons.add(closeBtn);
-        
         status = new JLabel();
         
         add(buttons,BorderLayout.CENTER);
@@ -114,6 +117,9 @@ public class Interface extends JWindow {
 	        closeBtn.setEnabled(false);
         }
         
+    	postProcess = new PostProcessor();
+    	postProcess.addProcessListener(this);
+        
         System.out.println("Interface initialized...");
     }
     
@@ -121,6 +127,7 @@ public class Interface extends JWindow {
      * Installs VLC, ffmpeg and ffplay if needed.
      */
     public void setupExtensions() { 
+    	
     	try {
         	/* might revisit copying the jar locally later
     		if(!VLC_EXEC.exists() && RfxApplet.DEV_MODE) {
@@ -239,9 +246,17 @@ public class Interface extends JWindow {
     }
 
     public void saveRecording() {
-        new PostProcessor().start();
+        postProcess.start();
         status.setText("Encoding to H.264...");
     }
+    
+	public void processUpdate(int event) {
+		switch(event) {
+			case PostProcessor.POST_PROCESS_COMPLETE:
+				status.setText("Done");
+			break;
+		}
+	}
 
     public void closeApplication() {
         try {

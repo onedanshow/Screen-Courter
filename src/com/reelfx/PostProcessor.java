@@ -1,19 +1,23 @@
 package com.reelfx;
 
-
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
+import com.reelfx.util.ProcessWrapper;
 import com.reelfx.util.StreamGobbler;
 
-public class PostProcessor extends Thread {
+public class PostProcessor extends ProcessWrapper implements ActionListener {
 	
 	public static String OUTPUT_FILE = RfxApplet.DESKTOP_FOLDER.getAbsolutePath()+File.separator+"output-final.mp4";
+	public final static int POST_PROCESS_COMPLETE = 0;
 	
-	Process postProcess;
-	StreamGobbler errorGobbler, inputGobbler;
+	protected Process postProcess;
+	protected StreamGobbler errorGobbler, inputGobbler;
 	
 	public void run() {
 		try {
@@ -86,8 +90,14 @@ public class PostProcessor extends Thread {
 	        inputGobbler = new StreamGobbler(postProcess.getInputStream(), false, "ffmpeg O");
 	        
 	        System.out.println("Starting listener threads...");
+	        errorGobbler.addActionListener("frame", this);
+	        //inputGobbler.addActionListener("ffmpeg", this);
 	        errorGobbler.start();
-	        inputGobbler.start();   
+	        inputGobbler.start();  
+	        
+	        postProcess.waitFor();
+	        
+	        fireProcessUpdate(POST_PROCESS_COMPLETE);
 	        
 	        // TODO monitor the progress of the event
 	        // TODO delete the temporary files when done
@@ -105,5 +115,14 @@ public class PostProcessor extends Thread {
 	protected void finalize() throws Throwable {
 		super.finalize();
 		postProcess.destroy();
+	}
+	
+	/**
+	 * Called when a stream gobbler finds a line that relevant to this wrapper.
+	 */
+	public void actionPerformed(ActionEvent e) {
+		if(e.getActionCommand().contains("frame")) {
+			System.out.println("Found a frame!");
+		}
 	}
 }

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project default="build_jar" name="Create Runnable Jar for Project java-review-tool">
 	
-<!-- To make this project work with NetBeans: <import file="nbproject/build-impl.xml"/> -->  
-<!-- Assumes the class files are already built. -->
+	<!-- To make this project work with NetBeans: <import file="nbproject/build-impl.xml"/> -->  
+	<!-- Assumes the class files are already built. -->
 	
 	<target name="build_jar">
 		<jar destfile="build/applet.jar" 
@@ -15,6 +15,7 @@
 	</target>
 		
 	<target name="sign_and_copy_jar" depends="build_jar">
+		<property name="server" value="/Users/daniel/Sites/review_tool/"/>
 		<echo message="Signing build/applet.jar ..." />
 		<exec dir="build" executable="jarsigner">
 	     <arg value="-verbose" />
@@ -25,6 +26,25 @@
 	     <arg value="applet.jar" />
 	     <arg value="duke" />
 	   </exec>
-		<copy file="build/applet.jar" todir="/Users/daniel/Sites/test2/"/>
+		<copy file="build/applet.jar" todir="${server}"/>
+		<copy file="src/template.html" tofile="${server}index.html" overwrite="true" />
+		<random max="100000000" property="randomValue"></random>
+		<replace file="${server}index.html" token="@@@UNIQUE@@@" value="${randomValue}"/>
 	</target>
+	
+	<!-- Taken from: http://docs.huihoo.com/apache/apachecon/eu2007/extending_ant.pdf -->
+	<scriptdef language="javascript" manager="javax" name="random"> 
+		<attribute name="max"/> 
+		<attribute name="property"/>
+		var max=attributes.get("max"); 
+		var property=attributes.get("property"); 
+		if(max==null || property==null) {
+			self.fail("'property' or 'max' is not set") 
+		} else {
+			var result=java.util.Random().nextInt(max); 
+			self.log("Generated random number " + result); 
+			project.setNewProperty(property, result);
+		}
+	</scriptdef>
+	
 </project>

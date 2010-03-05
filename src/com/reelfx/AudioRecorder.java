@@ -32,10 +32,6 @@ package com.reelfx;
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
-|<---            this code is formatted to fit into 80 columns             --->|
-*/
-
 
 import java.io.IOException;
 import java.io.File;
@@ -101,7 +97,7 @@ import javax.sound.sampled.AudioFileFormat;
 public class AudioRecorder extends Thread
 {
 	
-        public static String OUTPUT_FILE = RfxApplet.RFX_FOLDER.getAbsolutePath()+File.separator+"output-java.wav";
+    public static String OUTPUT_FILE = RfxApplet.RFX_FOLDER.getAbsolutePath()+File.separator+"output-java.wav";
 	
 	private TargetDataLine		m_line = null;
 	private AudioFileFormat.Type	m_targetType;
