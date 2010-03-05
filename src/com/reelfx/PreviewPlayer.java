@@ -68,7 +68,7 @@ public class PreviewPlayer extends Thread {
     	try {
 
             List<String> vlcArgs = new ArrayList<String>();
-            vlcArgs.add("/opt/local/bin/ffplay");
+            vlcArgs.add(RfxApplet.RFX_FOLDER.getAbsoluteFile()+File.separator+"bin-mac"+File.separator+"ffplay");
             vlcArgs.add(ScreenRecorder.OUTPUT_FILE);
 
             ProcessBuilder pb = new ProcessBuilder(vlcArgs);

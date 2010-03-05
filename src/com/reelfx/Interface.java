@@ -1,5 +1,6 @@
 package com.reelfx;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -7,13 +8,21 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.lang.reflect.InvocationTargetException;
+import java.net.MalformedURLException;
 import java.net.SocketException;
+import java.net.URL;
 
 import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
 import javax.swing.JWindow;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import javax.swing.JLabel;
 
 import org.apache.commons.net.telnet.TelnetClient;
 
@@ -22,7 +31,10 @@ public class Interface extends JWindow {
     private static final long serialVersionUID = 4803377343174867777L;
     TelnetClient telnet = new TelnetClient();
     AudioRecorder audio;
-
+    ScreenRecorder screen;
+    JButton recordBtn, stopBtn, previewBtn, saveBtn, closeBtn;
+    JLabel status;
+    
     public Interface() {
         super();
 
@@ -31,58 +43,141 @@ public class Interface extends JWindow {
 
         setBackground(Color.white);
         //setPreferredSize(dim); // full screen
-        setPreferredSize(new Dimension(500, 40));
-        setLayout(new FlowLayout());
+        setPreferredSize(new Dimension(500, 50));
+        setLayout(new BorderLayout());
         setAlwaysOnTop(true);
 
         /*if (AWTUtilities.isTranslucencySupported(AWTUtilities.Translucency.PERPIXEL_TRANSPARENT)) {
             System.out.println("Transparency supported!");
         }*/
+        
+        JPanel buttons = new JPanel();
 
-        JButton recordBtn = new JButton("Record");
+        recordBtn = new JButton("Record");
         recordBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                startRecording();
+                prepRecording();
             }
         });
-        add(recordBtn);
+        buttons.add(recordBtn);
 
-        JButton stopBtn = new JButton("Stop");
+        stopBtn = new JButton("Stop");
         stopBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 stopRecording();
             }
         });
-        add(stopBtn);
+        stopBtn.setEnabled(false);
+        buttons.add(stopBtn);
 
-        JButton previewBtn = new JButton("Preview");
+        previewBtn = new JButton("Preview");
         previewBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 previewRecording();
             }
         });
-        add(previewBtn);
+        if( !new File(ScreenRecorder.OUTPUT_FILE).exists() ) {
+        	previewBtn.setEnabled(false);
+        }
+        buttons.add(previewBtn);
 
-        JButton saveBtn = new JButton("Save");
+        saveBtn = new JButton("Save");
         saveBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 saveRecording();
             }
         });
-        add(saveBtn);
+        if( !new File(ScreenRecorder.OUTPUT_FILE).exists() ) {
+        	saveBtn.setEnabled(false);
+        }
+        buttons.add(saveBtn);
 
-        JButton closeBtn = new JButton("Close");
+        closeBtn = new JButton("Close");
         closeBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 closeApplication();
             }
         });
-        add(closeBtn);
-
+        buttons.add(closeBtn);
+        
+        status = new JLabel();
+        
+        add(buttons,BorderLayout.CENTER);
+        add(status,BorderLayout.SOUTH);
+        
+        if(!RfxApplet.BIN_FOLDER.exists()){
+			status.setText("Performing one-time install...");
+			recordBtn.setEnabled(false);
+	        stopBtn.setEnabled(false);
+	        previewBtn.setEnabled(false);
+	        saveBtn.setEnabled(false);
+	        closeBtn.setEnabled(false);
+        }
+        
         System.out.println("Interface initialized...");
     }
+    
+    /**
+     * Installs VLC, ffmpeg and ffplay if needed.
+     */
+    public void setupExtensions() { 
+    	try {
+        	/* might revisit copying the jar locally later
+    		if(!VLC_EXEC.exists() && RfxApplet.DEV_MODE) {
+    			RfxApplet.copyFolderFromRemoteJar(new URL("jar", "", "/Users/daniel/Documents/Java/java-review-tool/lib"+File.separator+"bin-mac.jar" + "!/"), "bin-mac");
+    			Runtime.getRuntime().exec("chmod 755 "+VLC_EXEC.getAbsolutePath()).waitFor();
+    			if(!VLC_EXEC.exists()) throw new IOException("Did not copy VLC to its execution directory!");
+    		} else */
+			if(!RfxApplet.BIN_FOLDER.exists()){
+				RfxApplet.copyFolderFromRemoteJar(new URL(RfxApplet.CODE_BASE+"/bin-mac.jar"), "bin-mac");
+				Runtime.getRuntime().exec("chmod 755 "+RfxApplet.BIN_FOLDER+File.separator+"VLC").waitFor();
+				Runtime.getRuntime().exec("chmod 755 "+RfxApplet.BIN_FOLDER+File.separator+"ffmpeg").waitFor();
+				Runtime.getRuntime().exec("chmod 755 "+RfxApplet.BIN_FOLDER+File.separator+"ffplay").waitFor();
+				if(!RfxApplet.BIN_FOLDER.exists()) throw new IOException("Did not copy VLC to its execution directory!");
+				status.setText("");
+				recordBtn.setEnabled(true);
+		        closeBtn.setEnabled(true);
+			}
+        } catch (MalformedURLException e1) {
+			status.setText("Error downloading native extensions");
+			e1.printStackTrace();
+		} catch (InterruptedException e) {
+			status.setText("Error setting up nativ extentions");
+			e.printStackTrace();
+		} catch (IOException e) {
+			status.setText("Error downloading native extentions");
+			e.printStackTrace();
+		}
+    }
+    
+    public void prepRecording() {
+    	// start up VLC
+    	screen = new ScreenRecorder();
+    	screen.start();
+    	// TODO check that it starts up correctly
+    	status.setText("Ready...");
+    	
+    	recordBtn.setEnabled(false);
+        stopBtn.setEnabled(false);
+        previewBtn.setEnabled(false);
+        saveBtn.setEnabled(false);
+        closeBtn.setEnabled(false);
+    	
+    	ActionListener taskPerformer = new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                startRecording();
+            }
+        };
+        // TODO make the "ready, set, go!" pretty
+        Timer waitForIt = new Timer(2000, taskPerformer);
+        waitForIt.setRepeats(false);
+        waitForIt.start();
+    }
 
-    public void startRecording() {
+    private void startRecording() {
+    	
+    	stopBtn.setEnabled(true);
+    	
         ActionListener taskPerformer = new ActionListener() {
 
             public void actionPerformed(ActionEvent evt) {
@@ -108,6 +203,8 @@ public class Interface extends JWindow {
 
         audio = new AudioRecorder();
         audio.startRecording();
+        
+        status.setText("Go!");
     }
 
     public void stopRecording() {
@@ -123,9 +220,17 @@ public class Interface extends JWindow {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        
+        recordBtn.setEnabled(true);
+        stopBtn.setEnabled(false);
+        previewBtn.setEnabled(true);
+        saveBtn.setEnabled(true);
+        closeBtn.setEnabled(true);
 
         if(audio != null)
            audio.stopRecording();
+        
+        status.setText("Recording stopped.");
     }
 
     public void previewRecording() {
@@ -135,21 +240,24 @@ public class Interface extends JWindow {
 
     public void saveRecording() {
         new PostProcessor().start();
+        status.setText("Encoding to H.264...");
     }
 
     public void closeApplication() {
         try {
-            if (!telnet.isConnected()) {
-                telnet.connect("localhost", 4444);
+            if (telnet.isConnected()) {
+            	BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(telnet.getOutputStream()));
+                bw.write("quit \n");
+                bw.flush();
             }
-            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(telnet.getOutputStream()));
-            bw.write("quit \n");
-            bw.flush();
+			screen = null;
         } catch (SocketException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        } catch (Throwable e) {
+			e.printStackTrace();
+		} 
         setVisible(false);
     }
 }

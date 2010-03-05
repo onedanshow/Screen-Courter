@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.JarURLConnection;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLConnection;
@@ -33,23 +34,23 @@ public class RfxApplet extends JApplet {
 
 	private static final long serialVersionUID = 4544354980928245103L;
 	
-	public static File RFX_FOLDER;
-	public static File DESKTOP_FOLDER;
-	public static URL DOCUMENT_BASE;
+	public static File RFX_FOLDER, BIN_FOLDER, DESKTOP_FOLDER;
+	public static URL DOCUMENT_BASE, CODE_BASE;
 	public static boolean IS_MAC = System.getProperty("os.name").contains("Mac");
 	public static boolean IS_WINDOWS = System.getProperty("os.name").contains("Windows");
 	public static boolean DEV_MODE = System.getProperty("user.dir").contains(System.getProperty("user.home")); // assume dev files are in developer's home
 	
-	private ScreenRecorder sr;
-	private Interface ui;
+	private Interface ui = null;
 	
 	// called when this applet is loaded into the browser.
 	@Override
     public void init() {
 		try {
 			RFX_FOLDER = new File(getRfxFolder());
+			BIN_FOLDER = new File(RFX_FOLDER.getAbsolutePath()+File.separator+"bin-mac");
 			DESKTOP_FOLDER = new File(getDesktopFolder());
 			DOCUMENT_BASE = getDocumentBase();
+			CODE_BASE = getCodeBase();
 			
 			System.out.println(getAppletInfo());			 
 						
@@ -63,14 +64,16 @@ public class RfxApplet extends JApplet {
 			// execute a job on the event-dispatching thread; creating this applet's GUI.
             SwingUtilities.invokeAndWait(new Runnable() {
                 public void run() {
-                	// start up VLC
-                	sr = new ScreenRecorder();
-                	sr.start();
-                	
                 	// start up the GUI
                 	ui = new Interface();
                 	ui.setVisible(true);
                 	ui.pack();
+                }
+            });
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                	if(ui != null)
+                		ui.setupExtensions();
                 }
             });
         
@@ -220,17 +223,24 @@ public class RfxApplet extends JApplet {
 	@Override
 	public String getAppletInfo() {
 		
-		return 
-			"Java Version: \t"+System.getProperty("java.version")+"\n"+
-			"OS Name: \t"+System.getProperty("os.name")+"\n"+
-			"OS Version: \t"+System.getProperty("os.version")+"\n"+
-			"Run Directory: \t"+System.getProperty("user.dir")+"\n"+
-			"User Home: \t"+System.getProperty("user.home")+"\n"+
-			"User Name: \t"+System.getProperty("user.name")+"\n"+
-			"ReelFX Folder: \t"+RFX_FOLDER.getPath()+"\n"+
-			"User Desktop: \t"+DESKTOP_FOLDER.getPath()+"\n"+
-			"Code Base: \t"+getCodeBase().getPath()+"\n"+
-			"Document Base: \t"+getDocumentBase().getPath()+"\n";
+		try {
+			return 
+				"Java Version: \t"+System.getProperty("java.version")+"\n"+
+				"OS Name: \t"+System.getProperty("os.name")+"\n"+
+				"OS Version: \t"+System.getProperty("os.version")+"\n"+
+				"Run Directory: \t"+System.getProperty("user.dir")+"\n"+
+				"User Home: \t"+System.getProperty("user.home")+"\n"+
+				"User Name: \t"+System.getProperty("user.name")+"\n"+
+				"ReelFX Folder: \t"+RFX_FOLDER.getPath()+"\n"+
+				"User Desktop: \t"+DESKTOP_FOLDER.getPath()+"\n"+
+				"Code Base: \t"+getCodeBase().getPath()+"\n"+
+				"Document Base: \t"+getDocumentBase().getPath()+"\n"+
+				"Execution URL: \t"+RfxApplet.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()+"\n";
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return "Error";
+		}
 		
 		//System.out.println("Free space: \n"+TEMP_FOLDER.getFreeSpace()+" GBs"); // Java 1.6 only
 		//System.out.println("Total space: \n"+TEMP_FOLDER.getTotalSpace()+" GBs");
@@ -261,11 +271,6 @@ public class RfxApplet extends JApplet {
                 	ui.closeApplication();
                     ui.setVisible(false);
                     ui = null;
-                    try {
-						sr = null;
-					} catch (Throwable e) {
-						e.printStackTrace();
-					}
                 }
             });
         } catch (Exception e) { }
