@@ -99,7 +99,7 @@ public class Interface extends JWindow implements ProcessListener {
         closeBtn = new JButton("Close");
         closeBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                closeApplication();
+                closeInterface();
             }
         });
         buttons.add(closeBtn);
@@ -250,6 +250,7 @@ public class Interface extends JWindow implements ProcessListener {
     }
 
     public void saveRecording() {
+    	disable();
         postProcess.start();
         status.setText("Encoding to H.264...");
     }
@@ -257,6 +258,8 @@ public class Interface extends JWindow implements ProcessListener {
 	public void processUpdate(int event) {
 		switch(event) {
 			case PostProcessor.POST_PROCESS_COMPLETE:
+				recordBtn.setEnabled(true);
+				closeBtn.setEnabled(true);
 				status.setText("Done");
 			break;
 		}
@@ -270,8 +273,9 @@ public class Interface extends JWindow implements ProcessListener {
         closeBtn.setEnabled(false);
 	}
 
-    public void closeApplication() {
+    public void closeInterface() {
         try {
+        	System.out.println("Closing interface...");
             if (telnet.isConnected()) {
             	BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(telnet.getOutputStream()));
                 bw.write("quit \n");

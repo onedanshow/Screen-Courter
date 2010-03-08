@@ -252,12 +252,14 @@ public class RfxApplet extends JApplet {
 		else if(IS_LINUX)
 			return System.getProperty("user.home")+File.separator+".ReelFX";
 		else 
-			throw new IOException("I don't know what operating system this is!");
+			throw new IOException("I don't know where to find the native extensions!");
 	}
 	
-	public String getDesktopFolder() {
-		// TODO resolve based on OS
-		return System.getProperty("user.home")+File.separator+"Desktop";
+	public String getDesktopFolder() throws IOException {
+		if(IS_MAC || IS_LINUX)
+			return System.getProperty("user.home")+File.separator+"Desktop";
+		else
+			throw new IOException("I don't know where to find the user's desktop!");
 	}
     
     /**
@@ -272,7 +274,7 @@ public class RfxApplet extends JApplet {
             SwingUtilities.invokeAndWait(new Runnable() {
                 public void run() {
                 	System.out.println("Closing down...");
-                	ui.closeApplication();
+                	ui.closeInterface();
                     ui.setVisible(false);
                     ui = null;
                 }

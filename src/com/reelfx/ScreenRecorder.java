@@ -27,6 +27,8 @@ import java.net.URLConnection;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
 
+import org.apache.commons.io.FileUtils;
+
 /**
  *
  * @author daniel
@@ -34,7 +36,7 @@ import java.security.ProtectionDomain;
 public class ScreenRecorder extends ProcessWrapper {
 	
 	// FILE LOCATIONS
-	public static String OUTPUT_FILE = RfxApplet.RFX_FOLDER.getAbsolutePath()+File.separator+"output-java.mov";
+	public static String OUTPUT_FILE = RfxApplet.RFX_FOLDER.getAbsolutePath()+File.separator+"output-java"+(RfxApplet.IS_MAC ? ".mov" : ".mp4");
 	//public static File VLC_JAR = new File(System.getProperty("java.class.path")+File.separator+"bin-mac.jar");
 	//public static File VLC_JAR = new File("/Users/daniel/Documents/Java/java-review-tool/lib"+File.separator+"bin-mac.jar");
 	protected static File VLC_EXEC = new File(RfxApplet.BIN_FOLDER.getAbsoluteFile()+File.separator+"VLC");
@@ -73,19 +75,24 @@ public class ScreenRecorder extends ProcessWrapper {
     		} 
     		
     		else if(RfxApplet.IS_LINUX) {
+    			File old = new File(OUTPUT_FILE);
+    			if( old.exists() && !old.delete() )
+    				throw new IOException("Could not delete the old video file: " + old.getAbsolutePath());
+    			
     			Toolkit tk = Toolkit.getDefaultToolkit();
     	        Dimension dim = tk.getScreenSize();
     	        
     			List<String> ffmpegArgs = new ArrayList<String>();
     	    	//ffmpegArgs.add(RfxApplet.RFX_FOLDER.getAbsoluteFile()+File.separator+"bin-mac"+File.separator+"ffmpeg");
-    	    	ffmpegArgs.add("/usr/bin/ffmpeg");
+    	    	//ffmpegArgs.add(RfxApplet.BIN_FOLDER.getAbsoluteFile()+File.separator+"ffmpeg");
+    			ffmpegArgs.add("/usr/bin/ffmpeg");
     	    	// screen capture settings
     	    	ffmpegArgs.addAll(parseParameters("-f x11grab -s "+dim.width+"x"+dim.height+" -r "+FPS+" -b "+BIT_RATE+"k -i :0.0"));
     	    	// microphone settings
-    	    	ffmpegArgs.addAll(parseParameters("-f oss -i /dev/audio"));
+    	    	ffmpegArgs.addAll(parseParameters("-f oss -ac 1 -ar "+AudioRecorder.FREQ+" -i /dev/audio"));
     	    	// output file settings
     	    	ffmpegArgs.addAll(parseParameters("-vcodec libx264 -r 10 -s "+Math.round(dim.width*SCALE)+"x"+Math.round(dim.height*SCALE)));
-    	    	ffmpegArgs.add(PostProcessor.TEMP_FILE);
+    	    	ffmpegArgs.add(OUTPUT_FILE);
     	    	System.out.println("Executing this command: "+ffmpegArgs.toString());
     	        ProcessBuilder pb = new ProcessBuilder(ffmpegArgs);
     	        recordingProcess = pb.start();
@@ -96,6 +103,10 @@ public class ScreenRecorder extends ProcessWrapper {
 	            System.out.println("Starting listener threads...");
 	            errorGobbler.start();
 	            inputGobbler.start();
+	            
+	            recordingProcess.waitFor();
+	            
+	            fireProcessUpdate(SCREEN_RECORDING_COMPLETE);
     		}
             
       } catch (IOException ioe) {

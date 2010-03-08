@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.io.FileUtils;
+
 import com.reelfx.util.ProcessWrapper;
 import com.reelfx.util.StreamGobbler;
 
@@ -15,7 +17,6 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 	
 	// FILE LOCATIONS
 	public static String OUTPUT_FILE = RfxApplet.DESKTOP_FOLDER.getAbsolutePath()+File.separator+"output-final.mp4";
-	public static String TEMP_FILE = RfxApplet.RFX_FOLDER.getAbsolutePath()+File.separator+"output-temp.mp4";
 	
 	// STATES
 	public final static int POST_PROCESS_COMPLETE = 0;
@@ -27,30 +28,34 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 		try {
 	        //Process p = Runtime.getRuntime().exec("/Applications/VLC.app/Contents/MacOS/VLC -I telnet --telnet-host=localhost:4442 -I rc --rc-host=localhost:4444");
 	        //Process p = Runtime.getRuntime().exec("/Applications/VLC.app/Contents/MacOS/VLC -I rc --rc-host=localhost:4444");
-			
-			List<String> ffmpegArgs = new ArrayList<String>();
-	    	ffmpegArgs.add(RfxApplet.RFX_FOLDER.getAbsoluteFile()+File.separator+"bin-mac"+File.separator+"ffmpeg");
-	    	ffmpegArgs.add("-ar");
-	    	ffmpegArgs.add("44100");
-	    	ffmpegArgs.add("-i");
-	    	ffmpegArgs.add(AudioRecorder.OUTPUT_FILE);
-	    	ffmpegArgs.add("-i"); 
-	    	ffmpegArgs.add(ScreenRecorder.OUTPUT_FILE);
-	    	ffmpegArgs.addAll(getFfmpegX264Params());
-	    	ffmpegArgs.add(OUTPUT_FILE);
-	        ProcessBuilder pb = new ProcessBuilder(ffmpegArgs);
-	        postProcess = pb.start();
-	
-	        errorGobbler = new StreamGobbler(postProcess.getErrorStream(), false, "ffmpeg E");
-	        inputGobbler = new StreamGobbler(postProcess.getInputStream(), false, "ffmpeg O");
-	        
-	        System.out.println("Starting listener threads...");
-	        errorGobbler.addActionListener("frame", this);
-	        //inputGobbler.addActionListener("ffmpeg", this);
-	        errorGobbler.start();
-	        inputGobbler.start();  
-	        
-	        postProcess.waitFor();
+			if(RfxApplet.IS_MAC) {
+				List<String> ffmpegArgs = new ArrayList<String>();
+		    	ffmpegArgs.add(RfxApplet.RFX_FOLDER.getAbsoluteFile()+File.separator+"bin-mac"+File.separator+"ffmpeg");
+		    	ffmpegArgs.add("-ar");
+		    	ffmpegArgs.add("44100");
+		    	ffmpegArgs.add("-i");
+		    	ffmpegArgs.add(AudioRecorder.OUTPUT_FILE);
+		    	ffmpegArgs.add("-i"); 
+		    	ffmpegArgs.add(ScreenRecorder.OUTPUT_FILE);
+		    	ffmpegArgs.addAll(getFfmpegX264Params());
+		    	ffmpegArgs.add(OUTPUT_FILE);
+		        ProcessBuilder pb = new ProcessBuilder(ffmpegArgs);
+		        postProcess = pb.start();
+		
+		        errorGobbler = new StreamGobbler(postProcess.getErrorStream(), false, "ffmpeg E");
+		        inputGobbler = new StreamGobbler(postProcess.getInputStream(), false, "ffmpeg O");
+		        
+		        System.out.println("Starting listener threads...");
+		        errorGobbler.addActionListener("frame", this);
+		        //inputGobbler.addActionListener("ffmpeg", this);
+		        errorGobbler.start();
+		        inputGobbler.start();  
+		        
+		        postProcess.waitFor();
+			}
+			else if(RfxApplet.IS_LINUX) {
+				FileUtils.moveFile(new File(ScreenRecorder.OUTPUT_FILE), new File(OUTPUT_FILE));
+			}
 	        
 	        fireProcessUpdate(POST_PROCESS_COMPLETE);
 	        

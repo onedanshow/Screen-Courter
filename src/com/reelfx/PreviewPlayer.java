@@ -67,11 +67,12 @@ public class PreviewPlayer extends Thread {
 	public void run() {
     	try {
 
-            List<String> vlcArgs = new ArrayList<String>();
-            vlcArgs.add(RfxApplet.RFX_FOLDER.getAbsoluteFile()+File.separator+"bin-mac"+File.separator+"ffplay");
-            vlcArgs.add(ScreenRecorder.OUTPUT_FILE);
+            List<String> ffplayArgs = new ArrayList<String>();
+            ffplayArgs.add(RfxApplet.BIN_FOLDER.getAbsolutePath()+File.separator+"ffplay");
+            //ffplayArgs.add("/usr/bin/ffplay");
+            ffplayArgs.add(ScreenRecorder.OUTPUT_FILE);
 
-            ProcessBuilder pb = new ProcessBuilder(vlcArgs);
+            ProcessBuilder pb = new ProcessBuilder(ffplayArgs);
             ffplayProcess = pb.start();
 
             errorGobbler = new StreamGobbler(ffplayProcess.getErrorStream(), false, "ffplay E");
@@ -93,15 +94,19 @@ public class PreviewPlayer extends Thread {
 	}
 
     private void playAudio() {
-        System.out.println("Playing audio...");
-        audioPlayer = new AudioPlayer();
-        audioPlayer.start();
+    	if(RfxApplet.IS_MAC) {
+	        System.out.println("Playing audio independently...");
+	        audioPlayer = new AudioPlayer();
+	        audioPlayer.start();
+    	}
     }
 
     private void stopAudio() {
-        System.out.println("Stopping audio...");
-        if(audioPlayer.isAlive())
-            audioPlayer.keepPlaying = false;
+    	if(RfxApplet.IS_MAC) {
+	        System.out.println("Stopping independent audio...");
+	        if(audioPlayer.isAlive())
+	            audioPlayer.keepPlaying = false;
+    	}
     }
 
     @Override
