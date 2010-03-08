@@ -108,13 +108,9 @@ public class Interface extends JWindow implements ProcessListener {
         add(buttons,BorderLayout.CENTER);
         add(status,BorderLayout.SOUTH);
         
-        if(!RfxApplet.BIN_FOLDER.exists()){
+        if(RfxApplet.IS_MAC && !RfxApplet.BIN_FOLDER.exists()){
 			status.setText("Performing one-time install...");
-			recordBtn.setEnabled(false);
-	        stopBtn.setEnabled(false);
-	        previewBtn.setEnabled(false);
-	        saveBtn.setEnabled(false);
-	        closeBtn.setEnabled(false);
+			disable();
         }
         
     	postProcess = new PostProcessor();
@@ -135,7 +131,7 @@ public class Interface extends JWindow implements ProcessListener {
     			Runtime.getRuntime().exec("chmod 755 "+VLC_EXEC.getAbsolutePath()).waitFor();
     			if(!VLC_EXEC.exists()) throw new IOException("Did not copy VLC to its execution directory!");
     		} else */
-			if(!RfxApplet.BIN_FOLDER.exists()){
+			if(RfxApplet.IS_MAC && !RfxApplet.BIN_FOLDER.exists()){
 				RfxApplet.copyFolderFromRemoteJar(new URL(RfxApplet.CODE_BASE+"/bin-mac.jar"), "bin-mac");
 				Runtime.getRuntime().exec("chmod 755 "+RfxApplet.BIN_FOLDER+File.separator+"VLC").waitFor();
 				Runtime.getRuntime().exec("chmod 755 "+RfxApplet.BIN_FOLDER+File.separator+"ffmpeg").waitFor();
@@ -149,7 +145,7 @@ public class Interface extends JWindow implements ProcessListener {
 			status.setText("Error downloading native extensions");
 			e1.printStackTrace();
 		} catch (InterruptedException e) {
-			status.setText("Error setting up nativ extentions");
+			status.setText("Error setting up native extentions");
 			e.printStackTrace();
 		} catch (IOException e) {
 			status.setText("Error downloading native extentions");
@@ -185,48 +181,59 @@ public class Interface extends JWindow implements ProcessListener {
     	
     	stopBtn.setEnabled(true);
     	
-        ActionListener taskPerformer = new ActionListener() {
-
-            public void actionPerformed(ActionEvent evt) {
-                try {
-                    if (!telnet.isConnected()) {
-                        telnet.connect("localhost", 4444);
-                    }
-                    BufferedWriter bw = new BufferedWriter(
-                            new OutputStreamWriter(telnet.getOutputStream()));
-                    bw.write("add screen:// \n");
-                    bw.flush();
-                } catch (SocketException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        };
-        // HACK: audio takes a second to get going, delay the video a second (maybe a mac only thing)
-        Timer delayVideo = new Timer(500, taskPerformer);
-        delayVideo.setRepeats(false);
-        delayVideo.start();
-
-        audio = new AudioRecorder();
-        audio.startRecording();
+    	if(RfxApplet.IS_MAC) {
+	        ActionListener taskPerformer = new ActionListener() {
+	            public void actionPerformed(ActionEvent evt) {
+	                try {
+	                    if (!telnet.isConnected()) {
+	                        telnet.connect("localhost", 4444);
+	                    }
+	                    BufferedWriter bw = new BufferedWriter(
+	                            new OutputStreamWriter(telnet.getOutputStream()));
+	                    bw.write("add screen:// \n");
+	                    bw.flush();
+	                } catch (SocketException e) {
+	                    e.printStackTrace();
+	                } catch (IOException e) {
+	                    e.printStackTrace();
+	                }
+	            }
+	        };
+	        // HACK: audio takes a second to get going, delay the video a second (maybe a mac only thing)
+	        Timer delayVideo = new Timer(500, taskPerformer);
+	        delayVideo.setRepeats(false);
+	        delayVideo.start();
+	
+	        audio = new AudioRecorder();
+	        audio.startRecording();
+    	}
+    	else if(RfxApplet.IS_LINUX) {
+    		// already started...
+    	}
         
         status.setText("Go!");
     }
 
     public void stopRecording() {
-        try {
-            if (!telnet.isConnected()) {
-                telnet.connect("localhost", 4444);
-            }
-            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(telnet.getOutputStream()));
-            bw.write("stop \n");
-            bw.flush();
-        } catch (SocketException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    	if(RfxApplet.IS_MAC) {
+	        try {
+	            if (!telnet.isConnected()) {
+	                telnet.connect("localhost", 4444);
+	            }
+	            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(telnet.getOutputStream()));
+	            bw.write("stop \n");
+	            bw.flush();
+	        } catch (SocketException e) {
+	            e.printStackTrace();
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	        }
+	        if(audio != null)
+	            audio.stopRecording();
+    	}
+    	else if(RfxApplet.IS_LINUX) {
+    		screen.stopRecording();
+    	}
         
         recordBtn.setEnabled(true);
         stopBtn.setEnabled(false);
@@ -234,9 +241,6 @@ public class Interface extends JWindow implements ProcessListener {
         saveBtn.setEnabled(true);
         closeBtn.setEnabled(true);
 
-        if(audio != null)
-           audio.stopRecording();
-        
         status.setText("Recording stopped.");
     }
 
@@ -256,6 +260,14 @@ public class Interface extends JWindow implements ProcessListener {
 				status.setText("Done");
 			break;
 		}
+	}
+	
+	public void disable() {
+		recordBtn.setEnabled(false);
+        stopBtn.setEnabled(false);
+        previewBtn.setEnabled(false);
+        saveBtn.setEnabled(false);
+        closeBtn.setEnabled(false);
 	}
 
     public void closeApplication() {

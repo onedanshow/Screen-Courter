@@ -99,6 +99,9 @@ public class AudioRecorder extends Thread
 	
     public static String OUTPUT_FILE = RfxApplet.RFX_FOLDER.getAbsolutePath()+File.separator+"output-java.wav";
 	
+    // AUDIO SETTINGS
+    public static int FREQ = 44100;
+    
 	private TargetDataLine		m_line = null;
 	private AudioFileFormat.Type	m_targetType;
 	private AudioInputStream	m_audioInputStream;

@@ -36,8 +36,9 @@ public class RfxApplet extends JApplet {
 	
 	public static File RFX_FOLDER, BIN_FOLDER, DESKTOP_FOLDER;
 	public static URL DOCUMENT_BASE, CODE_BASE;
-	public static boolean IS_MAC = System.getProperty("os.name").contains("Mac");
-	public static boolean IS_WINDOWS = System.getProperty("os.name").contains("Windows");
+	public static boolean IS_MAC = System.getProperty("os.name").toLowerCase().contains("mac");
+	public static boolean IS_LINUX = System.getProperty("os.name").toLowerCase().contains("linux");
+	public static boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("windows");
 	public static boolean DEV_MODE = System.getProperty("user.dir").contains(System.getProperty("user.home")); // assume dev files are in developer's home
 	
 	private Interface ui = null;
@@ -237,7 +238,6 @@ public class RfxApplet extends JApplet {
 				"Document Base: \t"+getDocumentBase().getPath()+"\n"+
 				"Execution URL: \t"+RfxApplet.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()+"\n";
 		} catch (URISyntaxException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return "Error";
 		}
@@ -246,9 +246,13 @@ public class RfxApplet extends JApplet {
 		//System.out.println("Total space: \n"+TEMP_FOLDER.getTotalSpace()+" GBs");
 	}
 	
-	public String getRfxFolder() {
-		// TODO resolve based on OS
-		return System.getProperty("user.home")+File.separator+"Library"+File.separator+"ReelFX";
+	public String getRfxFolder() throws IOException {
+		if(IS_MAC)
+			return System.getProperty("user.home")+File.separator+"Library"+File.separator+"ReelFX";
+		else if(IS_LINUX)
+			return System.getProperty("user.home")+File.separator+".ReelFX";
+		else 
+			throw new IOException("I don't know what operating system this is!");
 	}
 	
 	public String getDesktopFolder() {
