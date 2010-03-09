@@ -75,6 +75,8 @@ public class MacController extends ApplicationController {
 	@Override
 	// --------- START AUDIO ---------
 	public void startRecording(Mixer audioSource) {
+		AudioRecorder.deleteOutput();
+		stopped = false;
         if(audioSource != null) {
         	audio = new AudioRecorder(audioSource);
         	audio.addProcessListener(this);
@@ -83,7 +85,6 @@ public class MacController extends ApplicationController {
         	audio = null;
         	startVideoRecording();
         }
-        stopped = false;
 	}
 
 	// --------- START VIDEO (once audio has trigger it) ---------

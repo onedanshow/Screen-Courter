@@ -132,7 +132,7 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 		DataLine.Info info = new DataLine.Info(TargetDataLine.class, audioFormat);
 		try
 		{
-			if(false) //mixer != null) // try with the mixer given
+			if(mixer != null) // try with the mixer given
 				m_line = (TargetDataLine) mixer.getLine(info);
 			
 			else // try to grab one ourselves
@@ -249,5 +249,15 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 	private static void out(String strMessage)
 	{
 		System.out.println(strMessage);
+	}
+	
+	public static void deleteOutput() {
+		File oldOutput = new File(OUTPUT_FILE);
+		try {
+			if(oldOutput.exists() && !oldOutput.delete())
+				throw new Exception("Can't delete the old audio file!");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }

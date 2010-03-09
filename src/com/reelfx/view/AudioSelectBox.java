@@ -30,7 +30,7 @@ public class AudioSelectBox extends JComboBox implements MouseListener {
 		Mixer result = null;
 		
 		for(Mixer.Info info : AudioSystem.getMixerInfo())
-        	if(!info.getName().equals(getSelectedItem().toString()))
+        	if(info.getName().equals(getSelectedItem()))
         		result = AudioSystem.getMixer(info);
 		
 		return result;

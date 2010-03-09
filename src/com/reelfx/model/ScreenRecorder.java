@@ -157,4 +157,14 @@ public class ScreenRecorder extends ProcessWrapper {
     	super.finalize();
     	recordingProcess.destroy();
     }
+    
+    public static void deleteOutput() {
+		File oldOutput = new File(OUTPUT_FILE);
+		try {
+			if(oldOutput.exists() && !oldOutput.delete())
+				throw new Exception("Can't delete the old audio file!");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 }
