@@ -1,4 +1,4 @@
-package com.reelfx.gui;
+package com.reelfx.view;
 
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -20,10 +20,20 @@ public class AudioSelectBox extends JComboBox implements MouseListener {
 	private void listAudioSources() {
 		removeAllItems();
 		addItem("No Audio");
-		for(Mixer.Info info : AudioSystem.getMixerInfo()) {
+		
+		for(Mixer.Info info : AudioSystem.getMixerInfo())
         	if(!info.getName().contains("Java"))
         		addItem(info.getName());
-		}
+	}
+	
+	public Mixer getSelectedMixer() {
+		Mixer result = null;
+		
+		for(Mixer.Info info : AudioSystem.getMixerInfo())
+        	if(!info.getName().equals(getSelectedItem().toString()))
+        		result = AudioSystem.getMixer(info);
+		
+		return result;
 	}
 
 	// TODO mouse events don't work

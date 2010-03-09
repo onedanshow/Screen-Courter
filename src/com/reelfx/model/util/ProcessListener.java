@@ -1,4 +1,4 @@
-package com.reelfx.util;
+package com.reelfx.model.util;
 
 import java.util.EventListener;
 

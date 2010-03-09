@@ -1,4 +1,4 @@
-package com.reelfx;
+package com.reelfx.model;
 
 /**
  *	Base code from: SimpleAudioRecorder.java
@@ -37,12 +37,18 @@ import java.io.IOException;
 import java.io.File;
 
 import javax.sound.sampled.DataLine;
+import javax.sound.sampled.LineEvent;
+import javax.sound.sampled.LineListener;
+import javax.sound.sampled.Mixer;
 import javax.sound.sampled.TargetDataLine;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.AudioFileFormat;
+
+import com.reelfx.Applet;
+import com.reelfx.model.util.ProcessWrapper;
 
 /**	<titleabbrev>SimpleAudioRecorder</titleabbrev>
 	<title>Recording to an audio file (simple version)</title>
@@ -94,20 +100,24 @@ import javax.sound.sampled.AudioFileFormat;
 	</formalpara>
 
 */
-public class AudioRecorder extends Thread
+public class AudioRecorder extends ProcessWrapper implements LineListener
 {
 	
-    public static String OUTPUT_FILE = RfxApplet.RFX_FOLDER.getAbsolutePath()+File.separator+"output-java.wav";
+    public static String OUTPUT_FILE = Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"output-java.wav";
 	
     // AUDIO SETTINGS
     public static int FREQ = 44100;
     
-	private TargetDataLine		m_line = null;
-	private AudioFileFormat.Type	m_targetType;
-	private AudioInputStream	m_audioInputStream;
-	private File			m_outputFile;
+    // STATES
+    public final static int RECORDING_STARTED = 200;
+    public final static int RECORDING_COMPLETE = 201;
+    
+	private TargetDataLine m_line = null;
+	private AudioFileFormat.Type m_targetType;
+	private AudioInputStream m_audioInputStream;
+	private File m_outputFile;
 
-	public AudioRecorder()
+	public AudioRecorder(Mixer mixer)
 	{
 		/* For simplicity, the audio data format used for recording
 		   is hardcoded here. We use PCM 44.1 kHz, 16 bit signed, stereo.
@@ -117,13 +127,17 @@ public class AudioRecorder extends Thread
 
 		/* Now, we are trying to get a TargetDataLine. The
 		   TargetDataLine is used later to read audio data from it.
-		   If requesting the line was successful, we are opening
-		   it (important!).
+		   If requesting the line was successful, we are opening it (important!).
 		*/
 		DataLine.Info info = new DataLine.Info(TargetDataLine.class, audioFormat);
 		try
 		{
-			m_line = (TargetDataLine) AudioSystem.getLine(info);
+			if(mixer != null) // try with the mixer given
+				m_line = (TargetDataLine) mixer.getLine(info);
+			
+			else // try to grab one ourselves
+				m_line = (TargetDataLine) AudioSystem.getLine(info);
+			m_line.addLineListener(this);
 			m_line.open(audioFormat);
 		}
 		catch (LineUnavailableException e)
@@ -204,17 +218,32 @@ public class AudioRecorder extends Thread
     @Override
 	public void run()
 	{
-			try
-			{
-				AudioSystem.write(
-					m_audioInputStream,
-					m_targetType,
-					m_outputFile);
-			}
-			catch (IOException e)
-			{
-				e.printStackTrace();
-			}
+		try
+		{
+			AudioSystem.write(m_audioInputStream, m_targetType, m_outputFile);
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+	}
+    
+    /**
+     * Part of the LineListener implementation. 
+     */
+    public void update(LineEvent event) {
+		if(event.getType().equals(LineEvent.Type.OPEN)) {
+			
+		} 
+		else if(event.getType().equals(LineEvent.Type.START)) {
+			fireProcessUpdate(RECORDING_STARTED);
+		} 
+		else if(event.getType().equals(LineEvent.Type.STOP)) {
+			fireProcessUpdate(RECORDING_COMPLETE);
+		} 
+		else if(event.getType().equals(LineEvent.Type.CLOSE)) {
+			
+		}
 	}
 
 	private static void out(String strMessage)

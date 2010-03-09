@@ -1,4 +1,4 @@
-package com.reelfx;
+package com.reelfx.model;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -10,13 +10,14 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 
-import com.reelfx.util.ProcessWrapper;
-import com.reelfx.util.StreamGobbler;
+import com.reelfx.Applet;
+import com.reelfx.model.util.ProcessWrapper;
+import com.reelfx.model.util.StreamGobbler;
 
 public class PostProcessor extends ProcessWrapper implements ActionListener {
 	
 	// FILE LOCATIONS
-	public static String OUTPUT_FILE = RfxApplet.DESKTOP_FOLDER.getAbsolutePath()+File.separator+"output-final.mp4";
+	public static String OUTPUT_FILE = Applet.DESKTOP_FOLDER.getAbsolutePath()+File.separator+"output-final.mp4";
 	
 	// STATES
 	public final static int POST_PROCESS_COMPLETE = 0;
@@ -28,9 +29,9 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 		try {
 	        //Process p = Runtime.getRuntime().exec("/Applications/VLC.app/Contents/MacOS/VLC -I telnet --telnet-host=localhost:4442 -I rc --rc-host=localhost:4444");
 	        //Process p = Runtime.getRuntime().exec("/Applications/VLC.app/Contents/MacOS/VLC -I rc --rc-host=localhost:4444");
-			if(RfxApplet.IS_MAC) {
+			if(Applet.IS_MAC) {
 				List<String> ffmpegArgs = new ArrayList<String>();
-		    	ffmpegArgs.add(RfxApplet.RFX_FOLDER.getAbsoluteFile()+File.separator+"bin-mac"+File.separator+"ffmpeg");
+		    	ffmpegArgs.add(Applet.RFX_FOLDER.getAbsoluteFile()+File.separator+"bin-mac"+File.separator+"ffmpeg");
 		    	ffmpegArgs.add("-ar");
 		    	ffmpegArgs.add("44100");
 		    	ffmpegArgs.add("-i");
@@ -53,7 +54,7 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 		        
 		        postProcess.waitFor();
 			}
-			else if(RfxApplet.IS_LINUX) {
+			else if(Applet.IS_LINUX) {
 				FileUtils.moveFile(new File(ScreenRecorder.OUTPUT_FILE), new File(OUTPUT_FILE));
 			}
 	        

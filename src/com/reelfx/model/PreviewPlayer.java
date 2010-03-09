@@ -1,11 +1,14 @@
-package com.reelfx;
+package com.reelfx.model;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.reelfx.util.StreamGobbler;
+import com.reelfx.Applet;
+import com.reelfx.model.util.ProcessWrapper;
+import com.reelfx.model.util.StreamGobbler;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.sound.sampled.AudioFormat;
@@ -56,7 +59,7 @@ import javax.swing.Timer;
 	</formalpara>
 
 */
-public class PreviewPlayer extends Thread {
+public class PreviewPlayer extends ProcessWrapper {
 
     Process ffplayProcess;
     AudioPlayer audioPlayer;
@@ -68,7 +71,7 @@ public class PreviewPlayer extends Thread {
     	try {
 
             List<String> ffplayArgs = new ArrayList<String>();
-            ffplayArgs.add(RfxApplet.BIN_FOLDER.getAbsolutePath()+File.separator+"ffplay");
+            ffplayArgs.add(Applet.BIN_FOLDER.getAbsolutePath()+File.separator+"ffplay");
             //ffplayArgs.add("/usr/bin/ffplay");
             ffplayArgs.add(ScreenRecorder.OUTPUT_FILE);
 
@@ -94,7 +97,7 @@ public class PreviewPlayer extends Thread {
 	}
 
     private void playAudio() {
-    	if(RfxApplet.IS_MAC) {
+    	if(Applet.IS_MAC) {
 	        System.out.println("Playing audio independently...");
 	        audioPlayer = new AudioPlayer();
 	        audioPlayer.start();
@@ -102,7 +105,7 @@ public class PreviewPlayer extends Thread {
     }
 
     private void stopAudio() {
-    	if(RfxApplet.IS_MAC) {
+    	if(Applet.IS_MAC) {
 	        System.out.println("Stopping independent audio...");
 	        if(audioPlayer.isAlive())
 	            audioPlayer.keepPlaying = false;

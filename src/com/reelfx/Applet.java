@@ -20,6 +20,10 @@ import java.util.zip.ZipFile;
 import javax.swing.JApplet;
 import javax.swing.SwingUtilities;
 
+import com.reelfx.controller.ApplicationController;
+import com.reelfx.controller.LinuxController;
+import com.reelfx.controller.MacController;
+import com.reelfx.view.Interface;
 import com.sun.JarClassLoader;
 
 /**
@@ -30,7 +34,7 @@ import com.sun.JarClassLoader;
  *
  */
 
-public class RfxApplet extends JApplet {
+public class Applet extends JApplet {
 
 	private static final long serialVersionUID = 4544354980928245103L;
 	
@@ -41,7 +45,7 @@ public class RfxApplet extends JApplet {
 	public static boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("windows");
 	public static boolean DEV_MODE = System.getProperty("user.dir").contains(System.getProperty("user.home")); // assume dev files are in developer's home
 	
-	private Interface ui = null;
+	private ApplicationController controller = null;
 	
 	// called when this applet is loaded into the browser.
 	@Override
@@ -66,15 +70,18 @@ public class RfxApplet extends JApplet {
             SwingUtilities.invokeAndWait(new Runnable() {
                 public void run() {
                 	// start up the GUI
-                	ui = new Interface();
-                	ui.setVisible(true);
-                	ui.pack();
+                	if(IS_MAC)
+                		controller = new MacController();
+                	else if(IS_LINUX)
+                		controller = new LinuxController();
+                	else 
+                		System.err.println("I don't which operating system this is.");
                 }
             });
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                	if(ui != null)
-                		ui.setupExtensions();
+                	if(controller != null)
+                		controller.setupExtensions();
                 }
             });
         
@@ -165,7 +172,7 @@ public class RfxApplet extends JApplet {
      }
      
      protected static boolean copyFileFromJar(String sResource, File fDest) {
-    	 return copyFileFromJar(sResource, fDest, RfxApplet.class.getClassLoader());
+    	 return copyFileFromJar(sResource, fDest, Applet.class.getClassLoader());
      }
 	
 	/** 
@@ -236,7 +243,7 @@ public class RfxApplet extends JApplet {
 				"User Desktop: \t"+DESKTOP_FOLDER.getPath()+"\n"+
 				"Code Base: \t"+getCodeBase().getPath()+"\n"+
 				"Document Base: \t"+getDocumentBase().getPath()+"\n"+
-				"Execution URL: \t"+RfxApplet.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()+"\n";
+				"Execution URL: \t"+Applet.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()+"\n";
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
 			return "Error";
@@ -269,14 +276,12 @@ public class RfxApplet extends JApplet {
      */
     @Override
     public void destroy() {
-        System.out.println("Setting up to close down...");
         try {
             SwingUtilities.invokeAndWait(new Runnable() {
                 public void run() {
                 	System.out.println("Closing down...");
-                	ui.closeInterface();
-                    ui.setVisible(false);
-                    ui = null;
+                	controller.closeDown();
+                	controller = null;
                 }
             });
         } catch (Exception e) { }

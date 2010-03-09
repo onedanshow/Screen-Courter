@@ -1,4 +1,4 @@
-package com.reelfx;
+package com.reelfx.view;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -33,23 +33,28 @@ import javax.swing.JLabel;
 
 import org.apache.commons.net.telnet.TelnetClient;
 
-import com.reelfx.gui.AudioSelectBox;
-import com.reelfx.util.ProcessListener;
+import com.reelfx.Applet;
+import com.reelfx.controller.ApplicationController;
+import com.reelfx.model.AudioRecorder;
+import com.reelfx.model.PostProcessor;
+import com.reelfx.model.PreviewPlayer;
+import com.reelfx.model.ScreenRecorder;
+import com.reelfx.model.util.ProcessListener;
 
-public class Interface extends JWindow implements ProcessListener, MouseListener, MouseMotionListener {
+public class Interface extends JWindow implements MouseListener, MouseMotionListener {
 
     private static final long serialVersionUID = 4803377343174867777L;
-    private TelnetClient telnet = new TelnetClient();
-    private AudioRecorder audio;
-    private ScreenRecorder screen;
-    private PostProcessor postProcess;
-    private JButton recordBtn, previewBtn, saveBtn, closeBtn;
-    private AudioSelectBox audioSelect;
-    private JLabel status;
     
-    public Interface() {
+    public JButton recordBtn, previewBtn, saveBtn, closeBtn;
+    public AudioSelectBox audioSelect;
+    public JLabel status;
+    private ApplicationController controller;
+    
+    public Interface(ApplicationController controller) {
         super();
-
+        
+        this.controller = controller;
+        
         Toolkit tk = Toolkit.getDefaultToolkit();
         Dimension dim = tk.getScreenSize();
 
@@ -72,7 +77,7 @@ public class Interface extends JWindow implements ProcessListener, MouseListener
         recordBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
             	if(recordBtn.getText().equals("Record")) {
-            		prepRecording();
+            		prepareForRecording();
             		recordBtn.setText("Stop");
             	}
             	else if(recordBtn.getText().equals("Stop")) {
@@ -84,7 +89,6 @@ public class Interface extends JWindow implements ProcessListener, MouseListener
         options.add(recordBtn);
         
         audioSelect = new AudioSelectBox();
-        
         audioSelect.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				System.out.println(e.toString());
@@ -127,61 +131,17 @@ public class Interface extends JWindow implements ProcessListener, MouseListener
         add(options,BorderLayout.CENTER);
         add(status,BorderLayout.SOUTH);
         
-        if(RfxApplet.IS_MAC && !RfxApplet.BIN_FOLDER.exists()){
-			status.setText("Performing one-time install...");
-			disable();
-        }
-        
-    	postProcess = new PostProcessor();
-    	postProcess.addProcessListener(this);
-        
         System.out.println("Interface initialized...");
     }
     
-    /**
-     * Installs VLC, ffmpeg and ffplay if needed.
-     */
-    public void setupExtensions() { 
-    	status.setText("");
-    	try {
-        	/* might revisit copying the jar locally later
-    		if(!VLC_EXEC.exists() && RfxApplet.DEV_MODE) {
-    			RfxApplet.copyFolderFromRemoteJar(new URL("jar", "", "/Users/daniel/Documents/Java/java-review-tool/lib"+File.separator+"bin-mac.jar" + "!/"), "bin-mac");
-    			Runtime.getRuntime().exec("chmod 755 "+VLC_EXEC.getAbsolutePath()).waitFor();
-    			if(!VLC_EXEC.exists()) throw new IOException("Did not copy VLC to its execution directory!");
-    		} else */
-			if(RfxApplet.IS_MAC && !RfxApplet.BIN_FOLDER.exists()){
-				RfxApplet.copyFolderFromRemoteJar(new URL(RfxApplet.CODE_BASE+"/bin-mac.jar"), "bin-mac");
-				Runtime.getRuntime().exec("chmod 755 "+RfxApplet.BIN_FOLDER+File.separator+"VLC").waitFor();
-				Runtime.getRuntime().exec("chmod 755 "+RfxApplet.BIN_FOLDER+File.separator+"ffmpeg").waitFor();
-				Runtime.getRuntime().exec("chmod 755 "+RfxApplet.BIN_FOLDER+File.separator+"ffplay").waitFor();
-				if(!RfxApplet.BIN_FOLDER.exists()) throw new IOException("Did not copy VLC to its execution directory!");
-				recordBtn.setEnabled(true);
-		        closeBtn.setEnabled(true);
-			}
-        } catch (MalformedURLException e1) {
-			status.setText("Error downloading native extensions");
-			e1.printStackTrace();
-		} catch (InterruptedException e) {
-			status.setText("Error setting up native extentions");
-			e.printStackTrace();
-		} catch (IOException e) {
-			status.setText("Error downloading native extentions");
-			e.printStackTrace();
-		}
-    }
-    
-    public void prepRecording() {
-    	// start up VLC
-    	screen = new ScreenRecorder();
-    	screen.start();
-    	// TODO check that it starts up correctly
+    public void prepareForRecording() {    	
     	status.setText("Ready...");
-    	
     	recordBtn.setEnabled(false);
         previewBtn.setEnabled(false);
         saveBtn.setEnabled(false);
         closeBtn.setEnabled(false);
+        
+        controller.prepareForRecording();
     	
     	ActionListener taskPerformer = new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -195,59 +155,14 @@ public class Interface extends JWindow implements ProcessListener, MouseListener
     }
 
     private void startRecording() {
-    	if(RfxApplet.IS_MAC) {
-	        ActionListener taskPerformer = new ActionListener() {
-	            public void actionPerformed(ActionEvent evt) {
-	                try {
-	                    if (!telnet.isConnected()) {
-	                        telnet.connect("localhost", 4444);
-	                    }
-	                    BufferedWriter bw = new BufferedWriter(
-	                            new OutputStreamWriter(telnet.getOutputStream()));
-	                    bw.write("add screen:// \n");
-	                    bw.flush();
-	                } catch (SocketException e) {
-	                    e.printStackTrace();
-	                } catch (IOException e) {
-	                    e.printStackTrace();
-	                }
-	            }
-	        };
-	        // HACK: audio takes a second to get going, delay the video a second (maybe a mac only thing)
-	        Timer delayVideo = new Timer(500, taskPerformer);
-	        delayVideo.setRepeats(false);
-	        delayVideo.start();
-	
-	        audio = new AudioRecorder();
-	        audio.startRecording();
-    	}
-    	else if(RfxApplet.IS_LINUX) {
-    		// already started...
-    	}
-        
+    	controller.startRecording(audioSelect.getSelectedMixer());
+    	
+    	recordBtn.setEnabled(true);
         status.setText("Go!");
     }
 
     public void stopRecording() {
-    	if(RfxApplet.IS_MAC) {
-	        try {
-	            if (!telnet.isConnected()) {
-	                telnet.connect("localhost", 4444);
-	            }
-	            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(telnet.getOutputStream()));
-	            bw.write("stop \n");
-	            bw.flush();
-	        } catch (SocketException e) {
-	            e.printStackTrace();
-	        } catch (IOException e) {
-	            e.printStackTrace();
-	        }
-	        if(audio != null)
-	            audio.stopRecording();
-    	}
-    	else if(RfxApplet.IS_LINUX) {
-    		screen.stopRecording();
-    	}
+    	controller.stopRecording();
         
         recordBtn.setEnabled(true);
         previewBtn.setEnabled(true);
@@ -258,25 +173,14 @@ public class Interface extends JWindow implements ProcessListener, MouseListener
     }
 
     public void previewRecording() {
-        PreviewPlayer preview = new PreviewPlayer();
-        preview.start();
+        controller.previewRecording();
     }
 
     public void saveRecording() {
+    	controller.saveRecording();
     	disable();
-        postProcess.start();
         status.setText("Encoding to H.264...");
     }
-    
-	public void processUpdate(int event) {
-		switch(event) {
-			case PostProcessor.POST_PROCESS_COMPLETE:
-				recordBtn.setEnabled(true);
-				closeBtn.setEnabled(true);
-				status.setText("Done");
-			break;
-		}
-	}
 	
 	public void disable() {
 		recordBtn.setEnabled(false);
@@ -285,22 +189,7 @@ public class Interface extends JWindow implements ProcessListener, MouseListener
         closeBtn.setEnabled(false);
 	}
 
-    public void closeInterface() {
-        try {
-        	System.out.println("Closing interface...");
-            if (telnet.isConnected()) {
-            	BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(telnet.getOutputStream()));
-                bw.write("quit \n");
-                bw.flush();
-            }
-			screen = null;
-        } catch (SocketException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (Throwable e) {
-			e.printStackTrace();
-		} 
+    public void closeInterface() { 
         setVisible(false);
     }
 
