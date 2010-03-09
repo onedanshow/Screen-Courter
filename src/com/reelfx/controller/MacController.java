@@ -1,29 +1,18 @@
 package com.reelfx.controller;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.net.MalformedURLException;
-import java.net.SocketException;
 import java.net.URL;
 
 import javax.sound.sampled.Mixer;
-import javax.swing.Timer;
-
-import org.apache.commons.net.telnet.TelnetClient;
 
 import com.reelfx.Applet;
 import com.reelfx.model.AudioRecorder;
-import com.reelfx.model.PostProcessor;
 import com.reelfx.model.ScreenRecorder;
-import com.reelfx.view.Interface;
 
 public class MacController extends ApplicationController {
 	
-	private TelnetClient telnet = new TelnetClient();
 	private AudioRecorder audio;
 	private boolean stopped = true;
 

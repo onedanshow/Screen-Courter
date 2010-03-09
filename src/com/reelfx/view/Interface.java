@@ -3,7 +3,6 @@ package com.reelfx.view;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -11,35 +10,16 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.lang.reflect.InvocationTargetException;
-import java.net.MalformedURLException;
-import java.net.SocketException;
-import java.net.URL;
 
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Mixer;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JWindow;
-import javax.swing.SwingUtilities;
 import javax.swing.Timer;
-import javax.swing.JLabel;
 
-import org.apache.commons.net.telnet.TelnetClient;
-
-import com.reelfx.Applet;
 import com.reelfx.controller.ApplicationController;
-import com.reelfx.model.AudioRecorder;
-import com.reelfx.model.PostProcessor;
-import com.reelfx.model.PreviewPlayer;
 import com.reelfx.model.ScreenRecorder;
-import com.reelfx.model.util.ProcessListener;
 
 public class Interface extends JWindow implements MouseListener, MouseMotionListener {
 
