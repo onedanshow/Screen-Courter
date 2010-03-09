@@ -4,9 +4,13 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
@@ -16,7 +20,10 @@ import java.net.MalformedURLException;
 import java.net.SocketException;
 import java.net.URL;
 
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Mixer;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JWindow;
@@ -26,17 +33,19 @@ import javax.swing.JLabel;
 
 import org.apache.commons.net.telnet.TelnetClient;
 
+import com.reelfx.gui.AudioSelectBox;
 import com.reelfx.util.ProcessListener;
 
-public class Interface extends JWindow implements ProcessListener {
+public class Interface extends JWindow implements ProcessListener, MouseListener, MouseMotionListener {
 
     private static final long serialVersionUID = 4803377343174867777L;
-    TelnetClient telnet = new TelnetClient();
-    AudioRecorder audio;
-    ScreenRecorder screen;
-    PostProcessor postProcess;
-    JButton recordBtn, stopBtn, previewBtn, saveBtn, closeBtn;
-    JLabel status;
+    private TelnetClient telnet = new TelnetClient();
+    private AudioRecorder audio;
+    private ScreenRecorder screen;
+    private PostProcessor postProcess;
+    private JButton recordBtn, previewBtn, saveBtn, closeBtn;
+    private AudioSelectBox audioSelect;
+    private JLabel status;
     
     public Interface() {
         super();
@@ -46,33 +55,42 @@ public class Interface extends JWindow implements ProcessListener {
 
         setBackground(Color.white);
         //setPreferredSize(dim); // full screen
-        setPreferredSize(new Dimension(500, 50));
-        setLocation(100, 100);
+        //setPreferredSize(new Dimension(500, 50)); // will auto fit to the size needed, but if you want to specify a size
+        setLocation(dim.width/2, dim.height/2);
         setLayout(new BorderLayout());
         setAlwaysOnTop(true);
+        addMouseListener(this);
+        addMouseMotionListener(this);
 
         /*if (AWTUtilities.isTranslucencySupported(AWTUtilities.Translucency.PERPIXEL_TRANSPARENT)) {
             System.out.println("Transparency supported!");
         }*/
         
-        JPanel buttons = new JPanel();
+        JPanel options = new JPanel();
 
         recordBtn = new JButton("Record");
         recordBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                prepRecording();
+            	if(recordBtn.getText().equals("Record")) {
+            		prepRecording();
+            		recordBtn.setText("Stop");
+            	}
+            	else if(recordBtn.getText().equals("Stop")) {
+            		stopRecording();
+            		recordBtn.setText("Record");
+            	}
             }
         });
-        buttons.add(recordBtn);
-
-        stopBtn = new JButton("Stop");
-        stopBtn.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                stopRecording();
-            }
-        });
-        stopBtn.setEnabled(false);
-        buttons.add(stopBtn);
+        options.add(recordBtn);
+        
+        audioSelect = new AudioSelectBox();
+        
+        audioSelect.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				System.out.println(e.toString());
+			}
+		});
+        options.add(audioSelect);
 
         previewBtn = new JButton("Preview");
         previewBtn.addActionListener(new ActionListener() {
@@ -83,7 +101,7 @@ public class Interface extends JWindow implements ProcessListener {
         if( !new File(ScreenRecorder.OUTPUT_FILE).exists() ) {
         	previewBtn.setEnabled(false);
         }
-        buttons.add(previewBtn);
+        options.add(previewBtn);
 
         saveBtn = new JButton("Save");
         saveBtn.addActionListener(new ActionListener() {
@@ -94,7 +112,7 @@ public class Interface extends JWindow implements ProcessListener {
         if( !new File(ScreenRecorder.OUTPUT_FILE).exists() ) {
         	saveBtn.setEnabled(false);
         }
-        buttons.add(saveBtn);
+        options.add(saveBtn);
 
         closeBtn = new JButton("Close");
         closeBtn.addActionListener(new ActionListener() {
@@ -102,10 +120,11 @@ public class Interface extends JWindow implements ProcessListener {
                 closeInterface();
             }
         });
-        buttons.add(closeBtn);
+        options.add(closeBtn);
         status = new JLabel();
+        status.setText("Loading...");
         
-        add(buttons,BorderLayout.CENTER);
+        add(options,BorderLayout.CENTER);
         add(status,BorderLayout.SOUTH);
         
         if(RfxApplet.IS_MAC && !RfxApplet.BIN_FOLDER.exists()){
@@ -123,7 +142,7 @@ public class Interface extends JWindow implements ProcessListener {
      * Installs VLC, ffmpeg and ffplay if needed.
      */
     public void setupExtensions() { 
-    	
+    	status.setText("");
     	try {
         	/* might revisit copying the jar locally later
     		if(!VLC_EXEC.exists() && RfxApplet.DEV_MODE) {
@@ -137,7 +156,6 @@ public class Interface extends JWindow implements ProcessListener {
 				Runtime.getRuntime().exec("chmod 755 "+RfxApplet.BIN_FOLDER+File.separator+"ffmpeg").waitFor();
 				Runtime.getRuntime().exec("chmod 755 "+RfxApplet.BIN_FOLDER+File.separator+"ffplay").waitFor();
 				if(!RfxApplet.BIN_FOLDER.exists()) throw new IOException("Did not copy VLC to its execution directory!");
-				status.setText("");
 				recordBtn.setEnabled(true);
 		        closeBtn.setEnabled(true);
 			}
@@ -161,7 +179,6 @@ public class Interface extends JWindow implements ProcessListener {
     	status.setText("Ready...");
     	
     	recordBtn.setEnabled(false);
-        stopBtn.setEnabled(false);
         previewBtn.setEnabled(false);
         saveBtn.setEnabled(false);
         closeBtn.setEnabled(false);
@@ -178,9 +195,6 @@ public class Interface extends JWindow implements ProcessListener {
     }
 
     private void startRecording() {
-    	
-    	stopBtn.setEnabled(true);
-    	
     	if(RfxApplet.IS_MAC) {
 	        ActionListener taskPerformer = new ActionListener() {
 	            public void actionPerformed(ActionEvent evt) {
@@ -236,7 +250,6 @@ public class Interface extends JWindow implements ProcessListener {
     	}
         
         recordBtn.setEnabled(true);
-        stopBtn.setEnabled(false);
         previewBtn.setEnabled(true);
         saveBtn.setEnabled(true);
         closeBtn.setEnabled(true);
@@ -267,7 +280,6 @@ public class Interface extends JWindow implements ProcessListener {
 	
 	public void disable() {
 		recordBtn.setEnabled(false);
-        stopBtn.setEnabled(false);
         previewBtn.setEnabled(false);
         saveBtn.setEnabled(false);
         closeBtn.setEnabled(false);
@@ -291,4 +303,29 @@ public class Interface extends JWindow implements ProcessListener {
 		} 
         setVisible(false);
     }
+
+    private Point mouseOffset = null;
+    
+	public void mouseClicked(MouseEvent e) {}
+
+	public void mouseEntered(MouseEvent e) {}
+
+	public void mouseExited(MouseEvent e) {}
+
+	public void mousePressed(MouseEvent e) {
+		mouseOffset = new Point(e.getX(),e.getY());
+	}
+
+	public void mouseReleased(MouseEvent e) {
+		mouseOffset = null;
+	}
+
+	public void mouseDragged(MouseEvent e) {
+		Point p = e.getLocationOnScreen();
+		p.x -= mouseOffset.x;
+		p.y -= mouseOffset.y;
+		setLocation(p);
+	}
+
+	public void mouseMoved(MouseEvent e) {}
 }
