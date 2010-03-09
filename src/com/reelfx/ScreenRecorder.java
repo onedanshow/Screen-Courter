@@ -83,9 +83,8 @@ public class ScreenRecorder extends ProcessWrapper {
     	        Dimension dim = tk.getScreenSize();
     	        
     			List<String> ffmpegArgs = new ArrayList<String>();
-    	    	//ffmpegArgs.add(RfxApplet.RFX_FOLDER.getAbsoluteFile()+File.separator+"bin-mac"+File.separator+"ffmpeg");
-    	    	//ffmpegArgs.add(RfxApplet.BIN_FOLDER.getAbsoluteFile()+File.separator+"ffmpeg");
-    			ffmpegArgs.add("/usr/bin/ffmpeg");
+    			//ffmpegArgs.add("/usr/bin/ffmpeg");
+    	    	ffmpegArgs.add(RfxApplet.BIN_FOLDER.getAbsoluteFile()+File.separator+"ffmpeg");
     	    	// screen capture settings
     	    	ffmpegArgs.addAll(parseParameters("-f x11grab -s "+dim.width+"x"+dim.height+" -r "+FPS+" -b "+BIT_RATE+"k -i :0.0"));
     	    	// microphone settings
@@ -116,13 +115,7 @@ public class ScreenRecorder extends ProcessWrapper {
       }
 	}
 	
-	public void stopRecording() {
-
-        	//OutputStreamWriter osw = new OutputStreamWriter(recordingProcess.getOutputStream());
-            //osw.write("q");
-			
-        	//recordingProcess.getOutputStream().write("q".getBytes());
-        	
+	public void stopRecording() {        	
         	PrintWriter pw = new PrintWriter(recordingProcess.getOutputStream());
         	pw.print("q");
         	pw.flush();
