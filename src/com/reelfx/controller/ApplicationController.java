@@ -61,6 +61,7 @@ public abstract class ApplicationController implements ProcessListener {
 		gui.closeInterface();
         gui.setVisible(false);
         gui = null;
+        screen.closeDown();
         screen = null;
 	}
 	

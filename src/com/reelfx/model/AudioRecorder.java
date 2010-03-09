@@ -132,7 +132,7 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 		DataLine.Info info = new DataLine.Info(TargetDataLine.class, audioFormat);
 		try
 		{
-			if(mixer != null) // try with the mixer given
+			if(false) //mixer != null) // try with the mixer given
 				m_line = (TargetDataLine) mixer.getLine(info);
 			
 			else // try to grab one ourselves

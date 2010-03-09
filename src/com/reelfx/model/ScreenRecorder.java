@@ -62,19 +62,23 @@ public class ScreenRecorder extends ProcessWrapper {
 	            vlcArgs.add(VLC_EXEC.getAbsolutePath());
 	        	//vlcArgs.add("vlc-bin"+File.separator+"VLC");
 	        	vlcArgs.add("-IRC");
-	        	vlcArgs.add("--rc-host=localhost:4444"); // formatting is mac specific
+	        	//vlcArgs.add("--rc-host=localhost:4444"); // formatting is mac specific
 	        	vlcArgs.add("--rc-fake-tty");
 	        	vlcArgs.add("--sout=#transcode{vcodec=mp4v,vb="+BIT_RATE+",fps="+FPS+",scale="+SCALE+"}:standard{access=file,mux=mov,dst="+OUTPUT_FILE+"}");
 	        	
 	            ProcessBuilder pb = new ProcessBuilder(vlcArgs);
 	            recordingProcess = pb.start();
-	
+	            fireProcessUpdate(RECORDING_STARTED);
+	            
 	            errorGobbler = new StreamGobbler(recordingProcess.getErrorStream(), false, "vlc E");
 	            inputGobbler = new StreamGobbler(recordingProcess.getInputStream(), false, "vlc O");
 	            
 	            System.out.println("Starting listener threads...");
 	            errorGobbler.start();
-	            inputGobbler.start();    
+	            inputGobbler.start();
+	            
+	            recordingProcess.waitFor();
+	            fireProcessUpdate(RECORDING_COMPLETE);
     		} 
     		
     		else if(Applet.IS_LINUX) {
@@ -119,12 +123,34 @@ public class ScreenRecorder extends ProcessWrapper {
       }
 	}
 	
-	public void stopRecording() {      
+	public void startRecording() {      
+		if(Applet.IS_MAC) {
+	    	PrintWriter pw = new PrintWriter(recordingProcess.getOutputStream());
+	    	pw.println("add screen://");
+	    	pw.flush();
+		}
+		// nothing for linux
+	}
+	
+	public void stopRecording() {   
 		if(Applet.IS_LINUX) {
 	    	PrintWriter pw = new PrintWriter(recordingProcess.getOutputStream());
 	    	pw.print("q");
 	    	pw.flush();
+		} else if(Applet.IS_MAC) {
+	    	PrintWriter pw = new PrintWriter(recordingProcess.getOutputStream());
+	    	pw.println("stop");
+	    	pw.flush();
 		}
+	}
+	
+	public void closeDown() {
+		if(Applet.IS_MAC) {
+	    	PrintWriter pw = new PrintWriter(recordingProcess.getOutputStream());
+	    	pw.println("quit");
+	    	pw.flush();
+		}
+		// nothing for linux
 	}
 	
     protected void finalize() throws Throwable {

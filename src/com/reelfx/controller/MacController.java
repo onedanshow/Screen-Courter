@@ -25,6 +25,7 @@ public class MacController extends ApplicationController {
 	
 	private TelnetClient telnet = new TelnetClient();
 	private AudioRecorder audio;
+	private boolean stopped = true;
 
 	public MacController() {
 		super();
@@ -93,64 +94,24 @@ public class MacController extends ApplicationController {
         	audio = null;
         	startVideoRecording();
         }
-        connectToVLC();
+        stopped = false;
 	}
 
 	// --------- START VIDEO (once audio has trigger it) ---------
 	private void startVideoRecording() {
-        try {
-            connectToVLC();
-            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(telnet.getOutputStream()));
-            bw.write("add screen:// \n");
-            bw.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+		if(!stopped) // had issue with AudioRecorder firing a START event immediately after stop
+			screen.startRecording();
+		else
+			System.err.println("Received start video request when stopped!");
 	}
 
 	@Override
 	public void stopRecording() {
-		try {
-            connectToVLC();
-            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(telnet.getOutputStream()));
-            bw.write("stop \n");
-            bw.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        if(audio != null)
+		stopped = true;
+		
+		if(audio != null)
             audio.stopRecording();
+		
+		screen.stopRecording();
 	}
-
-	@Override
-	public void closeDown() {
-		super.closeDown();
-		try {
-        	System.out.println("Closing interface...");
-            if (telnet.isConnected()) {
-            	BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(telnet.getOutputStream()));
-                bw.write("quit \n");
-                bw.flush();
-            }
-        } catch (SocketException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (Throwable e) {
-			e.printStackTrace();
-		}
-	}
-	
-	private void connectToVLC() {
-		if (!telnet.isConnected()) {
-            try {
-				telnet.connect("localhost", 4444);
-			} catch (SocketException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-        }
-	}
-	
 }
