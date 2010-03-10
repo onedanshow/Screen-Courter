@@ -17,8 +17,10 @@ public class AudioPlayground {
 		for(Mixer.Info info : AudioSystem.getMixerInfo()) {
 			System.out.println(info.getName());
 			System.out.println(info.getDescription());
-			System.out.println(info.getVendor());
-			System.out.println(info.getVersion()+"\n");
+			System.out.println(info.getVendor());			
+			System.out.println(info.getVersion());
+			System.out.println(info.toString()+"\n");
+			
 			if(info.getName().equals("Built-in Microphone")) {
 				mic = AudioSystem.getMixer(info);
 			}

@@ -29,6 +29,8 @@ import java.net.URLConnection;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
 
+import javax.sound.sampled.Mixer;
+
 import org.apache.commons.io.FileUtils;
 
 /**
@@ -52,8 +54,19 @@ public class ScreenRecorder extends ProcessWrapper {
 	public final static int RECORDING_STARTED = 100;
 	public final static int RECORDING_COMPLETE = 101;
 	
-    Process recordingProcess;
-    StreamGobbler errorGobbler, inputGobbler;
+    private Process recordingProcess;
+    private StreamGobbler errorGobbler, inputGobbler;
+    private Mixer audioSource = null;
+    
+    /**
+     * If this guy is to handle audio as well. Give it the Java Mixer object to read from.
+     * 
+     * @param mixer
+     */
+	public synchronized void start(Mixer mixer) {
+		audioSource = mixer;
+		super.start();
+	}
 
 	public void run() {
     	try {
@@ -95,7 +108,8 @@ public class ScreenRecorder extends ProcessWrapper {
     	    	// screen capture settings
     	    	ffmpegArgs.addAll(parseParameters("-f x11grab -s "+dim.width+"x"+dim.height+" -r "+FPS+" -b "+BIT_RATE+"k -i :0.0"));
     	    	// microphone settings
-    	    	ffmpegArgs.addAll(parseParameters("-f oss -ac 1 -ar "+AudioRecorder.FREQ+" -i /dev/audio"));
+    	    	if(audioSource != null)
+    	    		ffmpegArgs.addAll(parseParameters("-f oss -ac 1 -ar "+AudioRecorder.FREQ+" -i /dev/audio"));
     	    	// output file settings
     	    	ffmpegArgs.addAll(parseParameters("-vcodec libx264 -r 10 -s "+Math.round(dim.width*SCALE)+"x"+Math.round(dim.height*SCALE)));
     	    	ffmpegArgs.add(OUTPUT_FILE);
