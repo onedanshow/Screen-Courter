@@ -8,8 +8,7 @@ public class LinuxController extends ApplicationController {
 
 	@Override
 	public void setupExtensions() {
-		// TODO Auto-generated method stub
-
+		// TODO copy the exec jar for linux
 	}
 	
 	@Override
@@ -19,7 +18,7 @@ public class LinuxController extends ApplicationController {
 
 	@Override
 	public void startRecording(Mixer mixer) {
-		screen.start();
+		screen.start(mixer);
 	}
 
 	@Override
