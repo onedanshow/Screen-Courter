@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 
@@ -20,7 +21,8 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 	public static String OUTPUT_FILE = Applet.DESKTOP_FOLDER.getAbsolutePath()+File.separator+"output-final.mp4";
 	
 	// STATES
-	public final static int POST_PROCESS_COMPLETE = 0;
+	public final static int POST_STARTED = 0;
+	public final static int POST_COMPLETE = 0;
 	
 	protected Process postProcess;
 	protected StreamGobbler errorGobbler, inputGobbler;
@@ -30,8 +32,11 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 	        //Process p = Runtime.getRuntime().exec("/Applications/VLC.app/Contents/MacOS/VLC -I telnet --telnet-host=localhost:4442 -I rc --rc-host=localhost:4444");
 	        //Process p = Runtime.getRuntime().exec("/Applications/VLC.app/Contents/MacOS/VLC -I rc --rc-host=localhost:4444");
 			if(Applet.IS_MAC) {
+				Map<String,Object> metadata = parseMediaFile(ScreenRecorder.OUTPUT_FILE);
+				printMetadata(metadata);
+				
 				List<String> ffmpegArgs = new ArrayList<String>();
-		    	ffmpegArgs.add(Applet.RFX_FOLDER.getAbsoluteFile()+File.separator+"bin-mac"+File.separator+"ffmpeg");
+		    	ffmpegArgs.add(Applet.BIN_FOLDER.getAbsoluteFile()+File.separator+"ffmpeg");
 		    	ffmpegArgs.add("-ar");
 		    	ffmpegArgs.add("44100");
 		    	ffmpegArgs.add("-i");
@@ -40,6 +45,7 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 		    	ffmpegArgs.add(ScreenRecorder.OUTPUT_FILE);
 		    	ffmpegArgs.addAll(getFfmpegX264Params());
 		    	ffmpegArgs.add(OUTPUT_FILE);
+		    	/*
 		        ProcessBuilder pb = new ProcessBuilder(ffmpegArgs);
 		        postProcess = pb.start();
 		
@@ -52,13 +58,13 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 		        errorGobbler.start();
 		        inputGobbler.start();  
 		        
-		        postProcess.waitFor();
+		        postProcess.waitFor();*/
 			}
 			else if(Applet.IS_LINUX) {
 				FileUtils.moveFile(new File(ScreenRecorder.OUTPUT_FILE), new File(OUTPUT_FILE));
 			}
 	        
-	        fireProcessUpdate(POST_PROCESS_COMPLETE);
+	        fireProcessUpdate(POST_COMPLETE);
 	        
 	        // TODO monitor the progress of the event
 	        // TODO delete the temporary files when done

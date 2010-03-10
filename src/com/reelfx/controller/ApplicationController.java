@@ -27,8 +27,9 @@ public abstract class ApplicationController implements ProcessListener {
 	
 	public void processUpdate(int event) {
 		switch(event) {
-			case PostProcessor.POST_PROCESS_COMPLETE:
+			case PostProcessor.POST_COMPLETE:
 				gui.recordBtn.setEnabled(true);
+				gui.saveBtn.setEnabled(true);
 				gui.closeBtn.setEnabled(true);
 				gui.status.setText("Done");
 				break;
