@@ -1,5 +1,7 @@
 package com.reelfx.controller;
 
+import java.io.File;
+
 import javax.sound.sampled.Mixer;
 
 import com.reelfx.model.PostProcessor;
@@ -27,12 +29,15 @@ public abstract class ApplicationController implements ProcessListener {
 	
 	public void processUpdate(int event) {
 		switch(event) {
-			case PostProcessor.POST_COMPLETE:
-				gui.recordBtn.setEnabled(true);
-				gui.saveBtn.setEnabled(true);
-				gui.closeBtn.setEnabled(true);
-				gui.status.setText("Done");
-				break;
+		case PostProcessor.ENCODING_STARTED:
+			gui.status.setText("Encoding to H.264...");
+			break;
+		case PostProcessor.ENCODING_COMPLETE:
+			gui.recordBtn.setEnabled(true);
+			gui.saveBtn.setEnabled(true);
+			gui.closeBtn.setEnabled(true);
+			gui.status.setText("Done");
+			break;
 		}
 	}
 	
@@ -47,8 +52,12 @@ public abstract class ApplicationController implements ProcessListener {
         preview.start();
     }
 	
-	public void saveRecording() {
-		postProcess.start();
+	public void saveRecording(File file) {
+		postProcess.saveToComputer(file);
+	}
+	
+	public void postRecording() {
+		postProcess.postToInsight();
 	}
 	
 	/**

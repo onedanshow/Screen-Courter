@@ -34,6 +34,8 @@ import com.sun.JarClassLoader;
  *
  */
 
+// TODO setup log4j
+
 public class Applet extends JApplet {
 
 	private static final long serialVersionUID = 4544354980928245103L;

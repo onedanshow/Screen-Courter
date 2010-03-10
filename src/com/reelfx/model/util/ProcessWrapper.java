@@ -44,8 +44,12 @@ public abstract class ProcessWrapper extends Thread {
     }
     
     protected void fireProcessUpdate(int event) {
+    	fireProcessUpdate(event, null);
+    }
+    
+    protected void fireProcessUpdate(int event,Object body) {
     	for (ProcessListener listener : listeners) {
-            listener.processUpdate(event);
+            listener.processUpdate(event,body);
         }
     }
     
@@ -106,7 +110,7 @@ public abstract class ProcessWrapper extends Thread {
     /**
      * Get duration and other information about a media file.  
      * 
-     * Lifted from Kelly's pruview gem: http://github.com/kelredd/pruview/blob/master/bin/ffyml
+     * Idea lifted from Kelly's pruview gem: http://github.com/kelredd/pruview/blob/master/bin/ffyml
      * 
      * @param path to media file
      */
@@ -114,8 +118,8 @@ public abstract class ProcessWrapper extends Thread {
         try {
         	results = new HashMap<String,Object>();
         	
-        	String tempFile = Applet.BIN_FOLDER.getAbsolutePath()+File.separator+"output_dump.txt";
-			String command = Applet.BIN_FOLDER.getAbsoluteFile()+File.separator+"ffmpeg -i "+path; //+" 2> "+tempFile;
+        	// purposefully incorrectly call ffmpeg so it gives us some information about the file...
+			String command = Applet.BIN_FOLDER.getAbsoluteFile()+File.separator+"ffmpeg -i "+path;
         	
 	        Process postProcess = Runtime.getRuntime().exec(command);
 	
@@ -165,26 +169,6 @@ public abstract class ProcessWrapper extends Thread {
 		}
 		
 		return results;
-
-    	/*
-    	ffmpeg -i "$video_file" 2> "$temp_out"
-    	 
-    	# parse temp_out for the file properties
-    	# format
-    	var_format=`cat $temp_out | grep "Input #0" | gawk -F', ' '{print $2}'`
-    	var_duration=`cat $temp_out | grep "Duration:" | gawk -F': ' '{print $2}' | gawk -F', ' '{print $1}'`
-    	var_bitrate=`cat $temp_out | grep "Duration:" | gawk -F': ' '{print $4}' | gawk -F' ' '{print $1}'`
-    	var_codec=`cat $temp_out | grep "Video:" | gawk -F': ' '{print $3}' | gawk -F', ' '{print $1}'`
-    	var_width=`cat $temp_out | grep "Video:" | gawk -F': ' '{print $3}' | gawk -F', ' '{print $3}' | gawk -F'x' '{print $1}'`
-    	var_height=`cat $temp_out | grep "Video:" | gawk -F': ' '{print $3}' | gawk -F', ' '{print $3}' | gawk -F'x' '{print $2}' | gawk -F' ' '{print $1}'`
-    	var_framerate=`cat $temp_out | grep "Video:" | gawk -F': ' '{print $3}' | gawk -F', ' '{print $5}' | gawk -F' ' '{print $1}'`
-    	if [ "$var_framerate" = "" ]; then
-    	var_framerate=`cat $temp_out | grep "Video:" | gawk -F': ' '{print $3}' | gawk -F', ' '{print $4}' | gawk -F' ' '{print $1}'`
-    	fi
-    	var_audio_codec=`cat $temp_out | grep "Audio:" | gawk -F': ' '{print $3}' | gawk -F', ' '{print $1}'`
-    	var_audio_bitrate=`cat $temp_out | grep "Audio:" | gawk -F', ' '{print $5}' | gawk -F' ' '{print $1}'`
-    	var_audio_sampling=`cat $temp_out | grep "Audio:" | gawk -F', ' '{print $2}' | gawk -F' ' '{print $1}'`
-    	*/
     }
     
     protected List<String> parseParameters(String commandLine) {

@@ -54,7 +54,7 @@ public class MacController extends ApplicationController {
 		}
 	}
 	
-	public void processUpdate(int event) {
+	public void processUpdate(int event,Object body) {
 		super.processUpdate(event);
 		switch(event) {
 

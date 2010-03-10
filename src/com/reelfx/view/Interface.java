@@ -13,6 +13,7 @@ import java.awt.event.MouseMotionListener;
 import java.io.File;
 
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JWindow;
@@ -25,10 +26,11 @@ public class Interface extends JWindow implements MouseListener, MouseMotionList
 
     private static final long serialVersionUID = 4803377343174867777L;
     
-    public JButton recordBtn, previewBtn, saveBtn, closeBtn;
+    public JButton recordBtn, previewBtn, saveBtn, insightBtn, closeBtn;
     public AudioSelectBox audioSelect;
     public JLabel status;
     private ApplicationController controller;
+    private JFileChooser fileSelect = new JFileChooser();
     
     public Interface(ApplicationController controller) {
         super();
@@ -87,7 +89,7 @@ public class Interface extends JWindow implements MouseListener, MouseMotionList
         }
         options.add(previewBtn);
 
-        saveBtn = new JButton("Save");
+        saveBtn = new JButton("Save to Computer");
         saveBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 saveRecording();
@@ -98,6 +100,17 @@ public class Interface extends JWindow implements MouseListener, MouseMotionList
         }
         options.add(saveBtn);
 
+        insightBtn = new JButton("Post to Insight");
+        insightBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                saveRecording();
+            }
+        });
+        if( !new File(ScreenRecorder.OUTPUT_FILE).exists() ) {
+        	insightBtn.setEnabled(false);
+        }
+        options.add(insightBtn);
+        
         closeBtn = new JButton("Close");
         closeBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -156,10 +169,20 @@ public class Interface extends JWindow implements MouseListener, MouseMotionList
         controller.previewRecording();
     }
 
-    public void saveRecording() {
-    	controller.saveRecording();
+    public void saveRecording() {   
+    	setAlwaysOnTop(false);
+    	int returnVal = fileSelect.showSaveDialog(this);
+    	setAlwaysOnTop(true);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            File file = fileSelect.getSelectedFile();
+            controller.saveRecording(file);
+            disable();
+        }
+    }
+    
+    public void postRecording() {
+    	controller.postRecording();
     	disable();
-        status.setText("Encoding to H.264...");
     }
 	
 	public void disable() {

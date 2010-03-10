@@ -103,7 +103,7 @@ import com.reelfx.model.util.ProcessWrapper;
 public class AudioRecorder extends ProcessWrapper implements LineListener
 {
 	
-    public static String OUTPUT_FILE = Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"output-java.wav";
+    public static File OUTPUT_FILE = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"output-java.wav");
 	
     // AUDIO SETTINGS
     public static int FREQ = 44100;
@@ -153,7 +153,7 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 		*/
 		m_targetType = AudioFileFormat.Type.WAVE;
 		
-		m_outputFile = new File(OUTPUT_FILE);
+		m_outputFile = OUTPUT_FILE;
 	}
 
 	/** Starts the recording.
@@ -252,9 +252,8 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 	}
 	
 	public static void deleteOutput() {
-		File oldOutput = new File(OUTPUT_FILE);
 		try {
-			if(oldOutput.exists() && !oldOutput.delete())
+			if(OUTPUT_FILE.exists() && !OUTPUT_FILE.delete())
 				throw new Exception("Can't delete the old audio file!");
 		} catch (Exception e) {
 			e.printStackTrace();

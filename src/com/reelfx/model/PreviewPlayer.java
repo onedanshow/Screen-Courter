@@ -127,7 +127,7 @@ class AudioPlayer extends Thread {
     @Override
     public void run() {
         System.out.println("Playing audio...");
-        File	soundFile = new File(AudioRecorder.OUTPUT_FILE);
+        File soundFile = AudioRecorder.OUTPUT_FILE;
 
         /*
           We have to read in the sound file.

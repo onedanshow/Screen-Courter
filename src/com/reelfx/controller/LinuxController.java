@@ -26,7 +26,7 @@ public class LinuxController extends ApplicationController {
 		screen.stopRecording();
 	}
 
-	public void processUpdate(int event) {
+	public void processUpdate(int event,Object body) {
 		super.processUpdate(event);
 	}
 
