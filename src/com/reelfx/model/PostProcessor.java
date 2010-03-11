@@ -97,7 +97,7 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 		        postProcess.waitFor();
 			}
 			else if(Applet.IS_LINUX) {
-				FileUtils.moveFile(new File(ScreenRecorder.OUTPUT_FILE), new File(DEFAULT_OUTPUT_FILE));
+				FileUtils.moveFile(new File(ScreenRecorder.OUTPUT_FILE), outputFile);
 			}
 			
 	        fireProcessUpdate(ENCODING_COMPLETE);

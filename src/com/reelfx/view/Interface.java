@@ -71,11 +71,6 @@ public class Interface extends JWindow implements MouseListener, MouseMotionList
         options.add(recordBtn);
         
         audioSelect = new AudioSelectBox();
-        audioSelect.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				System.out.println(e.toString());
-			}
-		});
         options.add(audioSelect);
 
         previewBtn = new JButton("Preview");
@@ -129,10 +124,7 @@ public class Interface extends JWindow implements MouseListener, MouseMotionList
     
     public void prepareForRecording() {    	
     	status.setText("Ready...");
-    	recordBtn.setEnabled(false);
-        previewBtn.setEnabled(false);
-        saveBtn.setEnabled(false);
-        closeBtn.setEnabled(false);
+    	disable();
         
         controller.prepareForRecording();
     	
@@ -157,10 +149,7 @@ public class Interface extends JWindow implements MouseListener, MouseMotionList
     public void stopRecording() {
     	controller.stopRecording();
         
-        recordBtn.setEnabled(true);
-        previewBtn.setEnabled(true);
-        saveBtn.setEnabled(true);
-        closeBtn.setEnabled(true);
+        enable();
 
         status.setText("Recording stopped.");
     }
@@ -184,9 +173,19 @@ public class Interface extends JWindow implements MouseListener, MouseMotionList
     	controller.postRecording();
     	disable();
     }
+    
+    public void enable() {
+    	recordBtn.setEnabled(true);
+    	audioSelect.setEnabled(true);
+        previewBtn.setEnabled(true);
+        insightBtn.setEnabled(true);
+        saveBtn.setEnabled(true);
+        closeBtn.setEnabled(true);
+    }
 	
 	public void disable() {
 		recordBtn.setEnabled(false);
+		audioSelect.setEnabled(false);
         previewBtn.setEnabled(false);
         saveBtn.setEnabled(false);
         insightBtn.setEnabled(false);

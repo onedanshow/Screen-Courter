@@ -59,7 +59,7 @@ public class ScreenRecorder extends ProcessWrapper {
     private Mixer audioSource = null;
     
     /**
-     * If this guy is to handle audio as well. Give it the Java Mixer object to read from.
+     * If this guy is to handle audio as well, give it the Java Mixer object to read from.
      * 
      * @param mixer
      */
@@ -95,9 +95,7 @@ public class ScreenRecorder extends ProcessWrapper {
     		} 
     		
     		else if(Applet.IS_LINUX) {
-    			File old = new File(OUTPUT_FILE);
-    			if( old.exists() && !old.delete() )
-    				throw new IOException("Could not delete the old video file: " + old.getAbsolutePath());
+    			deleteOutput();
     			
     			Toolkit tk = Toolkit.getDefaultToolkit();
     	        Dimension dim = tk.getScreenSize();
@@ -113,7 +111,7 @@ public class ScreenRecorder extends ProcessWrapper {
     	    	// output file settings
     	    	ffmpegArgs.addAll(parseParameters("-vcodec libx264 -r 10 -s "+Math.round(dim.width*SCALE)+"x"+Math.round(dim.height*SCALE)));
     	    	ffmpegArgs.add(OUTPUT_FILE);
-    	    	System.out.println("Executing this command: "+ffmpegArgs.toString());
+    	    	System.out.println("Executing this command: "+prettyCommand(ffmpegArgs));
     	        ProcessBuilder pb = new ProcessBuilder(ffmpegArgs);
     	        recordingProcess = pb.start();
     	        fireProcessUpdate(RECORDING_STARTED);
@@ -176,7 +174,7 @@ public class ScreenRecorder extends ProcessWrapper {
 		File oldOutput = new File(OUTPUT_FILE);
 		try {
 			if(oldOutput.exists() && !oldOutput.delete())
-				throw new Exception("Can't delete the old audio file!");
+				throw new Exception("Can't delete the old video file!");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

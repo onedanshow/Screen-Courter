@@ -8,6 +8,7 @@ public class LinuxController extends ApplicationController {
 
 	@Override
 	public void setupExtensions() {
+		super.setupExtensions();
 		// TODO copy the exec jar for linux
 	}
 	

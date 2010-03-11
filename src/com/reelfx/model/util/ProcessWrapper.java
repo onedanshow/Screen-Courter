@@ -185,4 +185,11 @@ public abstract class ProcessWrapper extends Thread {
     	}
     }
     
+    protected String prettyCommand(List<String> args) {
+    	String result = "";
+    	for(String arg : args)
+    		result += arg + " ";
+    	return result;
+    }
+    
 }
