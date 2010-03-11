@@ -1,21 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project default="build_jar" name="Create Runnable Jar for Project java-review-tool">
+<project default="create_local_test_page" name="Create Runnable Jar for Project java-review-tool">
 	
 	<!-- To make this project work with NetBeans: <import file="nbproject/build-impl.xml"/> -->  
-	<!-- Assumes the class files are already built. -->
+	<!-- Assumes the class files are already built (which Eclipse does) -->
 	
 	<target name="build_jar">
-		<jar destfile="build/applet.jar" 
-			filesetmanifest="mergewithoutmain" basedir="build/classes" includes="com/**,org/**">
+		<echo message="Copying apache files..." />
+		<!-- this is temporary -->
+		<copy todir="build/classes/org/apache">
+			<fileset dir="lib/org/apache"/>
+		</copy>		
+		<echo message="Building build/applet.jar ..." />
+		<jar destfile="build/applet.jar" filesetmanifest="mergewithoutmain" basedir="build/classes" includes="com/**,org/**">
 			<manifest>
 				<attribute name="Main-Class" value=".Applet"/>
-				<attribute name="REELFX-COMMENT" value="Review Tool v2" />
+				<attribute name="ReelFX-Comment" value="Review Tool V2" />
 			</manifest>
 		</jar>
+		<jar destfile="build/applet.jar" filesetmanifest="mergewithoutmain" update="true" includes="lib/*" />
 	</target>
-		
-	<target name="sign_and_copy_jar" depends="build_jar">
-		<property name="server" value="/Users/daniel/Sites/review_tool/"/>
+	
+	<target name="sign_jar" depends="build_jar">
+		<!-- Assumes key store is already setup -->
 		<echo message="Signing build/applet.jar ..." />
 		<exec dir="build" executable="jarsigner">
 	     <arg value="-verbose" />
@@ -26,10 +32,21 @@
 	     <arg value="applet.jar" />
 	     <arg value="duke" />
 	   </exec>
+	</target>
+		
+	<target name="create_local_test_page" depends="sign_jar">
+		<!-- CHANGE THIS TO THE FOLDER OF YOUR LOCAL HOST -->
+		<property name="server" value="/Users/daniel/Sites/review_tool/"/>
 		<copy file="build/applet.jar" todir="${server}"/>
 		<copy file="src/template.html" tofile="${server}index.html" overwrite="true" />
 		<random max="100000000" property="randomValue"></random>
 		<replace file="${server}index.html" token="@@@UNIQUE@@@" value="${randomValue}"/>
+	</target>
+	
+	<target name="create_local_insight_jar" depends="sign_jar">
+		<!-- CHANGE THIS TO THE FOLDER OF YOUR LOCAL INSIGHT PUBLIC FOLDER -->
+		<property name="server" value="/Users/daniel/Sites/classic/public/"/>
+		<copy file="build/applet.jar" todir="${server}"/>
 	</target>
 	
 	<!-- Taken from: http://docs.huihoo.com/apache/apachecon/eu2007/extending_ant.pdf -->
