@@ -4,12 +4,26 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpVersion;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.entity.mime.content.ContentBody;
+import org.apache.http.entity.mime.content.FileBody;
+import org.apache.http.impl.client.BasicResponseHandler;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.CoreProtocolPNames;
+import org.apache.http.util.EntityUtils;
 
 import com.reelfx.Applet;
 import com.reelfx.model.util.ProcessWrapper;
@@ -95,7 +109,31 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 	        if(postFile) {
 	        	fireProcessUpdate(POST_STARTED);
 	        	
-	        	System.out.println("Posting file to Insight...");
+	        	HttpClient client = new DefaultHttpClient();
+	        	client.getParams().setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
+	        	
+	        	MultipartEntity entity = new MultipartEntity();
+	        	ContentBody body = new FileBody(outputFile,"video/quicktime");
+	        	entity.addPart("review_media_file",body);
+	        	
+	        	HttpPost post = new HttpPost(Applet.POST_URL+"&api_key="+Applet.API_KEY); // TODO make this url construction more robust
+	        	post.setEntity(entity);
+	        	
+	        	System.out.println("Posting file to Insight... "+post.getRequestLine());
+	        	
+	        	HttpResponse response = client.execute(post);
+	        	HttpEntity responseEntity = response.getEntity();
+
+	        	System.out.println(response.getStatusLine());
+	        	// TODO verify that the response came back properly
+	            if (responseEntity != null) {
+	            	System.out.println(EntityUtils.toString(responseEntity));
+	            }
+	            if (responseEntity != null) {
+	            	responseEntity.consumeContent();
+	            }
+	        	
+	        	client.getConnectionManager().shutdown();
 	        	
 	        	fireProcessUpdate(POST_COMPLETE);
 	        }

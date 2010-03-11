@@ -42,6 +42,7 @@ public class Applet extends JApplet {
 	
 	public static File RFX_FOLDER, BIN_FOLDER, DESKTOP_FOLDER;
 	public static URL DOCUMENT_BASE, CODE_BASE;
+	public static String POST_URL = null, API_KEY = null;
 	public static boolean IS_MAC = System.getProperty("os.name").toLowerCase().contains("mac");
 	public static boolean IS_LINUX = System.getProperty("os.name").toLowerCase().contains("linux");
 	public static boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("windows");
@@ -58,6 +59,8 @@ public class Applet extends JApplet {
 			DESKTOP_FOLDER = new File(getDesktopFolder());
 			DOCUMENT_BASE = getDocumentBase();
 			CODE_BASE = getCodeBase();
+			POST_URL = getParameter("post_url");
+			API_KEY = getParameter("api_key");
 			
 			System.out.println(getAppletInfo());			 
 						

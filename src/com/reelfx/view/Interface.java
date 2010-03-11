@@ -43,7 +43,7 @@ public class Interface extends JWindow implements MouseListener, MouseMotionList
         setBackground(Color.white);
         //setPreferredSize(dim); // full screen
         //setPreferredSize(new Dimension(500, 50)); // will auto fit to the size needed, but if you want to specify a size
-        setLocation(dim.width/2, dim.height/2);
+        setLocation(dim.width/3, dim.height/2);
         setLayout(new BorderLayout());
         setAlwaysOnTop(true);
         addMouseListener(this);
@@ -103,7 +103,7 @@ public class Interface extends JWindow implements MouseListener, MouseMotionList
         insightBtn = new JButton("Post to Insight");
         insightBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                saveRecording();
+                postRecording();
             }
         });
         if( !new File(ScreenRecorder.OUTPUT_FILE).exists() ) {
@@ -189,6 +189,7 @@ public class Interface extends JWindow implements MouseListener, MouseMotionList
 		recordBtn.setEnabled(false);
         previewBtn.setEnabled(false);
         saveBtn.setEnabled(false);
+        insightBtn.setEnabled(false);
         closeBtn.setEnabled(false);
 	}
 

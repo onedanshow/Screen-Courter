@@ -36,8 +36,17 @@ public abstract class ApplicationController implements ProcessListener {
 			gui.recordBtn.setEnabled(true);
 			gui.saveBtn.setEnabled(true);
 			gui.closeBtn.setEnabled(true);
-			gui.status.setText("Done");
+			gui.status.setText("Finished encoding.");
 			break;
+		case PostProcessor.POST_STARTED:
+			gui.status.setText("Uploading to Insight...");
+			gui.disable();
+			break;
+		case PostProcessor.POST_COMPLETE:
+			gui.recordBtn.setEnabled(true);
+			gui.saveBtn.setEnabled(true);
+			gui.closeBtn.setEnabled(true);
+			gui.status.setText("Finished uploading. All done.");
 		}
 	}
 	
