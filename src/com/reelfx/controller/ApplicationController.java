@@ -52,7 +52,7 @@ public abstract class ApplicationController implements ProcessListener {
 	
 	public abstract void prepareForRecording();
 	
-	public abstract void startRecording(Mixer mixer);
+	public abstract void startRecording(Mixer mixer,int index);
 	
 	public abstract void stopRecording();
 	

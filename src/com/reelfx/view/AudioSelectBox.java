@@ -19,11 +19,13 @@ public class AudioSelectBox extends JComboBox implements MouseListener {
 
 	private void listAudioSources() {
 		removeAllItems();
-		addItem("No Audio");
 		
+		// find all audio inputs that have target outputs (excluding those with 'port' is a Linux hack, possibly temporary)
 		for(Mixer.Info info : AudioSystem.getMixerInfo())
-        	if(!info.getName().contains("Java"))
+        	if(!info.getName().toLowerCase().contains("port") && AudioSystem.getMixer(info).getTargetLineInfo().length != 0)
         		addItem(info.getName());
+		
+		addItem("No Audio");
 	}
 	
 	public Mixer getSelectedMixer() {

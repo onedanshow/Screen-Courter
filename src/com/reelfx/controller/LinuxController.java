@@ -18,8 +18,8 @@ public class LinuxController extends ApplicationController {
 	}
 
 	@Override
-	public void startRecording(Mixer mixer) {
-		screen.start(mixer);
+	public void startRecording(Mixer mixer,int index) {
+		screen.start(mixer,index);
 	}
 
 	@Override

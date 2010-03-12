@@ -74,7 +74,7 @@ public class MacController extends ApplicationController {
 
 	@Override
 	// --------- START AUDIO ---------
-	public void startRecording(Mixer audioSource) {
+	public void startRecording(Mixer audioSource,int audioIndex) {
 		AudioRecorder.deleteOutput();
 		stopped = false;
         if(audioSource != null) {

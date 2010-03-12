@@ -140,7 +140,7 @@ public class Interface extends JWindow implements MouseListener, MouseMotionList
     }
 
     private void startRecording() {
-    	controller.startRecording(audioSelect.getSelectedMixer());
+    	controller.startRecording(audioSelect.getSelectedMixer(),audioSelect.getSelectedIndex());
     	
     	recordBtn.setEnabled(true);
         status.setText("Go!");

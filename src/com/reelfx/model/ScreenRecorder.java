@@ -47,8 +47,8 @@ public class ScreenRecorder extends ProcessWrapper {
 	
 	// VIDEO SETTINGS
 	public static double SCALE = 0.8;
-	public static int FPS = 10;
-	public static int BIT_RATE = 2048;
+	public static int FPS = 15;  // can't go above 20, else it starts dropping frames/audio
+	public static int BIT_RATE = 384; // started at 5028 and went down
 	
 	// STATES
 	public final static int RECORDING_STARTED = 100;
@@ -57,14 +57,16 @@ public class ScreenRecorder extends ProcessWrapper {
     private Process recordingProcess;
     private StreamGobbler errorGobbler, inputGobbler;
     private Mixer audioSource = null;
+    private int audioIndex = 0;
     
     /**
      * If this guy is to handle audio as well, give it the Java Mixer object to read from.
      * 
      * @param mixer
      */
-	public synchronized void start(Mixer mixer) {
+	public synchronized void start(Mixer mixer,int index) {
 		audioSource = mixer;
+		audioIndex = index;
 		super.start();
 	}
 
@@ -106,10 +108,12 @@ public class ScreenRecorder extends ProcessWrapper {
     	    	// screen capture settings
     	    	ffmpegArgs.addAll(parseParameters("-f x11grab -s "+dim.width+"x"+dim.height+" -r "+FPS+" -b "+BIT_RATE+"k -i :0.0"));
     	    	// microphone settings (good resource: http://www.oreilly.de/catalog/multilinux/excerpt/ch14-05.htm)
-    	    	if(audioSource != null)
-    	    		ffmpegArgs.addAll(parseParameters("-f oss -ac 1 -ar "+AudioRecorder.FREQ+" -i /dev/dsp"));
+    	    	if(audioSource != null) {
+    	    		String driver = audioIndex > 0 ? "/dev/dsp"+audioIndex : "/dev/dsp";
+    	    		ffmpegArgs.addAll(parseParameters("-f oss -ac 1 -ar "+AudioRecorder.FREQ+" -i "+driver));
+    	    	}
     	    	// output file settings
-    	    	ffmpegArgs.addAll(parseParameters("-vcodec libx264 -r 10 -s "+Math.round(dim.width*SCALE)+"x"+Math.round(dim.height*SCALE)));
+    	    	ffmpegArgs.addAll(parseParameters("-vcodec libx264 -r "+FPS+" -s "+Math.round(dim.width*SCALE)+"x"+Math.round(dim.height*SCALE)));
     	    	ffmpegArgs.add(OUTPUT_FILE);
     	    	System.out.println("Executing this command: "+prettyCommand(ffmpegArgs));
     	        ProcessBuilder pb = new ProcessBuilder(ffmpegArgs);
