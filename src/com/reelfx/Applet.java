@@ -1,6 +1,9 @@
 package com.reelfx;
 
 
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -47,6 +50,7 @@ public class Applet extends JApplet {
 	public static boolean IS_LINUX = System.getProperty("os.name").toLowerCase().contains("linux");
 	public static boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("windows");
 	public static boolean DEV_MODE = System.getProperty("user.dir").contains(System.getProperty("user.home")); // assume dev files are in developer's home
+	public static GraphicsConfiguration GRAPHICS_CONFIG = null;
 	
 	private ApplicationController controller = null;
 	
@@ -61,6 +65,22 @@ public class Applet extends JApplet {
 			CODE_BASE = getCodeBase();
 			POST_URL = getParameter("post_url");
 			API_KEY = getParameter("api_key");
+			
+			// base code: http://stackoverflow.com/questions/2234476/how-to-detect-the-current-display-with-java
+			GRAPHICS_CONFIG = getGraphicsConfiguration();
+			GraphicsDevice myScreen = GRAPHICS_CONFIG.getDevice();
+			GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
+			GraphicsDevice[] allScreens = env.getScreenDevices();
+			int myScreenIndex = -1;
+			for (int i = 0; i < allScreens.length; i++) {
+			    if (allScreens[i].equals(myScreen))
+			    {
+			        myScreenIndex = i;
+			        break;
+			    }
+			}
+			System.out.println("Applet window is on screen" + myScreenIndex);
+
 			
 			System.out.println(getAppletInfo());			 
 						
@@ -248,7 +268,8 @@ public class Applet extends JApplet {
 				"User Desktop: \t"+DESKTOP_FOLDER.getPath()+"\n"+
 				"Code Base: \t"+getCodeBase().getPath()+"\n"+
 				"Document Base: \t"+getDocumentBase().getPath()+"\n"+
-				"Execution URL: \t"+Applet.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()+"\n";
+				"Execution URL: \t"+Applet.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()+"\n"+
+				"Multiple Monitors: \t"+(GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices().length > 1)+"\n";
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
 			return "Error";
