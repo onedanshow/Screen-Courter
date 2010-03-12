@@ -105,9 +105,9 @@ public class ScreenRecorder extends ProcessWrapper {
     	    	ffmpegArgs.add(Applet.BIN_FOLDER.getAbsoluteFile()+File.separator+"ffmpeg");
     	    	// screen capture settings
     	    	ffmpegArgs.addAll(parseParameters("-f x11grab -s "+dim.width+"x"+dim.height+" -r "+FPS+" -b "+BIT_RATE+"k -i :0.0"));
-    	    	// microphone settings
+    	    	// microphone settings (good resource: http://www.oreilly.de/catalog/multilinux/excerpt/ch14-05.htm)
     	    	if(audioSource != null)
-    	    		ffmpegArgs.addAll(parseParameters("-f oss -ac 1 -ar "+AudioRecorder.FREQ+" -i /dev/audio"));
+    	    		ffmpegArgs.addAll(parseParameters("-f oss -ac 1 -ar "+AudioRecorder.FREQ+" -i /dev/dsp"));
     	    	// output file settings
     	    	ffmpegArgs.addAll(parseParameters("-vcodec libx264 -r 10 -s "+Math.round(dim.width*SCALE)+"x"+Math.round(dim.height*SCALE)));
     	    	ffmpegArgs.add(OUTPUT_FILE);
