@@ -54,9 +54,9 @@ public class Applet extends JApplet {
 	@Override
     public void init() {
 		try {
-			RFX_FOLDER = new File(getRfxFolder());
-			BIN_FOLDER = new File(RFX_FOLDER.getAbsolutePath()+File.separator+"bin-mac");
-			DESKTOP_FOLDER = new File(getDesktopFolder());
+			RFX_FOLDER = new File(getRfxFolderPath()); // should be first
+			BIN_FOLDER = new File(getBinFolderPath());
+			DESKTOP_FOLDER = new File(getDesktopFolderPath());
 			DOCUMENT_BASE = getDocumentBase();
 			CODE_BASE = getCodeBase();
 			POST_URL = getParameter("post_url");
@@ -258,7 +258,16 @@ public class Applet extends JApplet {
 		//System.out.println("Total space: \n"+TEMP_FOLDER.getTotalSpace()+" GBs");
 	}
 	
-	public String getRfxFolder() throws IOException {
+	public static String getBinFolderPath() throws IOException {
+		if(IS_MAC)
+			return RFX_FOLDER.getAbsolutePath()+File.separator+"bin-mac";
+		else if(IS_LINUX)
+			return RFX_FOLDER.getAbsolutePath()+File.separator+"bin-linux";
+		else
+			throw new IOException("I don't know what bin folder to use!");
+	}
+	
+	public static String getRfxFolderPath() throws IOException {
 		if(IS_MAC)
 			return System.getProperty("user.home")+File.separator+"Library"+File.separator+"ReelFX";
 		else if(IS_LINUX)
@@ -267,7 +276,7 @@ public class Applet extends JApplet {
 			throw new IOException("I don't know where to find the native extensions!");
 	}
 	
-	public String getDesktopFolder() throws IOException {
+	public static String getDesktopFolderPath() throws IOException {
 		if(IS_MAC || IS_LINUX)
 			return System.getProperty("user.home")+File.separator+"Desktop";
 		else

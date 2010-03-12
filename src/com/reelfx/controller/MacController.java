@@ -40,8 +40,9 @@ public class MacController extends ApplicationController {
 				Runtime.getRuntime().exec("chmod 755 "+Applet.BIN_FOLDER+File.separator+"VLC").waitFor();
 				Runtime.getRuntime().exec("chmod 755 "+Applet.BIN_FOLDER+File.separator+"ffmpeg").waitFor();
 				Runtime.getRuntime().exec("chmod 755 "+Applet.BIN_FOLDER+File.separator+"ffplay").waitFor();
-				if(!Applet.BIN_FOLDER.exists()) throw new IOException("Did not copy VLC to its execution directory!");
+				if(!Applet.BIN_FOLDER.exists()) throw new IOException("Did not copy Mac extensions to the execution directory!");
 			}
+			System.out.println("Have access to execution folder: "+Applet.BIN_FOLDER.getAbsolutePath());
         } catch (MalformedURLException e1) {
 			gui.status.setText("Error downloading native extensions");
 			e1.printStackTrace();
