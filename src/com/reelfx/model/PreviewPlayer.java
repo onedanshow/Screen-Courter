@@ -69,10 +69,14 @@ public class PreviewPlayer extends ProcessWrapper {
     @Override
 	public void run() {
     	try {
-
+    		String ffplay = "ffplay" + (Applet.IS_WINDOWS ? ".exe" : "");
+    		
             List<String> ffplayArgs = new ArrayList<String>();
-            ffplayArgs.add(Applet.BIN_FOLDER.getAbsolutePath()+File.separator+"ffplay");
+            ffplayArgs.add(Applet.BIN_FOLDER.getAbsolutePath()+File.separator+ffplay);
             //ffplayArgs.add("/usr/bin/ffplay");
+            if(Applet.IS_WINDOWS) {
+            	ffplayArgs.addAll(parseParameters("-x 800 -y 600"));
+            }
             ffplayArgs.add(ScreenRecorder.OUTPUT_FILE);
 
             ProcessBuilder pb = new ProcessBuilder(ffplayArgs);
@@ -97,7 +101,7 @@ public class PreviewPlayer extends ProcessWrapper {
 	}
 
     private void playAudio() {
-    	if(Applet.IS_MAC) {
+    	if(Applet.IS_MAC || Applet.IS_WINDOWS) {
 	        System.out.println("Playing audio independently...");
 	        audioPlayer = new AudioPlayer();
 	        audioPlayer.start();
@@ -105,7 +109,7 @@ public class PreviewPlayer extends ProcessWrapper {
     }
 
     private void stopAudio() {
-    	if(Applet.IS_MAC) {
+    	if(Applet.IS_MAC || Applet.IS_WINDOWS) {
 	        System.out.println("Stopping independent audio...");
 	        if(audioPlayer.isAlive())
 	            audioPlayer.keepPlaying = false;

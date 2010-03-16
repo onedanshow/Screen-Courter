@@ -103,7 +103,7 @@ public class Applet extends JApplet {
                 	else if(IS_WINDOWS)
                 		controller = new WindowsController();
                 	else 
-                		System.err.println("Want to launch controller but I don't which operating system this is.");
+                		System.err.println("Want to launch controller but don't which operating system this is.");
                 }
             });
             SwingUtilities.invokeLater(new Runnable() {
