@@ -26,6 +26,7 @@ import javax.swing.SwingUtilities;
 import com.reelfx.controller.ApplicationController;
 import com.reelfx.controller.LinuxController;
 import com.reelfx.controller.MacController;
+import com.reelfx.controller.WindowsController;
 import com.reelfx.view.Interface;
 import com.sun.JarClassLoader;
 
@@ -99,8 +100,10 @@ public class Applet extends JApplet {
                 		controller = new MacController();
                 	else if(IS_LINUX)
                 		controller = new LinuxController();
+                	else if(IS_WINDOWS)
+                		controller = new WindowsController();
                 	else 
-                		System.err.println("I don't which operating system this is.");
+                		System.err.println("Want to launch controller but I don't which operating system this is.");
                 }
             });
             SwingUtilities.invokeLater(new Runnable() {
@@ -265,6 +268,7 @@ public class Applet extends JApplet {
 				"User Home: \t"+System.getProperty("user.home")+"\n"+
 				"User Name: \t"+System.getProperty("user.name")+"\n"+
 				"ReelFX Folder: \t"+RFX_FOLDER.getPath()+"\n"+
+				"Bin Folder: \t"+BIN_FOLDER.getPath()+"\n"+
 				"User Desktop: \t"+DESKTOP_FOLDER.getPath()+"\n"+
 				"Code Base: \t"+getCodeBase().getPath()+"\n"+
 				"Document Base: \t"+getDocumentBase().getPath()+"\n"+
@@ -284,6 +288,8 @@ public class Applet extends JApplet {
 			return RFX_FOLDER.getAbsolutePath()+File.separator+"bin-mac";
 		else if(IS_LINUX)
 			return RFX_FOLDER.getAbsolutePath()+File.separator+"bin-linux";
+		else if(IS_WINDOWS)
+			return RFX_FOLDER.getAbsolutePath()+File.separator+"bin-windows";
 		else
 			throw new IOException("I don't know what bin folder to use!");
 	}
@@ -293,12 +299,15 @@ public class Applet extends JApplet {
 			return System.getProperty("user.home")+File.separator+"Library"+File.separator+"ReelFX";
 		else if(IS_LINUX)
 			return System.getProperty("user.home")+File.separator+".ReelFX";
+		else if(IS_WINDOWS)
+			return System.getenv("LOCALAPPDATA")+File.separator+"Temp"+File.separator+"ReelFX"; // "LocalAppData" is a Windows only thing
 		else 
 			throw new IOException("I don't know where to find the native extensions!");
 	}
 	
+	// not tested, and not used
 	public static String getDesktopFolderPath() throws IOException {
-		if(IS_MAC || IS_LINUX)
+		if(IS_MAC || IS_LINUX || IS_WINDOWS)
 			return System.getProperty("user.home")+File.separator+"Desktop";
 		else
 			throw new IOException("I don't know where to find the user's desktop!");

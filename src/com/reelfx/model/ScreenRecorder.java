@@ -39,11 +39,14 @@ import org.apache.commons.io.FileUtils;
  */
 public class ScreenRecorder extends ProcessWrapper {
 	
+	private static String EXT = Applet.IS_MAC ? ".mov" : Applet.IS_WINDOWS ? ".avi" : ".mp4";
+	
 	// FILE LOCATIONS
-	public static String OUTPUT_FILE = Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"output-java"+(Applet.IS_MAC ? ".mov" : ".mp4");
+	public static String OUTPUT_FILE = Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"output-java"+EXT;
 	//public static File VLC_JAR = new File(System.getProperty("java.class.path")+File.separator+"bin-mac.jar");
 	//public static File VLC_JAR = new File("/Users/daniel/Documents/Java/java-review-tool/lib"+File.separator+"bin-mac.jar");
 	protected static File VLC_EXEC = new File(Applet.BIN_FOLDER.getAbsoluteFile()+File.separator+"VLC");
+	protected static File CAM_EXEC = new File(Applet.BIN_FOLDER.getAbsoluteFile()+File.separator+"CamCommandLine.exe");
 	
 	// VIDEO SETTINGS
 	public static double SCALE = 0.8;
@@ -135,6 +138,28 @@ public class ScreenRecorder extends ProcessWrapper {
 	            
 	            fireProcessUpdate(RECORDING_COMPLETE);
     		}
+    		
+    		else if(Applet.IS_WINDOWS) {
+	            List<String> camArgs = new ArrayList<String>();
+	            camArgs.add(CAM_EXEC.getAbsolutePath());
+	            camArgs.addAll(parseParameters("-outfile "+OUTPUT_FILE));
+	            
+	        	System.out.println("Executing this command: "+prettyCommand(camArgs));
+	            ProcessBuilder pb = new ProcessBuilder(camArgs);
+	            recordingProcess = pb.start();
+	            fireProcessUpdate(RECORDING_STARTED);
+	            
+	            errorGobbler = new StreamGobbler(recordingProcess.getErrorStream(), false, "cam E");
+	            inputGobbler = new StreamGobbler(recordingProcess.getInputStream(), false, "cam O");
+	            
+	            System.out.println("Starting listener threads...");
+	            errorGobbler.start();
+	            inputGobbler.start();
+	            
+	            recordingProcess.waitFor();
+	            
+	            fireProcessUpdate(RECORDING_COMPLETE);
+    		}
             
       } catch (IOException ioe) {
     	  ioe.printStackTrace();
@@ -149,7 +174,7 @@ public class ScreenRecorder extends ProcessWrapper {
 	    	pw.println("add screen://");
 	    	pw.flush();
 		}
-		// nothing for linux
+		// nothing for linux or windows
 	}
 	
 	public void stopRecording() {   
@@ -161,6 +186,10 @@ public class ScreenRecorder extends ProcessWrapper {
 	    	PrintWriter pw = new PrintWriter(recordingProcess.getOutputStream());
 	    	pw.println("stop");
 	    	pw.flush();
+		} else if(Applet.IS_WINDOWS) {
+			PrintWriter pw = new PrintWriter(recordingProcess.getOutputStream());
+	    	pw.print("\n");
+	    	pw.flush();
 		}
 	}
 	
@@ -170,7 +199,7 @@ public class ScreenRecorder extends ProcessWrapper {
 	    	pw.println("quit");
 	    	pw.flush();
 		}
-		// nothing for linux
+		// nothing for linux or windows
 	}
 	
     protected void finalize() throws Throwable {
