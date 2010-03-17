@@ -106,7 +106,7 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
     public static File OUTPUT_FILE = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"output-java.wav");
 	
     // AUDIO SETTINGS
-    public static int FREQ = 11025; // 22050; //44100;  lowered because it was skipping and dropping audio
+    public static float FREQ = 11025; // 22050; //44100;  lowered because it was skipping and dropping audio
     
     // STATES
     public final static int RECORDING_STARTED = 200;
