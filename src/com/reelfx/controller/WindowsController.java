@@ -1,7 +1,12 @@
 package com.reelfx.controller;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import javax.sound.sampled.Mixer;
 
+import com.reelfx.Applet;
 import com.reelfx.model.AudioRecorder;
 import com.reelfx.model.ScreenRecorder;
 
@@ -12,8 +17,32 @@ public class WindowsController extends ApplicationController {
 	
 	public WindowsController() {
 		super();
+		
+		if(!Applet.BIN_FOLDER.exists()){
+			gui.status.setText("Performing one-time install...");
+			gui.disable();
+        }
 	}
 
+	@Override
+	public void setupExtensions() {
+		super.setupExtensions();
+		try {
+			if(!Applet.BIN_FOLDER.exists()){
+				Applet.copyFolderFromRemoteJar(new URL(Applet.CODE_BASE+"/bin-windows.jar"), "bin-windows");
+				if(!Applet.BIN_FOLDER.exists()) throw new IOException("Did not copy Windows extensions to the execution directory!");
+			}
+			System.out.println("Have access to execution folder: "+Applet.BIN_FOLDER.getAbsolutePath());
+			gui.enable();
+        } catch (MalformedURLException e1) {
+			gui.status.setText("Error downloading native extensions");
+			e1.printStackTrace();
+		} catch (IOException e) {
+			gui.status.setText("Error downloading native extentions");
+			e.printStackTrace();
+		}
+	}
+	
 	@Override
 	public void prepareForRecording() {
 		screen = new ScreenRecorder();

@@ -31,8 +31,6 @@ import com.reelfx.view.Interface;
 import com.sun.JarClassLoader;
 
 /**
- * INSTALL:
- * 	-put "bin-(OS).jar" on the class path
  * 
  * @author daniel
  *

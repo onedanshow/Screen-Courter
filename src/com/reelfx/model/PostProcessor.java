@@ -28,7 +28,8 @@ import com.reelfx.model.util.StreamGobbler;
 public class PostProcessor extends ProcessWrapper implements ActionListener {
 	
 	// FILE LOCATIONS
-	public static String DEFAULT_OUTPUT_FILE = Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"output-final.mp4";
+	private static String ext = ".mp4";
+	public static String DEFAULT_OUTPUT_FILE = Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"output-final"+ext;
 	private File outputFile = null;
 	private boolean postFile = false;
 	
@@ -44,8 +45,8 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 	protected StreamGobbler errorGobbler, inputGobbler;
 	
 	public synchronized void saveToComputer(File file) {
-		if(!file.getName().endsWith(".mp4"))
-			file = new File(file.getAbsoluteFile()+".mp4"); // extension will probably change for Windows
+		if(!file.getName().endsWith(ext))
+			file = new File(file.getAbsoluteFile()+ext); // extension will probably change for Windows
 		outputFile = file;
 		postFile = false;
 		super.start();
@@ -66,7 +67,9 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 		try {
 			fireProcessUpdate(ENCODING_STARTED);
 			
-			if(Applet.IS_MAC) {
+			String ffmpeg = "ffmpeg" + (Applet.IS_WINDOWS ? ".exe" : "");
+			
+			if(Applet.IS_MAC || Applet.IS_WINDOWS) {
 				Map<String,Object> metadata = parseMediaFile(ScreenRecorder.OUTPUT_FILE);
 				printMetadata(metadata);
 				
@@ -74,15 +77,19 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 					throw new IOException("Could not delete the old exported file!");
 				
 				List<String> ffmpegArgs = new ArrayList<String>();
-		    	ffmpegArgs.add(Applet.BIN_FOLDER.getAbsoluteFile()+File.separator+"ffmpeg");
+		    	ffmpegArgs.add(Applet.BIN_FOLDER.getAbsoluteFile()+File.separator+ffmpeg);
 		    	// audio settings
 		    	if(AudioRecorder.OUTPUT_FILE.exists()) // if opted for microphone
-		    		ffmpegArgs.addAll(parseParameters("-ar 44100 -i "+AudioRecorder.OUTPUT_FILE.getAbsolutePath()));
+		    		ffmpegArgs.addAll(parseParameters("-i "+AudioRecorder.OUTPUT_FILE.getAbsolutePath()));
 		    	// video settings
 		    	ffmpegArgs.addAll(parseParameters("-i "+ScreenRecorder.OUTPUT_FILE));
 		    	// export settings
-		    	ffmpegArgs.addAll(getFfmpegX264Params());
+		    	if(Applet.IS_MAC)
+		    		ffmpegArgs.addAll(getFfmpegX264Params());
+		    	else if(Applet.IS_WINDOWS)
+		    		ffmpegArgs.addAll(getFfmpegCopyParams()); // video already encoded in X264, so just copy the stream
 		    	ffmpegArgs.add(outputFile.getAbsolutePath());
+		    	System.out.println("Executing this command: "+prettyCommand(ffmpegArgs));
 		        ProcessBuilder pb = new ProcessBuilder(ffmpegArgs);
 		        postProcess = pb.start();
 		

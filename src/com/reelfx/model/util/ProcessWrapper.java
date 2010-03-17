@@ -53,57 +53,81 @@ public abstract class ProcessWrapper extends Thread {
         }
     }
     
+    public List<String> getFfmpegCopyParams() {
+    	List<String> ffmpegArgs = new ArrayList<String>();
+    	
+    	ffmpegArgs.addAll(parseParameters("-vcodec copy"));
+    	
+    	return ffmpegArgs;
+    }
+    
     public List<String> getFfmpegX264Params() {
     	
     	List<String> ffmpegArgs = new ArrayList<String>();
-		// these are from the normal x264 preset; TODO convert to use parseParameters
-    	ffmpegArgs.add("-vcodec"); 
-    	ffmpegArgs.add("libx264");
-    	ffmpegArgs.add("-coder");
-    	ffmpegArgs.add("1");
-    	ffmpegArgs.add("-flags");
-    	ffmpegArgs.add("+loop");
-    	ffmpegArgs.add("-cmp");
-    	ffmpegArgs.add("+chroma");
-    	ffmpegArgs.add("-partitions");
-    	ffmpegArgs.add("+parti8x8+parti4x4+partp8x8+partb8x8");
-    	ffmpegArgs.add("-me_method");
-    	ffmpegArgs.add("hex");
-    	ffmpegArgs.add("-subq");
-    	ffmpegArgs.add("6");
-    	ffmpegArgs.add("-me_range");
-    	ffmpegArgs.add("16");
-    	ffmpegArgs.add("-g");
-    	ffmpegArgs.add("250");
-    	ffmpegArgs.add("-keyint_min");
-    	ffmpegArgs.add("25");
-    	ffmpegArgs.add("-sc_threshold");
-    	ffmpegArgs.add("40");
-    	ffmpegArgs.add("-i_qfactor");
-    	ffmpegArgs.add("0.71");
-    	ffmpegArgs.add("-b_strategy");
-    	ffmpegArgs.add("1");
-    	ffmpegArgs.add("-qcomp");
-    	ffmpegArgs.add("0.6");
-    	ffmpegArgs.add("-qmin");
-    	ffmpegArgs.add("10");
-    	ffmpegArgs.add("-qmax");
-    	ffmpegArgs.add("51");
-    	ffmpegArgs.add("-qdiff");
-    	ffmpegArgs.add("4");
-    	ffmpegArgs.add("-bf");
-    	ffmpegArgs.add("3");
-    	ffmpegArgs.add("-refs");
-    	ffmpegArgs.add("2");
-    	ffmpegArgs.add("-directpred");
-    	ffmpegArgs.add("3");
-    	ffmpegArgs.add("-trellis");
-    	ffmpegArgs.add("0");
-    	ffmpegArgs.add("-flags2");
-    	ffmpegArgs.add("+wpred+dct8x8+fastpskip+mbtree");
-    	ffmpegArgs.add("-wpredp");
-    	ffmpegArgs.add("2");
     	
+    	/*
+    	if(Applet.IS_WINDOWS) {    		
+    		// this is for main x264 preset (large file (though framerate helps) and still not good quality)
+    		//ffmpegArgs.addAll(parseParameters("-flags2 -dct8x8+mbtree -r 15"));
+    		
+    		// -ffmpeg doesn't like medium x264 preset (something with me_method setting)
+    		// -ffmpeg doesn't like hq x264 preset (same reason)
+    		// -placebo firstpass preset doesn't handle motion at all
+    		
+    		ffmpegArgs.addAll(parseParameters("-vcodec libx264 -r 15 -coder 1 -flags +loop -cmp +chroma -partitions +parti8x8+parti4x4+partp8x8+partp4x4+partb8x8"));
+    		ffmpegArgs.addAll(parseParameters("-me_method tesa -subq 10 -me_range 24 -g 250 -keyint_min 25 -sc_threshold 40"));
+    		ffmpegArgs.addAll(parseParameters("-i_qfactor 0.71 -b_strategy 2 -qcomp 0.6 -qmin 10 -qmax 51 -qdiff 4 -bf 16 -refs 16"));
+    		ffmpegArgs.addAll(parseParameters("-directpred 3 -trellis 2 -flags2 +bpyramid+mixed_refs+wpred+dct8x8-fastpskip+mbtree -wpredp 2"));
+    	} else {
+    	*/
+			// these are from the normal x264 preset; TODO convert to use parseParameters
+			ffmpegArgs.add("-vcodec"); 
+			ffmpegArgs.add("libx264");
+			ffmpegArgs.add("-coder");
+			ffmpegArgs.add("1");
+			ffmpegArgs.add("-flags");
+			ffmpegArgs.add("+loop");
+			ffmpegArgs.add("-cmp");
+			ffmpegArgs.add("+chroma");
+			ffmpegArgs.add("-partitions");
+			ffmpegArgs.add("+parti8x8+parti4x4+partp8x8+partb8x8");
+			ffmpegArgs.add("-me_method");
+			ffmpegArgs.add("hex");
+			ffmpegArgs.add("-subq");
+			ffmpegArgs.add("6");
+			ffmpegArgs.add("-me_range");
+			ffmpegArgs.add("16");
+			ffmpegArgs.add("-g");
+			ffmpegArgs.add("250");
+			ffmpegArgs.add("-keyint_min");
+			ffmpegArgs.add("25");
+			ffmpegArgs.add("-sc_threshold");
+			ffmpegArgs.add("40");
+			ffmpegArgs.add("-i_qfactor");
+			ffmpegArgs.add("0.71");
+			ffmpegArgs.add("-b_strategy");
+			ffmpegArgs.add("1");
+			ffmpegArgs.add("-qcomp");
+			ffmpegArgs.add("0.6");
+			ffmpegArgs.add("-qmin");
+			ffmpegArgs.add("10");
+			ffmpegArgs.add("-qmax");
+			ffmpegArgs.add("51");
+			ffmpegArgs.add("-qdiff");
+			ffmpegArgs.add("4");
+			ffmpegArgs.add("-bf");
+			ffmpegArgs.add("3");
+			ffmpegArgs.add("-refs");
+			ffmpegArgs.add("2");
+			ffmpegArgs.add("-directpred");
+			ffmpegArgs.add("3");
+			ffmpegArgs.add("-trellis");
+			ffmpegArgs.add("0");
+			ffmpegArgs.add("-flags2");
+			ffmpegArgs.add("+wpred+dct8x8+fastpskip+mbtree");
+			ffmpegArgs.add("-wpredp");
+			ffmpegArgs.add("2");
+    	//}
     	return ffmpegArgs;
     }
     
