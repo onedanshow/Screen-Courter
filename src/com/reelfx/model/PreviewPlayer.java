@@ -102,7 +102,8 @@ public class PreviewPlayer extends ProcessWrapper {
 	}
     
     public void stopPlayer() {
-    	ffplayProcess.destroy();
+    	if(ffplayProcess != null)
+    		ffplayProcess.destroy();
     }
 
     private void playAudio() {

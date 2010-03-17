@@ -15,7 +15,7 @@ public abstract class ApplicationController implements ProcessListener {
 	protected Interface gui;
 	protected ScreenRecorder screen;
 	protected PostProcessor postProcess;
-	protected PreviewPlayer previewPlayer;
+	protected PreviewPlayer previewPlayer = null;
 	
 	public ApplicationController() {
 		super();
