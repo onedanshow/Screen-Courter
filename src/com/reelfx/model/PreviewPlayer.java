@@ -92,6 +92,7 @@ public class PreviewPlayer extends ProcessWrapper {
             playAudio();
             ffplayProcess.waitFor();
             stopAudio();
+            ffplayProcess = null;
 
       } catch (IOException ioe) {
     	  ioe.printStackTrace();
@@ -99,6 +100,10 @@ public class PreviewPlayer extends ProcessWrapper {
     	  ie.printStackTrace();
       }
 	}
+    
+    public void stopPlayer() {
+    	ffplayProcess.destroy();
+    }
 
     private void playAudio() {
     	if(Applet.IS_MAC || Applet.IS_WINDOWS) {
@@ -119,7 +124,8 @@ public class PreviewPlayer extends ProcessWrapper {
     @Override
     protected void finalize() throws Throwable {
     	super.finalize();
-    	ffplayProcess.destroy();
+    	if(ffplayProcess != null)
+    		ffplayProcess.destroy();
     }
 }
 

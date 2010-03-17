@@ -15,6 +15,7 @@ public abstract class ApplicationController implements ProcessListener {
 	protected Interface gui;
 	protected ScreenRecorder screen;
 	protected PostProcessor postProcess;
+	protected PreviewPlayer previewPlayer;
 	
 	public ApplicationController() {
 		super();
@@ -57,15 +58,19 @@ public abstract class ApplicationController implements ProcessListener {
 	public abstract void stopRecording();
 	
 	public void previewRecording() {
-        PreviewPlayer preview = new PreviewPlayer();
-        preview.start();
+        previewPlayer = new PreviewPlayer();
+        previewPlayer.start();
     }
 	
 	public void saveRecording(File file) {
+		if(previewPlayer != null)
+			previewPlayer.stopPlayer();
 		postProcess.saveToComputer(file);
 	}
 	
 	public void postRecording() {
+		if(previewPlayer != null)
+			previewPlayer.stopPlayer();
 		postProcess.postToInsight();
 	}
 	
