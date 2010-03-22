@@ -28,7 +28,7 @@ import com.reelfx.model.util.StreamGobbler;
 public class PostProcessor extends ProcessWrapper implements ActionListener {
 	
 	// FILE LOCATIONS
-	private static String ext = ".mp4";
+	private static String ext = Applet.IS_MAC ? ".mov" : ".mp4";
 	public static String DEFAULT_OUTPUT_FILE = Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"output-final"+ext;
 	private File outputFile = null;
 	private boolean postFile = false;
@@ -65,12 +65,12 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 
 	public void run() {
 		try {
-			fireProcessUpdate(ENCODING_STARTED);
 			
 			String ffmpeg = "ffmpeg" + (Applet.IS_WINDOWS ? ".exe" : "");
 			
-			if(Applet.IS_MAC || Applet.IS_WINDOWS) {
-				Map<String,Object> metadata = parseMediaFile(ScreenRecorder.OUTPUT_FILE);
+			if(Applet.IS_WINDOWS) {
+				fireProcessUpdate(ENCODING_STARTED);
+				Map<String,Object> metadata = parseMediaFile(ScreenRecorder.OUTPUT_FILE.getAbsolutePath());
 				printMetadata(metadata);
 				
 				if(outputFile.exists() && !outputFile.delete()) // ffmpeg will halt and ask what to do if file exists
@@ -102,12 +102,12 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 		        inputGobbler.start();  
 		        
 		        postProcess.waitFor();
+		        fireProcessUpdate(ENCODING_COMPLETE);
 			}
-			else if(Applet.IS_LINUX) {
-				FileUtils.moveFile(new File(ScreenRecorder.OUTPUT_FILE), outputFile);
+			else if(Applet.IS_LINUX || Applet.IS_MAC) {
+				FileUtils.moveFile(ScreenRecorder.OUTPUT_FILE, outputFile);
+				fireProcessUpdate(ENCODING_COMPLETE);
 			}
-			
-	        fireProcessUpdate(ENCODING_COMPLETE);
 	        
 	        if(postFile) {
 	        	fireProcessUpdate(POST_STARTED);
@@ -146,7 +146,6 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 	        // TODO monitor the progress of the event
 	        // TODO allow canceling of the transcoding
 	        // TODO increment output file name if another already exists
-	        // TODO allow people to save to desktop if they wish
 	        
 	  } catch (IOException ioe) {
 		  ioe.printStackTrace();

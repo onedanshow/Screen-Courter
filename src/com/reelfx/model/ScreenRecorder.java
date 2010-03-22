@@ -42,7 +42,7 @@ public class ScreenRecorder extends ProcessWrapper {
 	private static String EXT = Applet.IS_MAC ? ".mov" : Applet.IS_WINDOWS ? ".avi" : ".mp4";
 	
 	// FILE LOCATIONS
-	public static String OUTPUT_FILE = Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"output-java"+EXT;
+	public static File OUTPUT_FILE = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"output-java"+EXT);
 	//public static File VLC_JAR = new File(System.getProperty("java.class.path")+File.separator+"bin-mac.jar");
 	//public static File VLC_JAR = new File("/Users/daniel/Documents/Java/java-review-tool/lib"+File.separator+"bin-mac.jar");
 	protected static File MAC_EXEC = new File(Applet.BIN_FOLDER.getAbsoluteFile()+File.separator+"mac-screen-recorder");
@@ -78,7 +78,7 @@ public class ScreenRecorder extends ProcessWrapper {
     		if(Applet.IS_MAC) {
 	        	List<String> macArgs = new ArrayList<String>();
 	            macArgs.add(MAC_EXEC.getAbsolutePath());
-	            macArgs.add(OUTPUT_FILE);
+	            macArgs.add(OUTPUT_FILE.getAbsolutePath());
 
 	            ProcessBuilder pb = new ProcessBuilder(macArgs);
 	            recordingProcess = pb.start();
@@ -117,7 +117,7 @@ public class ScreenRecorder extends ProcessWrapper {
     	    	}
     	    	// output file settings
     	    	ffmpegArgs.addAll(parseParameters("-vcodec libx264 -r "+FPS+" -s "+Math.round(width*SCALE)+"x"+Math.round(height*SCALE)));
-    	    	ffmpegArgs.add(OUTPUT_FILE);
+    	    	ffmpegArgs.add(OUTPUT_FILE.getAbsolutePath());
     	    	System.out.println("Executing this command: "+prettyCommand(ffmpegArgs));
     	        ProcessBuilder pb = new ProcessBuilder(ffmpegArgs);
     	        recordingProcess = pb.start();
@@ -204,9 +204,8 @@ public class ScreenRecorder extends ProcessWrapper {
     }
     
     public static void deleteOutput() {
-		File oldOutput = new File(OUTPUT_FILE);
 		try {
-			if(oldOutput.exists() && !oldOutput.delete())
+			if(OUTPUT_FILE.exists() && !OUTPUT_FILE.delete())
 				throw new Exception("Can't delete the old video file!");
 		} catch (Exception e) {
 			e.printStackTrace();
