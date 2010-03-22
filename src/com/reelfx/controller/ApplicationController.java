@@ -28,7 +28,7 @@ public abstract class ApplicationController implements ProcessListener {
     	gui.pack();
 	}
 	
-	public void processUpdate(int event) {
+	public void processUpdate(int event,Object body) {
 		switch(event) {
 		case PostProcessor.ENCODING_STARTED:
 			gui.status.setText("Encoding to H.264...");

@@ -83,7 +83,7 @@ public class WindowsController extends ApplicationController {
 	}
 
 	public void processUpdate(int event, Object body) {
-		super.processUpdate(event);
+		super.processUpdate(event,body);
 		switch(event) {
 
 			case AudioRecorder.RECORDING_STARTED:

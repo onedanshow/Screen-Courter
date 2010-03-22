@@ -45,7 +45,7 @@ public class ScreenRecorder extends ProcessWrapper {
 	public static String OUTPUT_FILE = Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"output-java"+EXT;
 	//public static File VLC_JAR = new File(System.getProperty("java.class.path")+File.separator+"bin-mac.jar");
 	//public static File VLC_JAR = new File("/Users/daniel/Documents/Java/java-review-tool/lib"+File.separator+"bin-mac.jar");
-	protected static File VLC_EXEC = new File(Applet.BIN_FOLDER.getAbsoluteFile()+File.separator+"VLC");
+	protected static File MAC_EXEC = new File(Applet.BIN_FOLDER.getAbsoluteFile()+File.separator+"mac-screen-recorder");
 	protected static File CAM_EXEC = new File(Applet.BIN_FOLDER.getAbsoluteFile()+File.separator+"CamCommandLine.exe");
 	
 	// VIDEO SETTINGS
@@ -76,20 +76,16 @@ public class ScreenRecorder extends ProcessWrapper {
 	public void run() {
     	try {
     		if(Applet.IS_MAC) {
-	        	List<String> vlcArgs = new ArrayList<String>();
-	            vlcArgs.add(VLC_EXEC.getAbsolutePath());
-	        	//vlcArgs.add("vlc-bin"+File.separator+"VLC");
-	        	vlcArgs.add("-IRC");
-	        	//vlcArgs.add("--rc-host=localhost:4444"); // formatting is mac specific
-	        	vlcArgs.add("--rc-fake-tty");
-	        	vlcArgs.add("--sout=#transcode{vcodec=mp4v,vb="+BIT_RATE+",fps="+FPS+",scale="+SCALE+"}:standard{access=file,mux=mov,dst="+OUTPUT_FILE+"}");
-	        	
-	            ProcessBuilder pb = new ProcessBuilder(vlcArgs);
+	        	List<String> macArgs = new ArrayList<String>();
+	            macArgs.add(MAC_EXEC.getAbsolutePath());
+	            macArgs.add(OUTPUT_FILE);
+
+	            ProcessBuilder pb = new ProcessBuilder(macArgs);
 	            recordingProcess = pb.start();
 	            fireProcessUpdate(RECORDING_STARTED);
 	            
-	            errorGobbler = new StreamGobbler(recordingProcess.getErrorStream(), false, "vlc E");
-	            inputGobbler = new StreamGobbler(recordingProcess.getInputStream(), false, "vlc O");
+	            errorGobbler = new StreamGobbler(recordingProcess.getErrorStream(), false, "mac E");
+	            inputGobbler = new StreamGobbler(recordingProcess.getInputStream(), false, "mac O");
 	            
 	            System.out.println("Starting listener threads...");
 	            errorGobbler.start();
@@ -171,7 +167,7 @@ public class ScreenRecorder extends ProcessWrapper {
 	public void startRecording() {      
 		if(Applet.IS_MAC) {
 	    	PrintWriter pw = new PrintWriter(recordingProcess.getOutputStream());
-	    	pw.println("add screen://");
+	    	pw.println("start");
 	    	pw.flush();
 		}
 		// nothing for linux or windows

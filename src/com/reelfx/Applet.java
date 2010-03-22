@@ -82,13 +82,13 @@ public class Applet extends JApplet {
 			System.out.println("Applet window is on screen" + myScreenIndex);
 
 			System.out.println(getAppletInfo());			 
-			
+			/*
 			System.out.println("Have these system variables:");
 			Map<String, String> sysEnv = System.getenv();
 	        for (String envName : sysEnv.keySet()) {
 	            System.out.format("%s=%s%n", envName, sysEnv.get(envName));
 	        }
-						
+			*/			
 			if( RFX_FOLDER.exists() && !RFX_FOLDER.isDirectory() && !RFX_FOLDER.delete() )
 		        throw new IOException("Could not delete file for folder: " + RFX_FOLDER.getAbsolutePath());
 			if( !RFX_FOLDER.exists() && !RFX_FOLDER.mkdir() )

@@ -73,7 +73,6 @@ public class PreviewPlayer extends ProcessWrapper {
     		
             List<String> ffplayArgs = new ArrayList<String>();
             ffplayArgs.add(Applet.BIN_FOLDER.getAbsolutePath()+File.separator+ffplay);
-            //ffplayArgs.add("/usr/bin/ffplay");
             if(Applet.IS_WINDOWS) {
             	ffplayArgs.addAll(parseParameters("-x 800 -y 600"));
             }
