@@ -45,7 +45,7 @@ public class Applet extends JApplet {
 	
 	public static File RFX_FOLDER, BIN_FOLDER, DESKTOP_FOLDER;
 	public static URL DOCUMENT_BASE, CODE_BASE;
-	public static String POST_URL = null, API_KEY = null;
+	public static String POST_URL = null, API_KEY = null, HOST_URL = null;
 	public static boolean HEADLESS = false;
 	public static boolean IS_MAC = System.getProperty("os.name").toLowerCase().contains("mac");
 	public static boolean IS_LINUX = System.getProperty("os.name").toLowerCase().contains("linux");
@@ -66,6 +66,7 @@ public class Applet extends JApplet {
 			CODE_BASE = getCodeBase();
 			POST_URL = getParameter("post_url");
 			API_KEY = getParameter("api_key");
+			HOST_URL = DOCUMENT_BASE.getProtocol() + "://" + DOCUMENT_BASE.getHost();
 			if(getParameter("headless") != null)
 				HEADLESS = !getParameter("headless").isEmpty() && getParameter("headless").equals("true"); // Boolean.getBoolean(string) didn't work
 		
@@ -295,8 +296,8 @@ public class Applet extends JApplet {
 				"ReelFX Folder: \t"+RFX_FOLDER.getPath()+"\n"+
 				"Bin Folder: \t"+BIN_FOLDER.getPath()+"\n"+
 				"User Desktop: \t"+DESKTOP_FOLDER.getPath()+"\n"+
-				"Code Base: \t"+getCodeBase().getPath()+"\n"+
-				"Document Base: \t"+getDocumentBase().getPath()+"\n"+
+				"Code Base: \t"+getCodeBase()+"\n"+
+				"Document Base: \t"+getDocumentBase()+"\n"+
 				"Execution URL: \t"+Applet.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()+"\n"+
 				"Multiple Monitors: \t"+(GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices().length > 1)+"\n"+
 				"Headless: \t"+HEADLESS+"\n";
