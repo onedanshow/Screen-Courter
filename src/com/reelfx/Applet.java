@@ -66,7 +66,8 @@ public class Applet extends JApplet {
 			CODE_BASE = getCodeBase();
 			POST_URL = getParameter("post_url");
 			API_KEY = getParameter("api_key");
-			HEADLESS = !getParameter("headless").isEmpty() && getParameter("headless").equals("true"); // Boolean.getBoolean(string) didn't work
+			if(getParameter("headless") != null)
+				HEADLESS = !getParameter("headless").isEmpty() && getParameter("headless").equals("true"); // Boolean.getBoolean(string) didn't work
 		
 			// base code: http://stackoverflow.com/questions/2234476/how-to-detect-the-current-display-with-java
 			GRAPHICS_CONFIG = getGraphicsConfiguration();
