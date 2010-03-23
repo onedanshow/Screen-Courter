@@ -79,7 +79,7 @@ public class Interface extends JWindow implements MouseListener, MouseMotionList
                 previewRecording();
             }
         });
-        if( !new File(ScreenRecorder.OUTPUT_FILE).exists() ) {
+        if( !ScreenRecorder.OUTPUT_FILE.exists() ) {
         	previewBtn.setEnabled(false);
         }
         options.add(previewBtn);
@@ -90,7 +90,7 @@ public class Interface extends JWindow implements MouseListener, MouseMotionList
                 saveRecording();
             }
         });
-        if( !new File(ScreenRecorder.OUTPUT_FILE).exists() ) {
+        if( !ScreenRecorder.OUTPUT_FILE.exists() ) {
         	saveBtn.setEnabled(false);
         }
         options.add(saveBtn);
@@ -101,7 +101,7 @@ public class Interface extends JWindow implements MouseListener, MouseMotionList
                 postRecording();
             }
         });
-        if( !new File(ScreenRecorder.OUTPUT_FILE).exists() ) {
+        if( !ScreenRecorder.OUTPUT_FILE.exists() ) {
         	insightBtn.setEnabled(false);
         }
         options.add(insightBtn);

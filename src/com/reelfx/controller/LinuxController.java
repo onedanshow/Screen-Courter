@@ -61,7 +61,7 @@ public class LinuxController extends ApplicationController {
 	}
 
 	public void processUpdate(int event,Object body) {
-		super.processUpdate(event);
+		super.processUpdate(event,body);
 	}
 
 }
