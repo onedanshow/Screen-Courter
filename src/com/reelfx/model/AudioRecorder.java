@@ -83,11 +83,14 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 		DataLine.Info info = new DataLine.Info(TargetDataLine.class, audioFormat);
 		try
 		{
-			if(mixer != null) // try with the mixer given
+			if(mixer != null) {// try with the mixer given
+				System.out.println("Grabbing the specified audio mixer: "+mixer.getLineInfo());
 				m_line = (TargetDataLine) mixer.getLine(info);
-			
-			else // try to grab one ourselves
+			}
+			else { // try to grab one ourselves
+				System.out.println("Grabbing whatever AudioSystem line I can get...");
 				m_line = (TargetDataLine) AudioSystem.getLine(info);
+			}
 			m_line.addLineListener(this);
 			m_line.open(audioFormat);
 		}

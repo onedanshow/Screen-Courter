@@ -57,6 +57,7 @@ public class WindowsController extends ApplicationController {
         	audio.addProcessListener(this);
         	audio.startRecording();
         } else {
+        	System.out.println("No audio source specified.");
         	audio = null;
         	startVideoRecording();
         }
