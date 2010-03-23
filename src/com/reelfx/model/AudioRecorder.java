@@ -32,7 +32,6 @@ package com.reelfx.model;
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 import java.io.IOException;
 import java.io.File;
 
@@ -50,56 +49,6 @@ import javax.sound.sampled.AudioFileFormat;
 import com.reelfx.Applet;
 import com.reelfx.model.util.ProcessWrapper;
 
-/**	<titleabbrev>SimpleAudioRecorder</titleabbrev>
-	<title>Recording to an audio file (simple version)</title>
-
-	<formalpara><title>Purpose</title>
-	<para>Records audio data and stores it in a file. The data is
-	recorded in CD quality (44.1 kHz, 16 bit linear, stereo) and
-	stored in a <filename>.wav</filename> file.</para></formalpara>
-
-	<formalpara><title>Usage</title>
-	<para>
-	<cmdsynopsis>
-	<command>java SimpleAudioRecorder</command>
-	<arg choice="plain"><option>-h</option></arg>
-	</cmdsynopsis>
-	<cmdsynopsis>
-	<command>java SimpleAudioRecorder</command>
-	<arg choice="plain"><replaceable>audiofile</replaceable></arg>
-	</cmdsynopsis>
-	</para></formalpara>
-
-	<formalpara><title>Parameters</title>
-	<variablelist>
-	<varlistentry>
-	<term><option>-h</option></term>
-	<listitem><para>print usage information, then exit</para></listitem>
-	</varlistentry>
-	<varlistentry>
-	<term><option><replaceable>audiofile</replaceable></option></term>
-	<listitem><para>the file name of the
-	audio file that should be produced from the recorded data</para></listitem>
-	</varlistentry>
-	</variablelist>
-	</formalpara>
-
-	<formalpara><title>Bugs, limitations</title>
-	<para>
-	You cannot select audio formats and the audio file type
-	on the command line. See
-	AudioRecorder for a version that has more advanced options.
-	Due to a bug in the Sun jdk1.3/1.4, this program does not work
-	with it.
-	</para></formalpara>
-
-	<formalpara><title>Source code</title>
-	<para>
-	<ulink url="SimpleAudioRecorder.java.html">SimpleAudioRecorder.java</ulink>
-	</para>
-	</formalpara>
-
-*/
 public class AudioRecorder extends ProcessWrapper implements LineListener
 {
 	
@@ -260,3 +209,54 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 		}
 	}
 }
+
+/**	<titleabbrev>SimpleAudioRecorder</titleabbrev>
+<title>Recording to an audio file (simple version)</title>
+
+<formalpara><title>Purpose</title>
+<para>Records audio data and stores it in a file. The data is
+recorded in CD quality (44.1 kHz, 16 bit linear, stereo) and
+stored in a <filename>.wav</filename> file.</para></formalpara>
+
+<formalpara><title>Usage</title>
+<para>
+<cmdsynopsis>
+<command>java SimpleAudioRecorder</command>
+<arg choice="plain"><option>-h</option></arg>
+</cmdsynopsis>
+<cmdsynopsis>
+<command>java SimpleAudioRecorder</command>
+<arg choice="plain"><replaceable>audiofile</replaceable></arg>
+</cmdsynopsis>
+</para></formalpara>
+
+<formalpara><title>Parameters</title>
+<variablelist>
+<varlistentry>
+<term><option>-h</option></term>
+<listitem><para>print usage information, then exit</para></listitem>
+</varlistentry>
+<varlistentry>
+<term><option><replaceable>audiofile</replaceable></option></term>
+<listitem><para>the file name of the
+audio file that should be produced from the recorded data</para></listitem>
+</varlistentry>
+</variablelist>
+</formalpara>
+
+<formalpara><title>Bugs, limitations</title>
+<para>
+You cannot select audio formats and the audio file type
+on the command line. See
+AudioRecorder for a version that has more advanced options.
+Due to a bug in the Sun jdk1.3/1.4, this program does not work
+with it.
+</para></formalpara>
+
+<formalpara><title>Source code</title>
+<para>
+<ulink url="SimpleAudioRecorder.java.html">SimpleAudioRecorder.java</ulink>
+</para>
+</formalpara>
+
+*/

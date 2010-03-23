@@ -3,12 +3,16 @@ package com.reelfx.controller;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.security.PrivilegedActionException;
 
 import javax.sound.sampled.Mixer;
 
 import com.reelfx.Applet;
 import com.reelfx.model.AudioRecorder;
 import com.reelfx.model.ScreenRecorder;
+import com.reelfx.model.util.ProcessListener;
 
 public class WindowsController extends ApplicationController {
 
@@ -48,20 +52,31 @@ public class WindowsController extends ApplicationController {
 		screen = new ScreenRecorder();
 	}
 
+	private Mixer audioSource;
+	private ProcessListener listener;
 	@Override
-	public void startRecording(Mixer audioSource, int index) {
-		AudioRecorder.deleteOutput();
-		stopped = false;
-        if(audioSource != null) {
-        	audio = new AudioRecorder(audioSource);
-        	audio.addProcessListener(this);
-        	audio.startRecording();
-        } else {
-        	audio = null;
-        	startVideoRecording();
-        }
-		// start up CamStudio
-		screen.start();
+	public void startRecording(Mixer source, int index) {
+		audioSource = source;
+		listener = this;
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
+			public Object run() {
+				
+				AudioRecorder.deleteOutput();
+				stopped = false;
+		        if(audioSource != null) {
+		        	audio = new AudioRecorder(audioSource);
+		        	audio.addProcessListener(listener);
+		        	audio.startRecording();
+		        } else {
+		        	audio = null;
+		        	startVideoRecording();
+		        }
+				// start up CamStudio
+				screen.start();
+				
+				return null;
+			}
+		});
 	}
 	
 	// --------- START VIDEO (once audio has trigger it) ---------
@@ -91,5 +106,13 @@ public class WindowsController extends ApplicationController {
 				break;
 		}
 	}
+}
 
+class AudioRecorderWrapper implements PrivilegedAction {
+
+	@Override
+	public Object run() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }
