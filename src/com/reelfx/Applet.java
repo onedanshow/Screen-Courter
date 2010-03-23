@@ -21,6 +21,7 @@ import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import javax.sound.sampled.AudioSystem;
 import javax.swing.JApplet;
 import javax.swing.SwingUtilities;
 
@@ -28,6 +29,7 @@ import com.reelfx.controller.ApplicationController;
 import com.reelfx.controller.LinuxController;
 import com.reelfx.controller.MacController;
 import com.reelfx.controller.WindowsController;
+import com.reelfx.view.AudioSelectBox;
 import com.reelfx.view.Interface;
 import com.sun.JarClassLoader;
 
@@ -136,7 +138,8 @@ public class Applet extends JApplet {
 	}
 	
 	public void startRecording() {
-		controller.startRecording(null,0); // TODO pass in the mixer
+		// TODO grabs default mixer right now, need a way to select microphones...
+		controller.startRecording(AudioSelectBox.getDefaultMixer(),0);
 	}
 	
 	public void stopRecording() {

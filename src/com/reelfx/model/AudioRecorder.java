@@ -84,7 +84,7 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 		try
 		{
 			if(mixer != null) {// try with the mixer given
-				System.out.println("Grabbing the specified audio mixer: "+mixer.getLineInfo());
+				System.out.println("Grabbing the specified audio mixer: "+mixer.getLineInfo().toString());
 				m_line = (TargetDataLine) mixer.getLine(info);
 			}
 			else { // try to grab one ourselves
@@ -116,6 +116,7 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 	*/
 	public void startRecording()
 	{
+		System.out.println("Setting up audio line recording...");
 		/* Starting the TargetDataLine. It tells the line that
 		   we now want to read data from it. If this method
 		   isn't called, we won't
@@ -171,22 +172,16 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 	*/
     @Override
 	public void run()
-	{
-		AccessController.doPrivileged(new PrivilegedAction<Object>() {
-
-			@Override
-			public Object run() {		
-		    	try
-				{
-					AudioSystem.write(m_audioInputStream, m_targetType, m_outputFile);
-				}
-				catch (IOException e)
-				{
-					e.printStackTrace();
-				}
-				return null;
-			}
-		});
+	{		
+    	try
+		{
+			AudioSystem.write(m_audioInputStream, m_targetType, m_outputFile);
+			System.out.println("Writing audio...");
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
 	}
     
     /**
@@ -194,16 +189,18 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
      */
     public void update(LineEvent event) {
 		if(event.getType().equals(LineEvent.Type.OPEN)) {
-			
+			System.out.println("Audio Line Opened...");
 		} 
 		else if(event.getType().equals(LineEvent.Type.START)) {
+			System.out.println("Audio Recording Started...");
 			fireProcessUpdate(RECORDING_STARTED);
 		} 
 		else if(event.getType().equals(LineEvent.Type.STOP)) {
+			System.out.println("Audio Recording Stopped...");
 			fireProcessUpdate(RECORDING_COMPLETE);
 		} 
 		else if(event.getType().equals(LineEvent.Type.CLOSE)) {
-			
+			System.out.println("Audio Line Closed...");
 		}
 	}
 
