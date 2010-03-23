@@ -2,6 +2,8 @@ package com.reelfx.model;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,46 +22,6 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 import javax.swing.Timer;
 
-
-/**	<titleabbrev>SimpleAudioPlayer</titleabbrev>
-	<title>Playing an audio file (easy)</title>
-
-	<formalpara><title>Purpose</title>
-	<para>Plays a single audio file.</para></formalpara>
-
-	<formalpara><title>Usage</title>
-	<cmdsynopsis>
-	<command>java SimpleAudioPlayer</command>
-	<replaceable class="parameter">audiofile</replaceable>
-	</cmdsynopsis>
-	</formalpara>
-
-	<formalpara><title>Parameters</title>
-	<variablelist>
-	<varlistentry>
-	<term><option><replaceable class="parameter">audiofile</replaceable></option></term>
-	<listitem><para>the name of the
-	audio file that should be played</para></listitem>
-	</varlistentry>
-	</variablelist>
-	</formalpara>
-
-	<formalpara><title>Bugs, limitations</title>
-
-	<para>Only PCM encoded files are supported. A-law, &mu;-law,
-	ADPCM, ogg vorbis, mp3 and other compressed data formats are not
-	supported. For playing these, see <olink targetdoc="AudioPlayer"
-	targetptr="AudioPlayer">AudioPlayer</olink>.</para>
-
-	</formalpara>
-
-	<formalpara><title>Source code</title>
-	<para>
-	<ulink url="SimpleAudioPlayer.java.html">SimpleAudioPlayer.java</ulink>
-	</para>
-	</formalpara>
-
-*/
 public class PreviewPlayer extends ProcessWrapper {
 
     Process ffplayProcess;
@@ -69,39 +31,47 @@ public class PreviewPlayer extends ProcessWrapper {
     
     @Override
 	public void run() {
-    	try {
-    		if(Applet.IS_MAC) {
-        		Desktop.getDesktop().open(ScreenRecorder.OUTPUT_FILE);
-        	} else {
-				String ffplay = "ffplay" + (Applet.IS_WINDOWS ? ".exe" : "");
+    	// need this when doing file IO and Javascript is calling the method (signed applet or not)
+    	AccessController.doPrivileged(new PrivilegedAction<Object>() {
+
+			@Override
+			public Object run() {
+		    	try {
+		    		if(Applet.IS_MAC) {
+		        		Desktop.getDesktop().open(ScreenRecorder.OUTPUT_FILE);
+		        	} else {
+		        		String ffplay = "ffplay" + (Applet.IS_WINDOWS ? ".exe" : "");
+						
+				        List<String> ffplayArgs = new ArrayList<String>();
+				        ffplayArgs.add(Applet.BIN_FOLDER.getAbsolutePath()+File.separator+ffplay);
+				        if(Applet.IS_WINDOWS) {
+				        	ffplayArgs.addAll(parseParameters("-x 800 -y 600"));
+				        }
+				        ffplayArgs.add(ScreenRecorder.OUTPUT_FILE.getAbsolutePath());
 				
-		        List<String> ffplayArgs = new ArrayList<String>();
-		        ffplayArgs.add(Applet.BIN_FOLDER.getAbsolutePath()+File.separator+ffplay);
-		        if(Applet.IS_WINDOWS) {
-		        	ffplayArgs.addAll(parseParameters("-x 800 -y 600"));
-		        }
-		        ffplayArgs.add(ScreenRecorder.OUTPUT_FILE.getAbsolutePath());
-		
-		        ProcessBuilder pb = new ProcessBuilder(ffplayArgs);
-		        ffplayProcess = pb.start();
-		
-		        errorGobbler = new StreamGobbler(ffplayProcess.getErrorStream(), false, "ffplay E");
-		        inputGobbler = new StreamGobbler(ffplayProcess.getInputStream(), false, "ffplay O");
-		
-		        System.out.println("Starting listener threads...");
-		        errorGobbler.start();
-		        inputGobbler.start();
-		
-		        playAudio();
-		        ffplayProcess.waitFor();
-		        stopAudio();
-		        ffplayProcess = null;
-        	}
-      } catch (IOException ioe) {
-    	  ioe.printStackTrace();
-      } catch (Exception ie) {
-    	  ie.printStackTrace();
-      }
+				        ProcessBuilder pb = new ProcessBuilder(ffplayArgs);
+				        ffplayProcess = pb.start();
+				
+				        errorGobbler = new StreamGobbler(ffplayProcess.getErrorStream(), false, "ffplay E");
+				        inputGobbler = new StreamGobbler(ffplayProcess.getInputStream(), false, "ffplay O");
+				
+				        System.out.println("Starting listener threads...");
+				        errorGobbler.start();
+				        inputGobbler.start();
+				
+				        playAudio();
+				        ffplayProcess.waitFor();
+				        stopAudio();
+				        ffplayProcess = null;
+		        	}
+		      } catch (IOException ioe) {
+		    	  ioe.printStackTrace();
+		      } catch (Exception ie) {
+		    	  ie.printStackTrace();
+		      }
+      		return null;
+			}
+		});
 	}
     
     public void stopPlayer() {
@@ -265,5 +235,44 @@ class AudioPlayer extends Thread {
         */
         line.close();
     }
-
 }
+
+/**	<titleabbrev>SimpleAudioPlayer</titleabbrev>
+<title>Playing an audio file (easy)</title>
+
+<formalpara><title>Purpose</title>
+<para>Plays a single audio file.</para></formalpara>
+
+<formalpara><title>Usage</title>
+<cmdsynopsis>
+<command>java SimpleAudioPlayer</command>
+<replaceable class="parameter">audiofile</replaceable>
+</cmdsynopsis>
+</formalpara>
+
+<formalpara><title>Parameters</title>
+<variablelist>
+<varlistentry>
+<term><option><replaceable class="parameter">audiofile</replaceable></option></term>
+<listitem><para>the name of the
+audio file that should be played</para></listitem>
+</varlistentry>
+</variablelist>
+</formalpara>
+
+<formalpara><title>Bugs, limitations</title>
+
+<para>Only PCM encoded files are supported. A-law, &mu;-law,
+ADPCM, ogg vorbis, mp3 and other compressed data formats are not
+supported. For playing these, see <olink targetdoc="AudioPlayer"
+targetptr="AudioPlayer">AudioPlayer</olink>.</para>
+
+</formalpara>
+
+<formalpara><title>Source code</title>
+<para>
+<ulink url="SimpleAudioPlayer.java.html">SimpleAudioPlayer.java</ulink>
+</para>
+</formalpara>
+
+*/

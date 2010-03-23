@@ -138,6 +138,8 @@ public class ScreenRecorder extends ProcessWrapper {
     		}
     		
     		else if(Applet.IS_WINDOWS) {
+    			// can have problem with file permissions when methods are invoked via Javascript even if applet is signed, 
+    			// thus some code needs to wrapped in a privledged block
     			AccessController.doPrivileged(new PrivilegedAction<Object>() {
 
 					@Override
@@ -166,11 +168,9 @@ public class ScreenRecorder extends ProcessWrapper {
 			            
 						}
 			            catch (InterruptedException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 			            catch (IOException e1) {
-							// TODO Auto-generated catch block
 							e1.printStackTrace();
 						}
 						return null;

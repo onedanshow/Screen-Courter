@@ -34,6 +34,8 @@ package com.reelfx.model;
 
 import java.io.IOException;
 import java.io.File;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.LineEvent;
@@ -201,12 +203,19 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 	}
 	
 	public static void deleteOutput() {
-		try {
-			if(OUTPUT_FILE.exists() && !OUTPUT_FILE.delete())
-				throw new Exception("Can't delete the old audio file!");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
+
+			@Override
+			public Object run() {
+				try {
+					if(OUTPUT_FILE.exists() && !OUTPUT_FILE.delete())
+						throw new Exception("Can't delete the old audio file!");
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				return null;
+			}
+		});
 	}
 }
 
