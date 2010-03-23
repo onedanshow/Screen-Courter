@@ -46,6 +46,7 @@ public class Applet extends JApplet {
 	public static File RFX_FOLDER, BIN_FOLDER, DESKTOP_FOLDER;
 	public static URL DOCUMENT_BASE, CODE_BASE;
 	public static String POST_URL = null, API_KEY = null;
+	public static boolean HEADLESS = false;
 	public static boolean IS_MAC = System.getProperty("os.name").toLowerCase().contains("mac");
 	public static boolean IS_LINUX = System.getProperty("os.name").toLowerCase().contains("linux");
 	public static boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("windows");
@@ -65,7 +66,8 @@ public class Applet extends JApplet {
 			CODE_BASE = getCodeBase();
 			POST_URL = getParameter("post_url");
 			API_KEY = getParameter("api_key");
-			
+			HEADLESS = !getParameter("headless").isEmpty() && getParameter("headless").equals("true"); // Boolean.getBoolean(string) didn't work
+		
 			// base code: http://stackoverflow.com/questions/2234476/how-to-detect-the-current-display-with-java
 			GRAPHICS_CONFIG = getGraphicsConfiguration();
 			GraphicsDevice myScreen = GRAPHICS_CONFIG.getDevice();
@@ -125,6 +127,24 @@ public class Applet extends JApplet {
             e.printStackTrace();
         }
     }
+	
+	// ---------- Headless Interface ----------
+	public void prepareForRecording() {
+		controller.prepareForRecording();
+	}
+	
+	public void startRecording() {
+		controller.startRecording(null,0); // TODO pass in the mixer
+	}
+	
+	public void stopRecording() {
+		controller.stopRecording();
+	}
+	
+	public void previewRecording() {
+		controller.previewRecording();
+	}
+	// ---------- Headless Interface ----------
 	
 	/** 
 	 * Copies an entire folder out of a jar to a physical location. 
@@ -277,7 +297,8 @@ public class Applet extends JApplet {
 				"Code Base: \t"+getCodeBase().getPath()+"\n"+
 				"Document Base: \t"+getDocumentBase().getPath()+"\n"+
 				"Execution URL: \t"+Applet.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()+"\n"+
-				"Multiple Monitors: \t"+(GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices().length > 1)+"\n";
+				"Multiple Monitors: \t"+(GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices().length > 1)+"\n"+
+				"Headless: \t"+HEADLESS+"\n";
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
 			return "Error";

@@ -190,7 +190,7 @@ public class ScreenRecorder extends ProcessWrapper {
 	}
 	
 	public void closeDown() {
-		if(Applet.IS_MAC) {
+		if(Applet.IS_MAC && recordingProcess != null) {
 	    	PrintWriter pw = new PrintWriter(recordingProcess.getOutputStream());
 	    	pw.println("quit");
 	    	pw.flush();
@@ -200,6 +200,7 @@ public class ScreenRecorder extends ProcessWrapper {
 	
     protected void finalize() throws Throwable {
     	super.finalize();
+    	closeDown();
     	recordingProcess.destroy();
     }
     

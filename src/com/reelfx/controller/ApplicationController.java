@@ -4,6 +4,7 @@ import java.io.File;
 
 import javax.sound.sampled.Mixer;
 
+import com.reelfx.Applet;
 import com.reelfx.model.PostProcessor;
 import com.reelfx.model.PreviewPlayer;
 import com.reelfx.model.ScreenRecorder;
@@ -24,8 +25,13 @@ public abstract class ApplicationController implements ProcessListener {
     	postProcess.addProcessListener(this);
 		
 		gui = new Interface(this);
-		gui.setVisible(true);
-    	gui.pack();
+		
+		if(Applet.HEADLESS) {
+			
+		} else {
+			gui.setVisible(true);
+	    	gui.pack();
+		}
 	}
 	
 	public void processUpdate(int event,Object body) {
