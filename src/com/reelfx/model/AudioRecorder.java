@@ -169,14 +169,21 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
     @Override
 	public void run()
 	{
-		try
-		{
-			AudioSystem.write(m_audioInputStream, m_targetType, m_outputFile);
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
+
+			@Override
+			public Object run() {		
+		    	try
+				{
+					AudioSystem.write(m_audioInputStream, m_targetType, m_outputFile);
+				}
+				catch (IOException e)
+				{
+					e.printStackTrace();
+				}
+				return null;
+			}
+		});
 	}
     
     /**
