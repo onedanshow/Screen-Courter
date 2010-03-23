@@ -116,14 +116,23 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 	*/
 	public void startRecording()
 	{
-		System.out.println("Setting up audio line recording...");
-		/* Starting the TargetDataLine. It tells the line that
-		   we now want to read data from it. If this method
-		   isn't called, we won't
-		   be able to read data from the line at all.
-		*/
-		m_line.start();
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
 
+			@Override
+			public Object run() {
+				System.out.println("Setting up audio line recording...");
+				/* Starting the TargetDataLine. It tells the line that
+				   we now want to read data from it. If this method
+				   isn't called, we won't
+				   be able to read data from the line at all.
+				*/
+				m_line.start();
+
+				
+				return null;
+			}
+		});
+		
 		/* Starting the thread. This call results in the
 		   method 'run()' (see below) being called. There, the
 		   data is actually read from the line.
@@ -147,9 +156,15 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 	*/
 	public void stopRecording()
 	{
-		m_line.stop();
-		m_line.close();
-		
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
+
+			@Override
+			public Object run() {
+				m_line.stop();
+				m_line.close();
+				return null;
+			}
+		});
 		// TODO handle stopping this thread properly
 	}
 
@@ -173,15 +188,22 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
     @Override
 	public void run()
 	{		
-    	try
-		{
-			AudioSystem.write(m_audioInputStream, m_targetType, m_outputFile);
-			System.out.println("Writing audio...");
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
+    	AccessController.doPrivileged(new PrivilegedAction<Object>() {
+
+			@Override
+			public Object run() {
+		    	try
+				{
+					AudioSystem.write(m_audioInputStream, m_targetType, m_outputFile);
+					System.out.println("Writing audio...");
+				}
+				catch (IOException e)
+				{
+					e.printStackTrace();
+				}
+				return null;
+			}
+    	});
 	}
     
     /**

@@ -3,12 +3,16 @@ package com.reelfx.controller;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.AccessControlContext;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 
 import javax.sound.sampled.Mixer;
 
 import com.reelfx.Applet;
 import com.reelfx.model.AudioRecorder;
 import com.reelfx.model.ScreenRecorder;
+import com.reelfx.model.util.ProcessListener;
 
 public class WindowsController extends ApplicationController {
 
@@ -48,21 +52,34 @@ public class WindowsController extends ApplicationController {
 		screen = new ScreenRecorder();
 	}
 
-	@Override
-	public void startRecording(Mixer audioSource, int index) {
-		AudioRecorder.deleteOutput();
-		stopped = false;
-        if(audioSource != null) {
-        	audio = new AudioRecorder(audioSource);
-        	audio.addProcessListener(this);
-        	audio.startRecording();
-        } else {
-        	System.out.println("No audio source specified.");
-        	audio = null;
-        	startVideoRecording();
-        }
-		// start up CamStudio
-		screen.start();
+	private Mixer audioSource = null;
+	private ProcessListener listener;
+	public void startRecording(Mixer source, int index) {
+		audioSource = source;
+		listener = this;
+		
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
+			
+			@Override
+			public Object run() {
+					
+				AudioRecorder.deleteOutput();
+				stopped = false;
+		        if(audioSource != null) {
+		        	audio = new AudioRecorder(audioSource);
+		        	audio.addProcessListener(listener);
+		        	audio.startRecording();
+		        } else {
+		        	System.out.println("No audio source specified.");
+		        	audio = null;
+		        	startVideoRecording();
+		        }
+				// start up CamStudio
+				screen.start();
+		
+				return null;
+			}
+		});
 	}
 	
 	// --------- START VIDEO (once audio has trigger it) ---------

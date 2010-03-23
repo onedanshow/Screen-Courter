@@ -43,6 +43,7 @@ public class AudioSelectBox extends JComboBox implements MouseListener {
 		for(Mixer.Info info : AudioSystem.getMixerInfo()) {
         	if(!info.getName().toLowerCase().contains("port") && AudioSystem.getMixer(info).getTargetLineInfo().length != 0) {
         		result = AudioSystem.getMixer(info);
+        		break;
         	}
 		}
 		
