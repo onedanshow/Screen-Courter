@@ -26,7 +26,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.security.AccessController;
 import java.security.CodeSource;
+import java.security.PrivilegedAction;
 import java.security.ProtectionDomain;
 
 import javax.sound.sampled.Mixer;
@@ -136,25 +138,45 @@ public class ScreenRecorder extends ProcessWrapper {
     		}
     		
     		else if(Applet.IS_WINDOWS) {
-	            List<String> camArgs = new ArrayList<String>();
-	            camArgs.add(CAM_EXEC.getAbsolutePath());
-	            camArgs.addAll(parseParameters("-outfile "+OUTPUT_FILE));
+    			AccessController.doPrivileged(new PrivilegedAction<Object>() {
+
+					@Override
+					public Object run() {
+						
+						try {
+							List<String> camArgs = new ArrayList<String>();
+				            camArgs.add(CAM_EXEC.getAbsolutePath());
+				            camArgs.addAll(parseParameters("-outfile "+OUTPUT_FILE));
+				            
+				        	System.out.println("Executing this command: "+prettyCommand(camArgs));
+				            ProcessBuilder pb = new ProcessBuilder(camArgs);
+							recordingProcess = pb.start();
+				            fireProcessUpdate(RECORDING_STARTED);
+				            
+				            errorGobbler = new StreamGobbler(recordingProcess.getErrorStream(), false, "cam E");
+				            inputGobbler = new StreamGobbler(recordingProcess.getInputStream(), false, "cam O");
+				            
+				            System.out.println("Starting listener threads...");
+				            errorGobbler.start();
+				            inputGobbler.start();
+				            			         
+							recordingProcess.waitFor();
+				            
+				            fireProcessUpdate(RECORDING_COMPLETE);
+			            
+						}
+			            catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+			            catch (IOException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+						return null;
+					}
+				});
 	            
-	        	System.out.println("Executing this command: "+prettyCommand(camArgs));
-	            ProcessBuilder pb = new ProcessBuilder(camArgs);
-	            recordingProcess = pb.start();
-	            fireProcessUpdate(RECORDING_STARTED);
-	            
-	            errorGobbler = new StreamGobbler(recordingProcess.getErrorStream(), false, "cam E");
-	            inputGobbler = new StreamGobbler(recordingProcess.getInputStream(), false, "cam O");
-	            
-	            System.out.println("Starting listener threads...");
-	            errorGobbler.start();
-	            inputGobbler.start();
-	            
-	            recordingProcess.waitFor();
-	            
-	            fireProcessUpdate(RECORDING_COMPLETE);
     		}
             
       } catch (IOException ioe) {
