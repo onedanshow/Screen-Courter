@@ -29,7 +29,7 @@ public class WindowsController extends ApplicationController {
 		super.setupExtensions();
 		try {
 			if(!Applet.BIN_FOLDER.exists()){
-				Applet.copyFolderFromRemoteJar(new URL(Applet.CODE_BASE+"/bin-windows.jar"), "bin-windows");
+				Applet.copyFolderFromRemoteJar(new URL("/bin-windows.jar"), "bin-windows");
 				if(!Applet.BIN_FOLDER.exists()) throw new IOException("Did not copy Windows extensions to the execution directory!");
 			}
 			System.out.println("Have access to execution folder: "+Applet.BIN_FOLDER.getAbsolutePath());
