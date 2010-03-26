@@ -4,8 +4,15 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>Applet</title>
 </head>
-<body>
+<body onload="onload();">
   <p>There is applet right here:</p>
-<applet id="applet" archive="applet.jar?v=@@@UNIQUE@@@" code="com.reelfx.RfxApplet" width="0" height="0" />
+<applet id="applet" archive="applet.jar?v=@@@UNIQUE@@@" code="com.reelfx.Applet" width="0" height="0" name="applet">
+	<param name="headless" value="true">
+</applet>
+<script type="text/javascript" charset="utf-8">
+	function onload() {
+		alert(""+document.getElementById('applet').HEADLESS);
+	}
+</script>
 </body>
 </html>

@@ -26,7 +26,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.security.AccessController;
 import java.security.CodeSource;
+import java.security.PrivilegedAction;
 import java.security.ProtectionDomain;
 
 import javax.sound.sampled.Mixer;
@@ -39,11 +41,14 @@ import org.apache.commons.io.FileUtils;
  */
 public class ScreenRecorder extends ProcessWrapper {
 	
+	private static String EXT = Applet.IS_MAC ? ".mov" : Applet.IS_WINDOWS ? ".avi" : ".mp4";
+	
 	// FILE LOCATIONS
-	public static String OUTPUT_FILE = Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"output-java"+(Applet.IS_MAC ? ".mov" : ".mp4");
+	public static File OUTPUT_FILE = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"output-java"+EXT);
 	//public static File VLC_JAR = new File(System.getProperty("java.class.path")+File.separator+"bin-mac.jar");
 	//public static File VLC_JAR = new File("/Users/daniel/Documents/Java/java-review-tool/lib"+File.separator+"bin-mac.jar");
-	protected static File VLC_EXEC = new File(Applet.BIN_FOLDER.getAbsoluteFile()+File.separator+"VLC");
+	protected static File MAC_EXEC = new File(Applet.BIN_FOLDER.getAbsoluteFile()+File.separator+"mac-screen-recorder");
+	protected static File CAM_EXEC = new File(Applet.BIN_FOLDER.getAbsoluteFile()+File.separator+"CamCommandLine.exe");
 	
 	// VIDEO SETTINGS
 	public static double SCALE = 0.8;
@@ -73,20 +78,16 @@ public class ScreenRecorder extends ProcessWrapper {
 	public void run() {
     	try {
     		if(Applet.IS_MAC) {
-	        	List<String> vlcArgs = new ArrayList<String>();
-	            vlcArgs.add(VLC_EXEC.getAbsolutePath());
-	        	//vlcArgs.add("vlc-bin"+File.separator+"VLC");
-	        	vlcArgs.add("-IRC");
-	        	//vlcArgs.add("--rc-host=localhost:4444"); // formatting is mac specific
-	        	vlcArgs.add("--rc-fake-tty");
-	        	vlcArgs.add("--sout=#transcode{vcodec=mp4v,vb="+BIT_RATE+",fps="+FPS+",scale="+SCALE+"}:standard{access=file,mux=mov,dst="+OUTPUT_FILE+"}");
-	        	
-	            ProcessBuilder pb = new ProcessBuilder(vlcArgs);
+	        	List<String> macArgs = new ArrayList<String>();
+	            macArgs.add(MAC_EXEC.getAbsolutePath());
+	            macArgs.add(OUTPUT_FILE.getAbsolutePath());
+
+	            ProcessBuilder pb = new ProcessBuilder(macArgs);
 	            recordingProcess = pb.start();
 	            fireProcessUpdate(RECORDING_STARTED);
 	            
-	            errorGobbler = new StreamGobbler(recordingProcess.getErrorStream(), false, "vlc E");
-	            inputGobbler = new StreamGobbler(recordingProcess.getInputStream(), false, "vlc O");
+	            errorGobbler = new StreamGobbler(recordingProcess.getErrorStream(), false, "mac E");
+	            inputGobbler = new StreamGobbler(recordingProcess.getInputStream(), false, "mac O");
 	            
 	            System.out.println("Starting listener threads...");
 	            errorGobbler.start();
@@ -118,7 +119,7 @@ public class ScreenRecorder extends ProcessWrapper {
     	    	}
     	    	// output file settings
     	    	ffmpegArgs.addAll(parseParameters("-vcodec libx264 -r "+FPS+" -s "+Math.round(width*SCALE)+"x"+Math.round(height*SCALE)));
-    	    	ffmpegArgs.add(OUTPUT_FILE);
+    	    	ffmpegArgs.add(OUTPUT_FILE.getAbsolutePath());
     	    	System.out.println("Executing this command: "+prettyCommand(ffmpegArgs));
     	        ProcessBuilder pb = new ProcessBuilder(ffmpegArgs);
     	        recordingProcess = pb.start();
@@ -135,6 +136,48 @@ public class ScreenRecorder extends ProcessWrapper {
 	            
 	            fireProcessUpdate(RECORDING_COMPLETE);
     		}
+    		
+    		else if(Applet.IS_WINDOWS) {
+    			// can have problem with file permissions when methods are invoked via Javascript even if applet is signed, 
+    			// thus some code needs to wrapped in a privledged block
+    			AccessController.doPrivileged(new PrivilegedAction<Object>() {
+
+					@Override
+					public Object run() {
+						
+						try {
+							List<String> camArgs = new ArrayList<String>();
+				            camArgs.add(CAM_EXEC.getAbsolutePath());
+				            camArgs.addAll(parseParameters("-outfile "+OUTPUT_FILE));
+				            
+				        	System.out.println("Executing this command: "+prettyCommand(camArgs));
+				            ProcessBuilder pb = new ProcessBuilder(camArgs);
+							recordingProcess = pb.start();
+				            fireProcessUpdate(RECORDING_STARTED);
+				            
+				            errorGobbler = new StreamGobbler(recordingProcess.getErrorStream(), false, "cam E");
+				            inputGobbler = new StreamGobbler(recordingProcess.getInputStream(), false, "cam O");
+				            
+				            System.out.println("Starting listener threads...");
+				            errorGobbler.start();
+				            inputGobbler.start();
+				            			         
+							recordingProcess.waitFor();
+				            
+				            fireProcessUpdate(RECORDING_COMPLETE);
+			            
+						}
+			            catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+			            catch (IOException e1) {
+							e1.printStackTrace();
+						}
+						return null;
+					}
+				});
+	            
+    		}
             
       } catch (IOException ioe) {
     	  ioe.printStackTrace();
@@ -146,10 +189,10 @@ public class ScreenRecorder extends ProcessWrapper {
 	public void startRecording() {      
 		if(Applet.IS_MAC) {
 	    	PrintWriter pw = new PrintWriter(recordingProcess.getOutputStream());
-	    	pw.println("add screen://");
+	    	pw.println("start");
 	    	pw.flush();
 		}
-		// nothing for linux
+		// nothing for linux or windows
 	}
 	
 	public void stopRecording() {   
@@ -161,27 +204,31 @@ public class ScreenRecorder extends ProcessWrapper {
 	    	PrintWriter pw = new PrintWriter(recordingProcess.getOutputStream());
 	    	pw.println("stop");
 	    	pw.flush();
+		} else if(Applet.IS_WINDOWS) {
+			PrintWriter pw = new PrintWriter(recordingProcess.getOutputStream());
+	    	pw.print("\n");
+	    	pw.flush();
 		}
 	}
 	
 	public void closeDown() {
-		if(Applet.IS_MAC) {
+		if(Applet.IS_MAC && recordingProcess != null) {
 	    	PrintWriter pw = new PrintWriter(recordingProcess.getOutputStream());
 	    	pw.println("quit");
 	    	pw.flush();
 		}
-		// nothing for linux
+		// nothing for linux or windows
 	}
 	
     protected void finalize() throws Throwable {
     	super.finalize();
+    	closeDown();
     	recordingProcess.destroy();
     }
     
     public static void deleteOutput() {
-		File oldOutput = new File(OUTPUT_FILE);
 		try {
-			if(oldOutput.exists() && !oldOutput.delete())
+			if(OUTPUT_FILE.exists() && !OUTPUT_FILE.delete())
 				throw new Exception("Can't delete the old video file!");
 		} catch (Exception e) {
 			e.printStackTrace();

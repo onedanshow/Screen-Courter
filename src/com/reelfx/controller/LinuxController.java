@@ -26,12 +26,13 @@ public class LinuxController extends ApplicationController {
 		super.setupExtensions();
 		try {
 			if(!Applet.BIN_FOLDER.exists()){
-				Applet.copyFolderFromRemoteJar(new URL(Applet.CODE_BASE+"/bin-linux.jar"), "bin-linux");
+				Applet.copyFolderFromRemoteJar(new URL(Applet.HOST_URL+"/bin-linux.jar"), "bin-linux");
 				Runtime.getRuntime().exec("chmod 755 "+Applet.BIN_FOLDER+File.separator+"ffmpeg").waitFor();
 				Runtime.getRuntime().exec("chmod 755 "+Applet.BIN_FOLDER+File.separator+"ffplay").waitFor();
 				if(!Applet.BIN_FOLDER.exists()) throw new IOException("Did not copy Linux extensions to the execution directory!");
 			}
 			System.out.println("Have access to execution folder: "+Applet.BIN_FOLDER.getAbsolutePath());
+			gui.enable();
         } catch (MalformedURLException e1) {
 			gui.status.setText("Error downloading native extensions");
 			e1.printStackTrace();
@@ -60,7 +61,7 @@ public class LinuxController extends ApplicationController {
 	}
 
 	public void processUpdate(int event,Object body) {
-		super.processUpdate(event);
+		super.processUpdate(event,body);
 	}
 
 }

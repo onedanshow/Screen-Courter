@@ -15,23 +15,25 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLConnection;
 import java.util.Enumeration;
+import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import javax.sound.sampled.AudioSystem;
 import javax.swing.JApplet;
 import javax.swing.SwingUtilities;
 
 import com.reelfx.controller.ApplicationController;
 import com.reelfx.controller.LinuxController;
 import com.reelfx.controller.MacController;
+import com.reelfx.controller.WindowsController;
+import com.reelfx.view.AudioSelectBox;
 import com.reelfx.view.Interface;
 import com.sun.JarClassLoader;
 
 /**
- * INSTALL:
- * 	-put "bin-(OS).jar" on the class path
  * 
  * @author daniel
  *
@@ -45,7 +47,8 @@ public class Applet extends JApplet {
 	
 	public static File RFX_FOLDER, BIN_FOLDER, DESKTOP_FOLDER;
 	public static URL DOCUMENT_BASE, CODE_BASE;
-	public static String POST_URL = null, API_KEY = null;
+	public static String POST_URL = null, API_KEY = null, HOST_URL = null;
+	public static boolean HEADLESS = false;
 	public static boolean IS_MAC = System.getProperty("os.name").toLowerCase().contains("mac");
 	public static boolean IS_LINUX = System.getProperty("os.name").toLowerCase().contains("linux");
 	public static boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("windows");
@@ -65,7 +68,10 @@ public class Applet extends JApplet {
 			CODE_BASE = getCodeBase();
 			POST_URL = getParameter("post_url");
 			API_KEY = getParameter("api_key");
-			
+			HOST_URL = DOCUMENT_BASE.getProtocol() + "://" + DOCUMENT_BASE.getHost();
+			if(getParameter("headless") != null)
+				HEADLESS = !getParameter("headless").isEmpty() && getParameter("headless").equals("true"); // Boolean.getBoolean(string) didn't work
+		
 			// base code: http://stackoverflow.com/questions/2234476/how-to-detect-the-current-display-with-java
 			GRAPHICS_CONFIG = getGraphicsConfiguration();
 			GraphicsDevice myScreen = GRAPHICS_CONFIG.getDevice();
@@ -81,9 +87,14 @@ public class Applet extends JApplet {
 			}
 			System.out.println("Applet window is on screen" + myScreenIndex);
 
-			
 			System.out.println(getAppletInfo());			 
-						
+			/*
+			System.out.println("Have these system variables:");
+			Map<String, String> sysEnv = System.getenv();
+	        for (String envName : sysEnv.keySet()) {
+	            System.out.format("%s=%s%n", envName, sysEnv.get(envName));
+	        }
+			*/			
 			if( RFX_FOLDER.exists() && !RFX_FOLDER.isDirectory() && !RFX_FOLDER.delete() )
 		        throw new IOException("Could not delete file for folder: " + RFX_FOLDER.getAbsolutePath());
 			if( !RFX_FOLDER.exists() && !RFX_FOLDER.mkdir() )
@@ -99,8 +110,10 @@ public class Applet extends JApplet {
                 		controller = new MacController();
                 	else if(IS_LINUX)
                 		controller = new LinuxController();
+                	else if(IS_WINDOWS)
+                		controller = new WindowsController();
                 	else 
-                		System.err.println("I don't which operating system this is.");
+                		System.err.println("Want to launch controller but don't which operating system this is.");
                 }
             });
             SwingUtilities.invokeLater(new Runnable() {
@@ -118,6 +131,25 @@ public class Applet extends JApplet {
             e.printStackTrace();
         }
     }
+	
+	// ---------- Headless Interface ----------
+	public void prepareForRecording() {
+		controller.prepareForRecording();
+	}
+	
+	public void startRecording() {
+		// TODO grabs default mixer right now, need a way to select microphones...
+		controller.startRecording(AudioSelectBox.getDefaultMixer(),0);
+	}
+	
+	public void stopRecording() {
+		controller.stopRecording();
+	}
+	
+	public void previewRecording() {
+		controller.previewRecording();
+	}
+	// ---------- Headless Interface ----------
 	
 	/** 
 	 * Copies an entire folder out of a jar to a physical location. 
@@ -265,11 +297,13 @@ public class Applet extends JApplet {
 				"User Home: \t"+System.getProperty("user.home")+"\n"+
 				"User Name: \t"+System.getProperty("user.name")+"\n"+
 				"ReelFX Folder: \t"+RFX_FOLDER.getPath()+"\n"+
+				"Bin Folder: \t"+BIN_FOLDER.getPath()+"\n"+
 				"User Desktop: \t"+DESKTOP_FOLDER.getPath()+"\n"+
-				"Code Base: \t"+getCodeBase().getPath()+"\n"+
-				"Document Base: \t"+getDocumentBase().getPath()+"\n"+
+				"Code Base: \t"+getCodeBase()+"\n"+
+				"Document Base: \t"+getDocumentBase()+"\n"+
 				"Execution URL: \t"+Applet.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()+"\n"+
-				"Multiple Monitors: \t"+(GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices().length > 1)+"\n";
+				"Multiple Monitors: \t"+(GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices().length > 1)+"\n"+
+				"Headless: \t"+HEADLESS+"\n";
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
 			return "Error";
@@ -284,6 +318,8 @@ public class Applet extends JApplet {
 			return RFX_FOLDER.getAbsolutePath()+File.separator+"bin-mac";
 		else if(IS_LINUX)
 			return RFX_FOLDER.getAbsolutePath()+File.separator+"bin-linux";
+		else if(IS_WINDOWS)
+			return RFX_FOLDER.getAbsolutePath()+File.separator+"bin-windows";
 		else
 			throw new IOException("I don't know what bin folder to use!");
 	}
@@ -293,12 +329,15 @@ public class Applet extends JApplet {
 			return System.getProperty("user.home")+File.separator+"Library"+File.separator+"ReelFX";
 		else if(IS_LINUX)
 			return System.getProperty("user.home")+File.separator+".ReelFX";
+		else if(IS_WINDOWS)
+			return System.getenv("TEMP")+File.separator+"ReelFX";
 		else 
 			throw new IOException("I don't know where to find the native extensions!");
 	}
 	
+	// not tested, and not used
 	public static String getDesktopFolderPath() throws IOException {
-		if(IS_MAC || IS_LINUX)
+		if(IS_MAC || IS_LINUX || IS_WINDOWS)
 			return System.getProperty("user.home")+File.separator+"Desktop";
 		else
 			throw new IOException("I don't know where to find the user's desktop!");

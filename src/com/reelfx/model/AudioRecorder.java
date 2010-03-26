@@ -32,9 +32,10 @@ package com.reelfx.model;
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 import java.io.IOException;
 import java.io.File;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.LineEvent;
@@ -50,63 +51,13 @@ import javax.sound.sampled.AudioFileFormat;
 import com.reelfx.Applet;
 import com.reelfx.model.util.ProcessWrapper;
 
-/**	<titleabbrev>SimpleAudioRecorder</titleabbrev>
-	<title>Recording to an audio file (simple version)</title>
-
-	<formalpara><title>Purpose</title>
-	<para>Records audio data and stores it in a file. The data is
-	recorded in CD quality (44.1 kHz, 16 bit linear, stereo) and
-	stored in a <filename>.wav</filename> file.</para></formalpara>
-
-	<formalpara><title>Usage</title>
-	<para>
-	<cmdsynopsis>
-	<command>java SimpleAudioRecorder</command>
-	<arg choice="plain"><option>-h</option></arg>
-	</cmdsynopsis>
-	<cmdsynopsis>
-	<command>java SimpleAudioRecorder</command>
-	<arg choice="plain"><replaceable>audiofile</replaceable></arg>
-	</cmdsynopsis>
-	</para></formalpara>
-
-	<formalpara><title>Parameters</title>
-	<variablelist>
-	<varlistentry>
-	<term><option>-h</option></term>
-	<listitem><para>print usage information, then exit</para></listitem>
-	</varlistentry>
-	<varlistentry>
-	<term><option><replaceable>audiofile</replaceable></option></term>
-	<listitem><para>the file name of the
-	audio file that should be produced from the recorded data</para></listitem>
-	</varlistentry>
-	</variablelist>
-	</formalpara>
-
-	<formalpara><title>Bugs, limitations</title>
-	<para>
-	You cannot select audio formats and the audio file type
-	on the command line. See
-	AudioRecorder for a version that has more advanced options.
-	Due to a bug in the Sun jdk1.3/1.4, this program does not work
-	with it.
-	</para></formalpara>
-
-	<formalpara><title>Source code</title>
-	<para>
-	<ulink url="SimpleAudioRecorder.java.html">SimpleAudioRecorder.java</ulink>
-	</para>
-	</formalpara>
-
-*/
 public class AudioRecorder extends ProcessWrapper implements LineListener
 {
 	
     public static File OUTPUT_FILE = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"output-java.wav");
 	
     // AUDIO SETTINGS
-    public static int FREQ = 11025; // 22050; //44100;  lowered because it was skipping and dropping audio
+    public static float FREQ = 11025; // 22050; //44100;  lowered because it was skipping and dropping audio
     
     // STATES
     public final static int RECORDING_STARTED = 200;
@@ -132,11 +83,14 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 		DataLine.Info info = new DataLine.Info(TargetDataLine.class, audioFormat);
 		try
 		{
-			if(mixer != null) // try with the mixer given
+			if(mixer != null) {// try with the mixer given
+				System.out.println("Grabbing the specified audio mixer: "+mixer.getLineInfo().toString());
 				m_line = (TargetDataLine) mixer.getLine(info);
-			
-			else // try to grab one ourselves
+			}
+			else { // try to grab one ourselves
+				System.out.println("Grabbing whatever AudioSystem line I can get...");
 				m_line = (TargetDataLine) AudioSystem.getLine(info);
+			}
 			m_line.addLineListener(this);
 			m_line.open(audioFormat);
 		}
@@ -162,13 +116,23 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 	*/
 	public void startRecording()
 	{
-		/* Starting the TargetDataLine. It tells the line that
-		   we now want to read data from it. If this method
-		   isn't called, we won't
-		   be able to read data from the line at all.
-		*/
-		m_line.start();
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
 
+			@Override
+			public Object run() {
+				System.out.println("Setting up audio line recording...");
+				/* Starting the TargetDataLine. It tells the line that
+				   we now want to read data from it. If this method
+				   isn't called, we won't
+				   be able to read data from the line at all.
+				*/
+				m_line.start();
+
+				
+				return null;
+			}
+		});
+		
 		/* Starting the thread. This call results in the
 		   method 'run()' (see below) being called. There, the
 		   data is actually read from the line.
@@ -192,9 +156,15 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 	*/
 	public void stopRecording()
 	{
-		m_line.stop();
-		m_line.close();
-		
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
+
+			@Override
+			public Object run() {
+				m_line.stop();
+				m_line.close();
+				return null;
+			}
+		});
 		// TODO handle stopping this thread properly
 	}
 
@@ -217,15 +187,23 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 	*/
     @Override
 	public void run()
-	{
-		try
-		{
-			AudioSystem.write(m_audioInputStream, m_targetType, m_outputFile);
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
+	{		
+    	AccessController.doPrivileged(new PrivilegedAction<Object>() {
+
+			@Override
+			public Object run() {
+		    	try
+				{
+					AudioSystem.write(m_audioInputStream, m_targetType, m_outputFile);
+					System.out.println("Writing audio...");
+				}
+				catch (IOException e)
+				{
+					e.printStackTrace();
+				}
+				return null;
+			}
+    	});
 	}
     
     /**
@@ -233,16 +211,18 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
      */
     public void update(LineEvent event) {
 		if(event.getType().equals(LineEvent.Type.OPEN)) {
-			
+			System.out.println("Audio Line Opened...");
 		} 
 		else if(event.getType().equals(LineEvent.Type.START)) {
+			System.out.println("Audio Recording Started...");
 			fireProcessUpdate(RECORDING_STARTED);
 		} 
 		else if(event.getType().equals(LineEvent.Type.STOP)) {
+			System.out.println("Audio Recording Stopped...");
 			fireProcessUpdate(RECORDING_COMPLETE);
 		} 
 		else if(event.getType().equals(LineEvent.Type.CLOSE)) {
-			
+			System.out.println("Audio Line Closed...");
 		}
 	}
 
@@ -252,11 +232,69 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 	}
 	
 	public static void deleteOutput() {
-		try {
-			if(OUTPUT_FILE.exists() && !OUTPUT_FILE.delete())
-				throw new Exception("Can't delete the old audio file!");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
+
+			@Override
+			public Object run() {
+				try {
+					if(OUTPUT_FILE.exists() && !OUTPUT_FILE.delete())
+						throw new Exception("Can't delete the old audio file!");
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				return null;
+			}
+		});
 	}
 }
+
+/**	<titleabbrev>SimpleAudioRecorder</titleabbrev>
+<title>Recording to an audio file (simple version)</title>
+
+<formalpara><title>Purpose</title>
+<para>Records audio data and stores it in a file. The data is
+recorded in CD quality (44.1 kHz, 16 bit linear, stereo) and
+stored in a <filename>.wav</filename> file.</para></formalpara>
+
+<formalpara><title>Usage</title>
+<para>
+<cmdsynopsis>
+<command>java SimpleAudioRecorder</command>
+<arg choice="plain"><option>-h</option></arg>
+</cmdsynopsis>
+<cmdsynopsis>
+<command>java SimpleAudioRecorder</command>
+<arg choice="plain"><replaceable>audiofile</replaceable></arg>
+</cmdsynopsis>
+</para></formalpara>
+
+<formalpara><title>Parameters</title>
+<variablelist>
+<varlistentry>
+<term><option>-h</option></term>
+<listitem><para>print usage information, then exit</para></listitem>
+</varlistentry>
+<varlistentry>
+<term><option><replaceable>audiofile</replaceable></option></term>
+<listitem><para>the file name of the
+audio file that should be produced from the recorded data</para></listitem>
+</varlistentry>
+</variablelist>
+</formalpara>
+
+<formalpara><title>Bugs, limitations</title>
+<para>
+You cannot select audio formats and the audio file type
+on the command line. See
+AudioRecorder for a version that has more advanced options.
+Due to a bug in the Sun jdk1.3/1.4, this program does not work
+with it.
+</para></formalpara>
+
+<formalpara><title>Source code</title>
+<para>
+<ulink url="SimpleAudioRecorder.java.html">SimpleAudioRecorder.java</ulink>
+</para>
+</formalpara>
+
+*/
