@@ -98,43 +98,63 @@ public class ScreenRecorder extends ProcessWrapper {
     		} 
     		
     		else if(Applet.IS_LINUX) {
-    			deleteOutput();
-    			
-    			//Toolkit tk = Toolkit.getDefaultToolkit();
-    	        //Dimension dim = tk.getScreenSize();
-    	        
-    			// only get it for the screen we're on
-    			int height = Applet.GRAPHICS_CONFIG.getDevice().getDisplayMode().getHeight();
-    			int width = Applet.GRAPHICS_CONFIG.getDevice().getDisplayMode().getWidth();
-    	        
-    			List<String> ffmpegArgs = new ArrayList<String>();
-    			//ffmpegArgs.add("/usr/bin/ffmpeg");
-    	    	ffmpegArgs.add(Applet.BIN_FOLDER.getAbsoluteFile()+File.separator+"ffmpeg");
-    	    	// screen capture settings
-    	    	ffmpegArgs.addAll(parseParameters("-f x11grab -s "+width+"x"+height+" -r "+FPS+" -b "+BIT_RATE+"k -i :0.0+0,0"));
-    	    	// microphone settings (good resource: http://www.oreilly.de/catalog/multilinux/excerpt/ch14-05.htm)
-    	    	if(audioSource != null) {
-    	    		String driver = audioIndex > 0 ? "/dev/dsp"+audioIndex : "/dev/dsp";
-    	    		ffmpegArgs.addAll(parseParameters("-f oss -ac 1 -ar "+AudioRecorder.FREQ+" -i "+driver));
-    	    	}
-    	    	// output file settings
-    	    	ffmpegArgs.addAll(parseParameters("-vcodec libx264 -r "+FPS+" -s "+Math.round(width*SCALE)+"x"+Math.round(height*SCALE)));
-    	    	ffmpegArgs.add(OUTPUT_FILE.getAbsolutePath());
-    	    	System.out.println("Executing this command: "+prettyCommand(ffmpegArgs));
-    	        ProcessBuilder pb = new ProcessBuilder(ffmpegArgs);
-    	        recordingProcess = pb.start();
-    	        fireProcessUpdate(RECORDING_STARTED);
-    	        
-    	        errorGobbler = new StreamGobbler(recordingProcess.getErrorStream(), false, "ffmpeg E");
-	            inputGobbler = new StreamGobbler(recordingProcess.getInputStream(), false, "ffmpeg O");
+    			// can have problem with file permissions when methods are invoked via Javascript even if applet is signed, 
+    			// thus some code needs to wrapped in a privledged block
+    			AccessController.doPrivileged(new PrivilegedAction<Object>() {
+
+					@Override
+					public Object run() {
+						
+						try {
+							
+			    			deleteOutput();
+			    			
+			    			//Toolkit tk = Toolkit.getDefaultToolkit();
+			    	        //Dimension dim = tk.getScreenSize();
+			    	        
+			    			// only get it for the screen we're on
+			    			int height = Applet.GRAPHICS_CONFIG.getDevice().getDisplayMode().getHeight();
+			    			int width = Applet.GRAPHICS_CONFIG.getDevice().getDisplayMode().getWidth();
+			    	        
+			    			List<String> ffmpegArgs = new ArrayList<String>();
+			    			//ffmpegArgs.add("/usr/bin/ffmpeg");
+			    	    	ffmpegArgs.add(Applet.BIN_FOLDER.getAbsoluteFile()+File.separator+"ffmpeg");
+			    	    	// screen capture settings
+			    	    	ffmpegArgs.addAll(parseParameters("-f x11grab -s "+width+"x"+height+" -r "+FPS+" -b "+BIT_RATE+"k -i :0.0+0,0"));
+			    	    	// microphone settings (good resource: http://www.oreilly.de/catalog/multilinux/excerpt/ch14-05.htm)
+			    	    	if(audioSource != null) {
+			    	    		String driver = audioIndex > 0 ? "/dev/dsp"+audioIndex : "/dev/dsp";
+			    	    		ffmpegArgs.addAll(parseParameters("-f oss -ac 1 -ar "+AudioRecorder.FREQ+" -i "+driver));
+			    	    	}
+			    	    	// output file settings
+			    	    	ffmpegArgs.addAll(parseParameters("-vcodec libx264 -r "+FPS+" -s "+Math.round(width*SCALE)+"x"+Math.round(height*SCALE)));
+			    	    	ffmpegArgs.add(OUTPUT_FILE.getAbsolutePath());
+			    	    	System.out.println("Executing this command: "+prettyCommand(ffmpegArgs));
+			    	        ProcessBuilder pb = new ProcessBuilder(ffmpegArgs);
+			    	        recordingProcess = pb.start();
+			    	        fireProcessUpdate(RECORDING_STARTED);
+			    	        
+			    	        errorGobbler = new StreamGobbler(recordingProcess.getErrorStream(), false, "ffmpeg E");
+				            inputGobbler = new StreamGobbler(recordingProcess.getInputStream(), false, "ffmpeg O");
+				            
+				            System.out.println("Starting listener threads...");
+				            errorGobbler.start();
+				            inputGobbler.start();
+				            
+				            recordingProcess.waitFor();
+				            
+				            fireProcessUpdate(RECORDING_COMPLETE);
 	            
-	            System.out.println("Starting listener threads...");
-	            errorGobbler.start();
-	            inputGobbler.start();
-	            
-	            recordingProcess.waitFor();
-	            
-	            fireProcessUpdate(RECORDING_COMPLETE);
+						}
+			            catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+			            catch (IOException e1) {
+							e1.printStackTrace();
+						}
+						return null;
+					}
+				});
     		}
     		
     		else if(Applet.IS_WINDOWS) {
@@ -227,11 +247,18 @@ public class ScreenRecorder extends ProcessWrapper {
     }
     
     public static void deleteOutput() {
-		try {
-			if(OUTPUT_FILE.exists() && !OUTPUT_FILE.delete())
-				throw new Exception("Can't delete the old video file!");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+    	AccessController.doPrivileged(new PrivilegedAction<Object>() {
+
+			@Override
+			public Object run() {
+				try {
+					if(OUTPUT_FILE.exists() && !OUTPUT_FILE.delete())
+						throw new Exception("Can't delete the old video file!");
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				return null;
+			}
+		});
 	}
 }
