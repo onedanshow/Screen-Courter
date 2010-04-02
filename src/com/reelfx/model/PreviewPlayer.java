@@ -1,5 +1,6 @@
 package com.reelfx.model;
 
+import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
 import java.security.AccessController;
@@ -7,20 +8,17 @@ import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.reelfx.Applet;
-import com.reelfx.model.util.ProcessWrapper;
-import com.reelfx.model.util.StreamGobbler;
-
-import java.awt.Desktop;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
-import javax.swing.Timer;
+
+import com.reelfx.Applet;
+import com.reelfx.controller.WindowsController;
+import com.reelfx.model.util.ProcessWrapper;
+import com.reelfx.model.util.StreamGobbler;
 
 public class PreviewPlayer extends ProcessWrapper {
 
@@ -31,15 +29,22 @@ public class PreviewPlayer extends ProcessWrapper {
     
     @Override
 	public void run() {
-    	// need this when doing file IO and Javascript is calling the method (signed applet or not)
+    	// need this when doing file IO and JavaScript is calling the method (signed Applet or not)
     	AccessController.doPrivileged(new PrivilegedAction<Object>() {
 
 			@Override
 			public Object run() {
 		    	try {
-		    		if(Applet.IS_MAC) {
-		        		Desktop.getDesktop().open(ScreenRecorder.OUTPUT_FILE);
-		        	} else {
+		    		if(Applet.IS_MAC && Desktop.isDesktopSupported()) {
+		    			Desktop.getDesktop().open(ScreenRecorder.OUTPUT_FILE);
+		    		}	
+		    		else if (Applet.IS_WINDOWS && Desktop.isDesktopSupported()) {
+		        		Desktop.getDesktop().open(WindowsController.MERGED_OUTPUT_FILE);
+		    			/*List<String> ffplayArgs = new ArrayList<String>();
+		    			ffplayArgs.add(WindowsController.MERGED_OUTPUT_FILE.getAbsolutePath());
+		    			new ProcessBuilder(ffplayArgs).start();*/
+		        	} 
+		    		else {
 		        		String ffplay = "ffplay" + (Applet.IS_WINDOWS ? ".exe" : "");
 						
 				        List<String> ffplayArgs = new ArrayList<String>();
@@ -79,6 +84,7 @@ public class PreviewPlayer extends ProcessWrapper {
     		ffplayProcess.destroy();
     }
 
+    @Deprecated
     private void playAudio() {
     	if(Applet.IS_WINDOWS) {
 	        System.out.println("Playing audio independently...");
@@ -86,7 +92,8 @@ public class PreviewPlayer extends ProcessWrapper {
 	        audioPlayer.start();
     	}
     }
-
+    
+    @Deprecated
     private void stopAudio() {
     	if(Applet.IS_WINDOWS) {
 	        System.out.println("Stopping independent audio...");

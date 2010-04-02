@@ -37,7 +37,7 @@ public abstract class ApplicationController implements ProcessListener {
 	public void processUpdate(int event,Object body) {
 		switch(event) {
 		case PostProcessor.ENCODING_STARTED:
-			gui.status.setText("Encoding to H.264...");
+			gui.status.setText("Encoding...");
 			break;
 		case PostProcessor.ENCODING_COMPLETE:
 			gui.recordBtn.setEnabled(true);
@@ -91,7 +91,8 @@ public abstract class ApplicationController implements ProcessListener {
 		gui.closeInterface();
         gui.setVisible(false);
         gui = null;
-        screen.closeDown();
+        if(screen != null)
+        	screen.closeDown();
         screen = null;
 	}
 	

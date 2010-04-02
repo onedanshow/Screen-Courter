@@ -29,7 +29,7 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 	
 	// FILE LOCATIONS
 	private static String ext = ".mov"; //Applet.IS_MAC ? ".mov" : ".mp4";
-	public static String DEFAULT_OUTPUT_FILE = Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"output-final"+ext;
+	public static File DEFAULT_OUTPUT_FILE = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"output-final"+ext);
 	private File outputFile = null;
 	private boolean postFile = false;
 	
@@ -45,7 +45,7 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 	protected StreamGobbler errorGobbler, inputGobbler;
 	
 	public synchronized void saveToComputer(File file) {
-		if(!file.getName().endsWith(ext))
+		if(!file.getName().endsWith(ext) && !file.getName().endsWith(".avi"))
 			file = new File(file.getAbsoluteFile()+ext); // extension will probably change for Windows
 		outputFile = file;
 		postFile = false;
@@ -53,7 +53,7 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 	}
 	
 	public synchronized void postToInsight() {
-		outputFile = new File(DEFAULT_OUTPUT_FILE);
+		outputFile = DEFAULT_OUTPUT_FILE;
 		postFile = true;
 		super.start();
 	}
@@ -80,7 +80,8 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 		    	ffmpegArgs.add(Applet.BIN_FOLDER.getAbsoluteFile()+File.separator+ffmpeg);
 		    	// audio settings
 		    	if(AudioRecorder.OUTPUT_FILE.exists()) // if opted for microphone
-		    		ffmpegArgs.addAll(parseParameters("-i "+AudioRecorder.OUTPUT_FILE.getAbsolutePath()));
+		    		ffmpegArgs.addAll(parseParameters("-itsoffset 00:00:00.2 -i "+AudioRecorder.OUTPUT_FILE.getAbsolutePath()));
+		    		// delay the audio a tad because it's generally ahead ( http://howto-pages.org/ffmpeg/#delay )
 		    	// video settings
 		    	ffmpegArgs.addAll(parseParameters("-i "+ScreenRecorder.OUTPUT_FILE));
 		    	// export settings

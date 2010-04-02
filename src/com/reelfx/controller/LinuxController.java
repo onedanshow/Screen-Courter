@@ -48,6 +48,7 @@ public class LinuxController extends ApplicationController {
 	@Override
 	public void prepareForRecording() {
 		screen = new ScreenRecorder();
+		screen.addProcessListener(this);
 	}
 
 	@Override

@@ -55,6 +55,7 @@ public class MacController extends ApplicationController {
 	public void prepareForRecording() {
 		// start up VLC
 		screen = new ScreenRecorder();
+		screen.addProcessListener(this);
 		screen.start();
 		// TODO check that it starts up correctly
 	}
