@@ -10,19 +10,20 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.JarURLConnection;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLClassLoader;
-import java.net.URLConnection;
 import java.util.Enumeration;
-import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import javax.sound.sampled.AudioSystem;
+import netscape.javascript.JSException;
+import netscape.javascript.JSObject;
+
 import javax.swing.JApplet;
+import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 
 import com.reelfx.controller.ApplicationController;
@@ -30,13 +31,20 @@ import com.reelfx.controller.LinuxController;
 import com.reelfx.controller.MacController;
 import com.reelfx.controller.WindowsController;
 import com.reelfx.view.AudioSelectBox;
-import com.reelfx.view.Interface;
 import com.sun.JarClassLoader;
 
 /**
  * 
  * @author daniel
  *
+ * SPECIAL NOTE ON JSObject (Used for communicating with Javascript)
+ * In Eclipse, initially couldn't find the class.  This guy said to add a reference to 'plugin.jar' 
+ * (http://stackoverflow.com/questions/1664604/jsobject-download-it-or-available-in-jre-1-6) however
+ * the only plugin.jar's I found for Java via the 'locate' command were either bad symlinks or inside
+ * .bundle so I had to create a good symlink called plugin-daniel.jar in /System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Home/lib
+ * that pointed to /System/Library/Frameworks/JavaVM.framework/Versions/A/Resources/Deploy.bundle/Contents/Resources/Java/plugin.jar
+ * 
+ * further information: http://java.sun.com/j2se/1.5.0/docs/guide/plugin/developer_guide/java_js.html
  */
 
 // TODO setup log4j
@@ -47,6 +55,7 @@ public class Applet extends JApplet {
 	
 	public static File RFX_FOLDER, BIN_FOLDER, DESKTOP_FOLDER;
 	public static URL DOCUMENT_BASE, CODE_BASE;
+	public static JSObject JS_BRIDGE;
 	public static String POST_URL = null, API_KEY = null, HOST_URL = null;
 	public static boolean HEADLESS = false;
 	public static boolean IS_MAC = System.getProperty("os.name").toLowerCase().contains("mac");
@@ -64,6 +73,7 @@ public class Applet extends JApplet {
 			RFX_FOLDER = new File(getRfxFolderPath()); // should be first
 			BIN_FOLDER = new File(getBinFolderPath());
 			DESKTOP_FOLDER = new File(getDesktopFolderPath());
+			JS_BRIDGE = JSObject.getWindow(this);
 			DOCUMENT_BASE = getDocumentBase();
 			CODE_BASE = getCodeBase();
 			POST_URL = getParameter("post_url");
@@ -123,16 +133,16 @@ public class Applet extends JApplet {
                 }
             });
         
-		} catch (IOException e1) {
+		} catch (IOException e) {
 			System.err.println("Could not create temporary folder!");
-			e1.printStackTrace();
+			e.printStackTrace();
 		}	catch (Exception e) {
             System.err.println("Could not create GUI!");
             e.printStackTrace();
         }
     }
 	
-	// ---------- Headless Interface ----------
+	// ---------- Headless API ----------
 	public void prepareForRecording() {
 		controller.prepareForRecording();
 	}
@@ -149,7 +159,32 @@ public class Applet extends JApplet {
 	public void previewRecording() {
 		controller.previewRecording();
 	}
-	// ---------- Headless Interface ----------
+	
+	public void postRecording() {
+		// TODO TEMPORARY until I get the Insight posting process down
+		controller.askForAndSaveRecording();
+	}
+	
+	public static void sendShowStatus(String message) {
+		JSObject doc = (JSObject) JS_BRIDGE.getMember("document");
+		doc.eval("showStatus(\""+message+"\");");
+	}
+	
+	public static void sendHideStatus() {
+		JSObject doc = (JSObject) JS_BRIDGE.getMember("document");
+		doc.eval("hideStatus();");
+	}
+	
+	public static void sendInfo(String message) {
+		JSObject doc = (JSObject) JS_BRIDGE.getMember("document");
+		doc.eval("info(\""+message+"\");");
+	}
+	
+	public static void sendError(String message) {
+		JSObject doc = (JSObject) JS_BRIDGE.getMember("document");
+		doc.eval("error(\""+message+"\");");
+	}
+	// ---------- Headless API ----------
 	
 	/** 
 	 * Copies an entire folder out of a jar to a physical location. 
