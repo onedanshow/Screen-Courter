@@ -6,12 +6,24 @@
 </head>
 <body onload="onload();">
   <p>There is applet right here:</p>
-<applet id="applet" archive="applet.jar?v=@@@UNIQUE@@@" code="com.reelfx.Applet" width="0" height="0" name="applet">
+<applet id="applet" archive="applet.jar?v=@@@UNIQUE@@@" code="com.reelfx.Applet" width="0" height="0" name="applet" mayscript="mayscript">
 	<param name="headless" value="true">
+	<param name="mayscript" value="true">
 </applet>
+<!--  Firebug posts an error of "too much recursion" if this guy is in the <head>...odd... -->
 <script type="text/javascript" charset="utf-8">
 	function onload() {
-		alert(""+document.getElementById('applet').HEADLESS);
+		//alert("Headless? "+document.getElementById('applet').HEADLESS);
+	}
+	function info(s) {
+		console.log(s);
+	}
+	function debug(s) {
+		console.warn(s);
+	}
+	function error(s) {
+		alert(s);
+		console.error(s);
 	}
 </script>
 </body>

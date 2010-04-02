@@ -7,6 +7,9 @@ import java.net.URL;
 
 import javax.sound.sampled.Mixer;
 
+import netscape.javascript.JSException;
+import netscape.javascript.JSObject;
+
 import com.reelfx.Applet;
 import com.reelfx.model.AudioRecorder;
 import com.reelfx.model.ScreenRecorder;
@@ -53,20 +56,39 @@ public class MacController extends ApplicationController {
 
 	@Override
 	public void prepareForRecording() {
-		// start up VLC
-		screen = new ScreenRecorder();
-		screen.addProcessListener(this);
-		screen.start();
-		// TODO check that it starts up correctly
+		boolean allowRecording = true;
+		
+		try {
+			if(Applet.IS_MAC && System.getProperty("os.version").startsWith("10.6"))
+				Applet.sendInfo("You have Snow Leopard.");
+			else {
+				Applet.sendError("You need to have Snow Leopard installed to record a review.");
+				allowRecording = false;
+				screen = null;
+			}
+			
+		} catch(JSException e) {
+			System.err.println("Could not get a JSObject for Java-to-Javascript bridge. Probably running in development mode...");
+		}
+		
+		if(allowRecording) {
+			// start up CamStudio
+			screen = new ScreenRecorder();
+			screen.addProcessListener(this);
+			screen.start();
+			// TODO check that it starts up correctly
+		}
 	}
 
 	@Override
 	public void startRecording(Mixer audioSource,int audioIndex) {
-		screen.startRecording();
+		if(screen != null)
+			screen.startRecording();
 	}
 
 	@Override
 	public void stopRecording() {		
-		screen.stopRecording();
+		if(screen != null)
+			screen.stopRecording();
 	}
 }

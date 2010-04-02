@@ -32,7 +32,11 @@ package playground;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */ 
 
+import java.util.List;
 import java.util.Map;
+
+import javax.script.ScriptEngineFactory;
+import javax.script.ScriptEngineManager;
 
 public class EnvMap {
     public static void main (String[] args) {
@@ -40,5 +44,28 @@ public class EnvMap {
         for (String envName : env.keySet()) {
             System.out.format("%s=%s%n", envName, env.get(envName));
         }
+        
+        // from here: http://java.sun.com/developer/technicalArticles/J2SE/Desktop/scripting/
+        System.out.println("\nScript Facortories Available:");
+        ScriptEngineManager mgr = new ScriptEngineManager();
+        List<ScriptEngineFactory> factories = mgr.getEngineFactories();
+        for (ScriptEngineFactory factory: factories) {
+            System.out.println("ScriptEngineFactory Info");
+            String engName = factory.getEngineName();
+            String engVersion = factory.getEngineVersion();
+            String langName = factory.getLanguageName();
+            String langVersion = factory.getLanguageVersion();
+            System.out.printf("\tScript Engine: %s (%s)\n", 
+                engName, engVersion);
+            List<String> engNames = factory.getNames();
+            for(String name: engNames) {
+              System.out.printf("\tEngine Alias: %s\n", name);
+            }
+            System.out.printf("\tLanguage: %s (%s)\n", 
+                langName, langVersion);
+          }    
+        // Originally looked at scriptengines as a way for Java to talk to Javascript, but they are not meant for this.
+        // Scriptengines allow you to run Javascript (or other dynamtically typed scripting languages) inside Java and 
+        // eval them at runtime, etc.  This way advanced users could extend your Java program, if you wanted to allow it.
     }
 }

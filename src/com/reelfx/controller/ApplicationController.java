@@ -3,6 +3,7 @@ package com.reelfx.controller;
 import java.io.File;
 
 import javax.sound.sampled.Mixer;
+import javax.swing.JFileChooser;
 
 import com.reelfx.Applet;
 import com.reelfx.model.PostProcessor;
@@ -27,7 +28,7 @@ public abstract class ApplicationController implements ProcessListener {
 		gui = new Interface(this);
 		
 		if(Applet.HEADLESS) {
-			
+			// don't show interface
 		} else {
 			gui.setVisible(true);
 	    	gui.pack();
@@ -38,22 +39,26 @@ public abstract class ApplicationController implements ProcessListener {
 		switch(event) {
 		case PostProcessor.ENCODING_STARTED:
 			gui.status.setText("Encoding...");
+			Applet.sendShowStatus("Encoding...");
 			break;
 		case PostProcessor.ENCODING_COMPLETE:
 			gui.recordBtn.setEnabled(true);
 			gui.saveBtn.setEnabled(true);
 			gui.closeBtn.setEnabled(true);
 			gui.status.setText("Finished encoding.");
+			Applet.sendHideStatus();
 			break;
 		case PostProcessor.POST_STARTED:
 			gui.status.setText("Uploading to Insight...");
 			gui.disable();
+			Applet.sendShowStatus("Uploading to Insight...");
 			break;
 		case PostProcessor.POST_COMPLETE:
 			gui.recordBtn.setEnabled(true);
 			gui.saveBtn.setEnabled(true);
 			gui.closeBtn.setEnabled(true);
 			gui.status.setText("Finished uploading. All done.");
+			Applet.sendHideStatus();
 		}
 	}
 	
@@ -67,6 +72,15 @@ public abstract class ApplicationController implements ProcessListener {
         previewPlayer = new PreviewPlayer();
         previewPlayer.start();
     }
+	
+	public void askForAndSaveRecording() {
+		JFileChooser fileSelect = new JFileChooser();
+    	int returnVal = fileSelect.showSaveDialog(null);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            File file = fileSelect.getSelectedFile();
+            saveRecording(file);
+        }
+	}
 	
 	public void saveRecording(File file) {
 		if(previewPlayer != null)
