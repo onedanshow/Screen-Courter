@@ -56,14 +56,17 @@ public abstract class ProcessWrapper extends Thread {
     public List<String> getFfmpegCopyParams() {
     	List<String> ffmpegArgs = new ArrayList<String>();
     	
-    	ffmpegArgs.addAll(parseParameters("-vcodec copy"));
+    	ffmpegArgs.addAll(parseParameters("-vcodec copy -acodec copy"));
     	
     	return ffmpegArgs;
     }
     
+    @Deprecated
     public List<String> getFfmpegX264Params() {
     	
     	List<String> ffmpegArgs = new ArrayList<String>();
+    	
+    	ffmpegArgs.addAll(parseParameters("-vcodec libx264 -r 15 -coder 1 -flags +loop -cmp +chroma -partitions +parti8x8+parti4x4+partp8x8+partp4x4+partb8x8"));
     	
     	/*
     	if(Applet.IS_WINDOWS) {    		

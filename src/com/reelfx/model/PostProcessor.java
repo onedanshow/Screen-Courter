@@ -28,7 +28,7 @@ import com.reelfx.model.util.StreamGobbler;
 public class PostProcessor extends ProcessWrapper implements ActionListener {
 	
 	// FILE LOCATIONS
-	private static String ext = Applet.IS_MAC ? ".mov" : ".mp4";
+	private static String ext = ".mov"; //Applet.IS_MAC ? ".mov" : ".mp4";
 	public static String DEFAULT_OUTPUT_FILE = Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"output-final"+ext;
 	private File outputFile = null;
 	private boolean postFile = false;
@@ -84,10 +84,7 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 		    	// video settings
 		    	ffmpegArgs.addAll(parseParameters("-i "+ScreenRecorder.OUTPUT_FILE));
 		    	// export settings
-		    	if(Applet.IS_MAC)
-		    		ffmpegArgs.addAll(getFfmpegX264Params());
-		    	else if(Applet.IS_WINDOWS)
-		    		ffmpegArgs.addAll(getFfmpegCopyParams()); // video already encoded in X264, so just copy the stream
+		    	ffmpegArgs.addAll(getFfmpegCopyParams());
 		    	ffmpegArgs.add(outputFile.getAbsolutePath());
 		    	System.out.println("Executing this command: "+prettyCommand(ffmpegArgs));
 		        ProcessBuilder pb = new ProcessBuilder(ffmpegArgs);
@@ -144,7 +141,7 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 	        }
 	        
 	        // TODO monitor the progress of the event
-	        // TODO allow canceling of the transcoding
+	        // TODO allow canceling of the transcoding?
 	        // TODO increment output file name if another already exists
 	        
 	  } catch (IOException ioe) {
