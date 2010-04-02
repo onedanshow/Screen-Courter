@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.JarURLConnection;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Enumeration;
@@ -19,12 +18,11 @@ import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import javax.swing.JApplet;
+import javax.swing.SwingUtilities;
+
 import netscape.javascript.JSException;
 import netscape.javascript.JSObject;
-
-import javax.swing.JApplet;
-import javax.swing.JFileChooser;
-import javax.swing.SwingUtilities;
 
 import com.reelfx.controller.ApplicationController;
 import com.reelfx.controller.LinuxController;
@@ -73,7 +71,11 @@ public class Applet extends JApplet {
 			RFX_FOLDER = new File(getRfxFolderPath()); // should be first
 			BIN_FOLDER = new File(getBinFolderPath());
 			DESKTOP_FOLDER = new File(getDesktopFolderPath());
-			JS_BRIDGE = JSObject.getWindow(this);
+			try {
+				JS_BRIDGE = JSObject.getWindow(this);
+			} catch(JSException e) {
+				System.err.println("Could not create JSObject.  Probably in development mode.");
+			}
 			DOCUMENT_BASE = getDocumentBase();
 			CODE_BASE = getCodeBase();
 			POST_URL = getParameter("post_url");
@@ -166,23 +168,39 @@ public class Applet extends JApplet {
 	}
 	
 	public static void sendShowStatus(String message) {
-		JSObject doc = (JSObject) JS_BRIDGE.getMember("document");
-		doc.eval("showStatus(\""+message+"\");");
+		if(JS_BRIDGE == null) {
+			System.err.println("Call to sendShowStatus but no JS Bridge exists.");
+		} else {
+			JSObject doc = (JSObject) JS_BRIDGE.getMember("document");
+			doc.eval("showStatus(\""+message+"\");");
+		}
 	}
 	
 	public static void sendHideStatus() {
-		JSObject doc = (JSObject) JS_BRIDGE.getMember("document");
-		doc.eval("hideStatus();");
+		if(JS_BRIDGE == null) {
+			System.err.println("Call to sendShowStatus but no JS Bridge exists.");
+		} else {
+			JSObject doc = (JSObject) JS_BRIDGE.getMember("document");
+			doc.eval("hideStatus();");
+		}
 	}
 	
 	public static void sendInfo(String message) {
-		JSObject doc = (JSObject) JS_BRIDGE.getMember("document");
-		doc.eval("info(\""+message+"\");");
+		if(JS_BRIDGE == null) {
+			System.err.println("Call to sendShowStatus but no JS Bridge exists.");
+		} else {
+			JSObject doc = (JSObject) JS_BRIDGE.getMember("document");
+			doc.eval("info(\""+message+"\");");
+		}
 	}
 	
 	public static void sendError(String message) {
-		JSObject doc = (JSObject) JS_BRIDGE.getMember("document");
-		doc.eval("error(\""+message+"\");");
+		if(JS_BRIDGE == null) {
+			System.err.println("Call to sendShowStatus but no JS Bridge exists.");
+		} else {
+			JSObject doc = (JSObject) JS_BRIDGE.getMember("document");
+			doc.eval("error(\""+message+"\");");
+		}
 	}
 	// ---------- Headless API ----------
 	
