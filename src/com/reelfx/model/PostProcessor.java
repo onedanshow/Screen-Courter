@@ -41,7 +41,7 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 	public final static int POST_PROGRESS = 4;
 	public final static int POST_COMPLETE = 5;
 	
-	protected Process postProcess;
+	protected Process ffmpegProcess;
 	protected StreamGobbler errorGobbler, inputGobbler;
 	
 	public synchronized void saveToComputer(File file) {
@@ -68,6 +68,7 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 			
 			String ffmpeg = "ffmpeg" + (Applet.IS_WINDOWS ? ".exe" : "");
 			
+			// TODO check if merged output file exists?
 			if(Applet.IS_WINDOWS) {
 				fireProcessUpdate(ENCODING_STARTED);
 				Map<String,Object> metadata = parseMediaFile(ScreenRecorder.OUTPUT_FILE.getAbsolutePath());
@@ -89,17 +90,17 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 		    	ffmpegArgs.add(outputFile.getAbsolutePath());
 		    	System.out.println("Executing this command: "+prettyCommand(ffmpegArgs));
 		        ProcessBuilder pb = new ProcessBuilder(ffmpegArgs);
-		        postProcess = pb.start();
+		        ffmpegProcess = pb.start();
 		
-		        errorGobbler = new StreamGobbler(postProcess.getErrorStream(), false, "ffmpeg E");
-		        inputGobbler = new StreamGobbler(postProcess.getInputStream(), false, "ffmpeg O");
+		        errorGobbler = new StreamGobbler(ffmpegProcess.getErrorStream(), false, "ffmpeg E");
+		        inputGobbler = new StreamGobbler(ffmpegProcess.getInputStream(), false, "ffmpeg O");
 		        
 		        System.out.println("Starting listener threads...");
 		        errorGobbler.addActionListener("frame", this);
 		        errorGobbler.start();
 		        inputGobbler.start();  
 		        
-		        postProcess.waitFor();
+		        ffmpegProcess.waitFor();
 		        fireProcessUpdate(ENCODING_COMPLETE);
 			}
 			else if(Applet.IS_LINUX || Applet.IS_MAC) {
@@ -156,7 +157,7 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 	
 	protected void finalize() throws Throwable {
 		super.finalize();
-		postProcess.destroy();
+		ffmpegProcess.destroy();
 	}
 	
 	/**

@@ -22,9 +22,6 @@ public abstract class ApplicationController implements ProcessListener {
 	public ApplicationController() {
 		super();
 		
-		postProcess = new PostProcessor();
-    	postProcess.addProcessListener(this);
-		
 		gui = new Interface(this);
 		
 		if(Applet.HEADLESS) {
@@ -85,12 +82,20 @@ public abstract class ApplicationController implements ProcessListener {
 	public void saveRecording(File file) {
 		if(previewPlayer != null)
 			previewPlayer.stopPlayer();
+		if(postProcess != null)
+			postProcess.removeAllProcessListeners();
+		postProcess = new PostProcessor();
+    	postProcess.addProcessListener(this);
 		postProcess.saveToComputer(file);
 	}
 	
 	public void postRecording() {
 		if(previewPlayer != null)
 			previewPlayer.stopPlayer();
+		if(postProcess != null)
+			postProcess.removeAllProcessListeners();
+		postProcess = new PostProcessor();
+    	postProcess.addProcessListener(this);
 		postProcess.postToInsight();
 	}
 	
@@ -105,6 +110,9 @@ public abstract class ApplicationController implements ProcessListener {
 		gui.closeInterface();
         gui.setVisible(false);
         gui = null;
+        if(postProcess != null) {
+        	postProcess.removeAllProcessListeners();
+        }
         if(screen != null)
         	screen.closeDown();
         screen = null;

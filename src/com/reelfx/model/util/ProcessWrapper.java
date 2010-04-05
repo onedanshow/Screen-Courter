@@ -43,6 +43,10 @@ public abstract class ProcessWrapper extends Thread {
         listeners.remove(listener);
     }
     
+    public void removeAllProcessListeners() {
+    	listeners.clear();
+    }
+    
     protected void fireProcessUpdate(int event) {
     	fireProcessUpdate(event, null);
     }

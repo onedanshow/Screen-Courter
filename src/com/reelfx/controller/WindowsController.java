@@ -126,6 +126,10 @@ public class WindowsController extends ApplicationController {
 				if(recordingDone) {
 					// merge the video and audio file together (ffmpeg does this pretty quickly)
 					deleteOutput();
+					if(postProcess != null)
+						postProcess.removeAllProcessListeners();
+					postProcess = new PostProcessor();
+			    	postProcess.addProcessListener(this);
 					postProcess.saveToComputer(MERGED_OUTPUT_FILE);
 				} else {
 					recordingDone = true;
