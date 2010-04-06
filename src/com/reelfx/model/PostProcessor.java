@@ -4,6 +4,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -104,7 +106,7 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 		        fireProcessUpdate(ENCODING_COMPLETE);
 			}
 			else if(Applet.IS_LINUX || Applet.IS_MAC) {
-				FileUtils.moveFile(ScreenRecorder.OUTPUT_FILE, outputFile);
+				FileUtils.copyFile(ScreenRecorder.OUTPUT_FILE, outputFile);
 				fireProcessUpdate(ENCODING_COMPLETE);
 			}
 	        
@@ -168,5 +170,21 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 			System.out.println("Found frame!"); // TODO exact the frame
 			fireProcessUpdate(ENCODING_PROGRESS, null);
 		}
+	}
+	
+	public static void deleteOutput() {
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
+
+			@Override
+			public Object run() {
+				try {
+					if(DEFAULT_OUTPUT_FILE.exists() && !DEFAULT_OUTPUT_FILE.delete())
+						throw new Exception("Can't delete the old audio file!");
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				return null;
+			}
+		});
 	}
 }

@@ -11,16 +11,12 @@ import netscape.javascript.JSException;
 
 import com.reelfx.Applet;
 import com.reelfx.model.ScreenRecorder;
+import com.reelfx.view.Interface;
 
 public class MacController extends ApplicationController {
 
 	public MacController() {
 		super();
-    	
-    	if(!Applet.BIN_FOLDER.exists()){
-			gui.status.setText("Performing one-time install...");
-			gui.disable();
-        }
 	}
 	
 	@Override
@@ -39,15 +35,15 @@ public class MacController extends ApplicationController {
 				if(!Applet.BIN_FOLDER.exists()) throw new IOException("Did not copy Mac extensions to the execution directory!");
 			}
 			System.out.println("Have access to execution folder: "+Applet.BIN_FOLDER.getAbsolutePath());
-			gui.enable();
+			gui.changeState(Interface.READY);
         } catch (MalformedURLException e1) {
-			gui.status.setText("Error downloading native extensions");
+        	gui.changeState(Interface.FATAL,"Error with install");
 			e1.printStackTrace();
 		} catch (InterruptedException e) {
-			gui.status.setText("Error setting up native extentions");
+			gui.changeState(Interface.FATAL,"Error with install");
 			e.printStackTrace();
 		} catch (IOException e) {
-			gui.status.setText("Error downloading native extentions");
+			gui.changeState(Interface.FATAL,"Error with install");
 			e.printStackTrace();
 		}
 	}

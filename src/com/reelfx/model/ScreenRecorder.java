@@ -236,6 +236,7 @@ public class ScreenRecorder extends ProcessWrapper {
 	    	PrintWriter pw = new PrintWriter(recordingProcess.getOutputStream());
 	    	pw.println("quit");
 	    	pw.flush();
+	    	recordingProcess.destroy();
 		}
 		// nothing for linux or windows
 	}
@@ -243,7 +244,8 @@ public class ScreenRecorder extends ProcessWrapper {
     protected void finalize() throws Throwable {
     	super.finalize();
     	closeDown();
-    	recordingProcess.destroy();
+    	if(recordingProcess != null)
+    		recordingProcess.destroy();
     }
     
     public static void deleteOutput() {

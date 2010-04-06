@@ -35,12 +35,13 @@ import com.sun.JarClassLoader;
  * 
  * @author daniel
  *
- * SPECIAL NOTE ON JSObject (Used for communicating with Javascript)
+ * SPECIAL NOTE ON JSObject on Mac (Used for communicating with Javascript)
  * In Eclipse, initially couldn't find the class.  This guy said to add a reference to 'plugin.jar' 
  * (http://stackoverflow.com/questions/1664604/jsobject-download-it-or-available-in-jre-1-6) however
  * the only plugin.jar's I found for Java via the 'locate' command were either bad symlinks or inside
  * .bundle so I had to create a good symlink called plugin-daniel.jar in /System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Home/lib
  * that pointed to /System/Library/Frameworks/JavaVM.framework/Versions/A/Resources/Deploy.bundle/Contents/Resources/Java/plugin.jar
+ * I had not issue adding it on Windows.
  * 
  * further information: http://java.sun.com/j2se/1.5.0/docs/guide/plugin/developer_guide/java_js.html
  */
@@ -144,7 +145,7 @@ public class Applet extends JApplet {
         }
     }
 	
-	// ---------- Headless API ----------
+	// ---------- API ----------
 	public void prepareForRecording() {
 		controller.prepareForRecording();
 	}
@@ -167,9 +168,17 @@ public class Applet extends JApplet {
 		controller.askForAndSaveRecording();
 	}
 	
+	public void showInterface() {
+		controller.showInterface();
+	}
+	
+	public void hideInterface() {
+		controller.hideInterface();
+	}
+	
 	public static void sendShowStatus(String message) {
 		if(JS_BRIDGE == null) {
-			System.err.println("Call to sendShowStatus but no JS Bridge exists.");
+			System.err.println("Call to sendShowStatus but no JS Bridge exists. Probably in development mode...");
 		} else {
 			JSObject doc = (JSObject) JS_BRIDGE.getMember("document");
 			doc.eval("showStatus(\""+message+"\");");
@@ -178,7 +187,7 @@ public class Applet extends JApplet {
 	
 	public static void sendHideStatus() {
 		if(JS_BRIDGE == null) {
-			System.err.println("Call to sendShowStatus but no JS Bridge exists.");
+			System.err.println("Call to sendShowStatus but no JS Bridge exists. Probably in development mode...");
 		} else {
 			JSObject doc = (JSObject) JS_BRIDGE.getMember("document");
 			doc.eval("hideStatus();");
@@ -187,7 +196,7 @@ public class Applet extends JApplet {
 	
 	public static void sendInfo(String message) {
 		if(JS_BRIDGE == null) {
-			System.err.println("Call to sendShowStatus but no JS Bridge exists.");
+			System.err.println("Call to sendShowStatus but no JS Bridge exists. Probably in development mode...");
 		} else {
 			JSObject doc = (JSObject) JS_BRIDGE.getMember("document");
 			doc.eval("info(\""+message+"\");");
@@ -196,13 +205,13 @@ public class Applet extends JApplet {
 	
 	public static void sendError(String message) {
 		if(JS_BRIDGE == null) {
-			System.err.println("Call to sendShowStatus but no JS Bridge exists.");
+			System.err.println("Call to sendShowStatus but no JS Bridge exists. Probably in development mode...");
 		} else {
 			JSObject doc = (JSObject) JS_BRIDGE.getMember("document");
 			doc.eval("error(\""+message+"\");");
 		}
 	}
-	// ---------- Headless API ----------
+	// ---------- API ----------
 	
 	/** 
 	 * Copies an entire folder out of a jar to a physical location. 
