@@ -8,6 +8,7 @@
   <p>There is applet right here:</p>
 <applet id="applet" archive="applet.jar?v=@@@UNIQUE@@@" code="com.reelfx.Applet" width="0" height="0" name="applet" mayscript="mayscript">
 	<param name="headless" value="true">
+	<param name="screen_capture_name" value="Shot 1000-0100">
 	<param name="mayscript" value="true">
 </applet>
 <!--  Firebug posts an error of "too much recursion" if this guy is in the <head>...odd... -->
@@ -24,6 +25,9 @@
 	function error(s) {
 		alert(s);
 		console.error(s);
+	}
+	function showTools() {
+		document.getElementById('applet').showInterface();
 	}
 </script>
 </body>
