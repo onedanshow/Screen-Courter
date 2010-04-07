@@ -15,6 +15,7 @@ import javax.sound.sampled.Mixer;
 import com.reelfx.Applet;
 import com.reelfx.model.AudioRecorder;
 import com.reelfx.model.PostProcessor;
+import com.reelfx.model.PreferenceManager;
 import com.reelfx.model.ScreenRecorder;
 import com.reelfx.model.util.ProcessListener;
 import com.reelfx.model.util.StreamGobbler;
@@ -22,7 +23,7 @@ import com.reelfx.view.Interface;
 
 public class WindowsController extends ApplicationController {
 
-	public static File MERGED_OUTPUT_FILE = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"output-final.mov");
+	public static File MERGED_OUTPUT_FILE = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"screen_capture_temp.avi");
 	
 	private AudioRecorder audio;
 	private boolean stopped = false;
@@ -135,6 +136,11 @@ public class WindowsController extends ApplicationController {
 		}
 	}
 
+	public void deleteRecording() {
+		deleteOutput();
+		super.deleteRecording();
+	}
+	
 	public static void deleteOutput() {
     	AccessController.doPrivileged(new PrivilegedAction<Object>() {
 

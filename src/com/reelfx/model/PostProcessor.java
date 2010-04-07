@@ -85,12 +85,13 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 		    	ffmpegArgs.add(Applet.BIN_FOLDER.getAbsoluteFile()+File.separator+ffmpeg);
 		    	// audio settings
 		    	if(AudioRecorder.OUTPUT_FILE.exists()) // if opted for microphone
-		    		ffmpegArgs.addAll(parseParameters("-itsoffset 00:00:00.2 -i "+AudioRecorder.OUTPUT_FILE.getAbsolutePath()));
+		    		ffmpegArgs.addAll(parseParameters("-itsoffset 00:00:00.1 -i "+AudioRecorder.OUTPUT_FILE.getAbsolutePath()));
 		    		// delay the audio a tad because it's generally ahead ( http://howto-pages.org/ffmpeg/#delay )
 		    	// video settings
 		    	ffmpegArgs.addAll(parseParameters("-i "+ScreenRecorder.OUTPUT_FILE));
 		    	// export settings
 		    	ffmpegArgs.addAll(getFfmpegCopyParams());
+		    	//ffmpegArgs.addAll(getFfmpegX264FastFirstPastBaselineParams());
 		    	ffmpegArgs.add(outputFile.getAbsolutePath());
 		    	System.out.println("Executing this command: "+prettyCommand(ffmpegArgs));
 		        ProcessBuilder pb = new ProcessBuilder(ffmpegArgs);

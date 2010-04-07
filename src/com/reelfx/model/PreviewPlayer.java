@@ -38,7 +38,7 @@ public class PreviewPlayer extends ProcessWrapper {
 		    		if(Applet.IS_MAC && Desktop.isDesktopSupported()) {
 		    			Desktop.getDesktop().open(ScreenRecorder.OUTPUT_FILE);
 		    		}	
-		    		else if (Applet.IS_WINDOWS && Desktop.isDesktopSupported()) {
+		    		else if (false) { //Applet.IS_WINDOWS && Desktop.isDesktopSupported()) {
 		        		Desktop.getDesktop().open(WindowsController.MERGED_OUTPUT_FILE);
 		    			/*List<String> ffplayArgs = new ArrayList<String>();
 		    			ffplayArgs.add(WindowsController.MERGED_OUTPUT_FILE.getAbsolutePath());
@@ -52,8 +52,11 @@ public class PreviewPlayer extends ProcessWrapper {
 				        if(Applet.IS_WINDOWS) {
 				        	ffplayArgs.addAll(parseParameters("-x 800 -y 600"));
 				        }
-				        ffplayArgs.add(ScreenRecorder.OUTPUT_FILE.getAbsolutePath());
-				
+				        if(Applet.IS_WINDOWS)
+				        	ffplayArgs.add(WindowsController.MERGED_OUTPUT_FILE.getAbsolutePath());
+				        else
+				        	ffplayArgs.add(ScreenRecorder.OUTPUT_FILE.getAbsolutePath());
+				        	
 				        ProcessBuilder pb = new ProcessBuilder(ffplayArgs);
 				        ffplayProcess = pb.start();
 				
@@ -64,9 +67,9 @@ public class PreviewPlayer extends ProcessWrapper {
 				        errorGobbler.start();
 				        inputGobbler.start();
 				
-				        playAudio();
+				        //playAudio();
 				        ffplayProcess.waitFor();
-				        stopAudio();
+				        //stopAudio();
 				        ffplayProcess = null;
 		        	}
 		      } catch (IOException ioe) {
