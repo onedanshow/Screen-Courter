@@ -8,7 +8,10 @@ import java.security.AccessControlContext;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.sound.sampled.Mixer;
 
@@ -28,6 +31,8 @@ public class WindowsController extends ApplicationController {
 	private AudioRecorder audio;
 	private boolean stopped = false;
 	private boolean recordingDone = false;
+	
+	private long audioStart, videoStart;
 	
 	public WindowsController() {
 		super();
@@ -116,7 +121,11 @@ public class WindowsController extends ApplicationController {
 		switch(event) {
 
 			case AudioRecorder.RECORDING_STARTED:
+				audioStart = Calendar.getInstance().getTimeInMillis();
 				startVideoRecording();
+				break;
+			case ScreenRecorder.RECORDING_STARTED:
+				videoStart = Calendar.getInstance().getTimeInMillis();
 				break;
 				
 			case ScreenRecorder.RECORDING_COMPLETE:
@@ -127,7 +136,13 @@ public class WindowsController extends ApplicationController {
 					if(postProcess != null)
 						postProcess.removeAllProcessListeners();
 					postProcess = new PostProcessor();
+					Map<Integer,String> opts = new HashMap<Integer, String>();
+					long ms = Math.max(audioStart,videoStart)-Math.min(audioStart,videoStart);
+					float s = ((float)ms)/1000f;
+					System.out.println("Video delay: "+ms+" ms "+s+" s");
+					opts.put(PostProcessor.OFFSET_VIDEO, s+"");
 			    	postProcess.addProcessListener(this);
+			    	postProcess.encodingOptions(opts);
 					postProcess.saveToComputer(MERGED_OUTPUT_FILE);
 				} else {
 					recordingDone = true;

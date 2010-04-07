@@ -36,6 +36,10 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 	private String postUrl = null;
 	private boolean performPost = false;
 	
+	// ENCODING SETTINGS
+	public final static int OFFSET_VIDEO = 0;
+	private Map<Integer, String> encodingOpts;
+	
 	// STATES
 	public final static int ENCODING_STARTED = 0;
 	public final static int ENCODING_PROGRESS = 1;
@@ -46,6 +50,10 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 	
 	protected Process ffmpegProcess;
 	protected StreamGobbler errorGobbler, inputGobbler;
+	
+	public void encodingOptions(Map<Integer,String> opts) {
+		encodingOpts = opts;
+	}
 	
 	public synchronized void saveToComputer(File file) {
 		if(!file.getName().endsWith(ext) && !file.getName().endsWith(".avi"))
@@ -83,12 +91,14 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 				
 				List<String> ffmpegArgs = new ArrayList<String>();
 		    	ffmpegArgs.add(Applet.BIN_FOLDER.getAbsoluteFile()+File.separator+ffmpeg);
-		    	// audio settings
-		    	if(AudioRecorder.OUTPUT_FILE.exists()) // if opted for microphone
-		    		ffmpegArgs.addAll(parseParameters("-itsoffset 00:00:00.1 -i "+AudioRecorder.OUTPUT_FILE.getAbsolutePath()));
-		    		// delay the audio a tad because it's generally ahead ( http://howto-pages.org/ffmpeg/#delay )
-		    	// video settings
-		    	ffmpegArgs.addAll(parseParameters("-i "+ScreenRecorder.OUTPUT_FILE));
+		    	// audio and video files
+		    	if(AudioRecorder.OUTPUT_FILE.exists()) { // if opted for microphone
+		    		ffmpegArgs.addAll(parseParameters("-i "+AudioRecorder.OUTPUT_FILE.getAbsolutePath()));
+		    		// delay the video a tad because it's generally starts behind ( http://howto-pages.org/ffmpeg/#delay )
+		    		ffmpegArgs.addAll(parseParameters("-itsoffset 00:00:0"+encodingOpts.get(OFFSET_VIDEO)+" -i "+ScreenRecorder.OUTPUT_FILE));
+		    	} else {
+		    		ffmpegArgs.addAll(parseParameters("-i "+ScreenRecorder.OUTPUT_FILE));
+		    	}
 		    	// export settings
 		    	ffmpegArgs.addAll(getFfmpegCopyParams());
 		    	//ffmpegArgs.addAll(getFfmpegX264FastFirstPastBaselineParams());
