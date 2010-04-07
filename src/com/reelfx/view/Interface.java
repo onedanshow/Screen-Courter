@@ -78,7 +78,7 @@ public class Interface extends JFrame implements MouseListener, MouseMotionListe
         //setPreferredSize(dim); // full screen
         //setPreferredSize(new Dimension(500, 50)); // will auto fit to the size needed, but if you want to specify a size
         setLocation(dim.width/3, dim.height/2);
-        setLayout(new BorderLayout());
+        setLayout(new BorderLayout(0, 3));
         setAlwaysOnTop(true);
         addMouseListener(this);
         addMouseMotionListener(this);
@@ -133,6 +133,9 @@ public class Interface extends JFrame implements MouseListener, MouseMotionListe
         postRecordingOptionsPanel.setMaximumSize(new Dimension(180,1000));
         //postRecordingOptionsPanel.setBorder(javax.swing.BorderFactory.createLineBorder(backgroundColor, 8));
         postRecordingOptionsPanel.setLayout(new javax.swing.BoxLayout(postRecordingOptionsPanel, javax.swing.BoxLayout.Y_AXIS));
+        
+        postRecordingOptionsPanel.add(new javax.swing.JSeparator());
+        
         /*
         message = new JTextArea();
         message.setFont(new java.awt.Font("Arial", 0, 13));
