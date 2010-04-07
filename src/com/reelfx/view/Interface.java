@@ -98,11 +98,9 @@ public class Interface extends JFrame implements MouseListener, MouseMotionListe
         recordBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
             	if(recordBtn.getText().equals("Record")) {
-            		recordBtn.setText("Stop");
             		prepareForRecording();
             	}
             	else if(recordBtn.getText().equals("Stop")) {
-            		recordBtn.setText("Record");
             		stopRecording();
             	}
             }
@@ -209,18 +207,22 @@ public class Interface extends JFrame implements MouseListener, MouseMotionListe
     	switch(state) {
     	
     	case READY:
+    		recordBtn.setEnabled(true);
     		recordBtn.setText("Record");
     		audioSelect.setEnabled(true);
     		audioSelect.setVisible(true);
-    		status.setEnabled(true);
-    		status.setVisible(false);
+    		if(statusText != null) {
+    			status.setVisible(true);
+    			status.setText(statusText);
+    		} else {
+    			status.setText("");
+    			status.setVisible(false);
+    		}
     		postRecordingOptionsPanel.setVisible(false);
     		break;
     		
     	case READY_WITH_OPTIONS:
     		changeState(READY);
-    		if(statusText != null)
-    			status.setVisible(true);
     		message.setText("<html><body><table cellpadding='5' width='100%'><tr><td align='center'>"+controller.getOptionsMessage()+"</td></tr></table></body></html>");
     		postRecordingOptionsPanel.setEnabled(true);
     		postRecordingOptionsPanel.setVisible(true);
@@ -268,7 +270,7 @@ public class Interface extends JFrame implements MouseListener, MouseMotionListe
     			status.setText("");
     			status.setVisible(false);
     		}
-    		postRecordingOptionsPanel.setEnabled(false);
+    		postRecordingOptionsPanel.setVisible(false);
     		break;
     	}
     	currentState = state; // needs to be at end

@@ -8,6 +8,8 @@ package com.reelfx.model;
 
 import java.awt.Dimension;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -39,7 +41,7 @@ import org.apache.commons.io.FileUtils;
  *
  * @author daniel
  */
-public class ScreenRecorder extends ProcessWrapper {
+public class ScreenRecorder extends ProcessWrapper implements ActionListener {
 	
 	private static String EXT = Applet.IS_MAC ? ".mov" : Applet.IS_WINDOWS ? ".avi" : ".mp4";
 	
@@ -63,6 +65,7 @@ public class ScreenRecorder extends ProcessWrapper {
     private StreamGobbler errorGobbler, inputGobbler;
     private Mixer audioSource = null;
     private int audioIndex = 0;
+    private ScreenRecorder self = this;
     
     /**
      * If this guy is to handle audio as well, give it the Java Mixer object to read from.
@@ -159,7 +162,7 @@ public class ScreenRecorder extends ProcessWrapper {
     		
     		else if(Applet.IS_WINDOWS) {
     			// can have problem with file permissions when methods are invoked via Javascript even if applet is signed, 
-    			// thus some code needs to wrapped in a privledged block
+    			// thus some code needs to wrapped in a privileged block
     			AccessController.doPrivileged(new PrivilegedAction<Object>() {
 
 					@Override
@@ -173,13 +176,14 @@ public class ScreenRecorder extends ProcessWrapper {
 				        	System.out.println("Executing this command: "+prettyCommand(camArgs));
 				            ProcessBuilder pb = new ProcessBuilder(camArgs);
 							recordingProcess = pb.start();
-				            fireProcessUpdate(RECORDING_STARTED);
+				            //fireProcessUpdate(RECORDING_STARTED);
 				            
 				            errorGobbler = new StreamGobbler(recordingProcess.getErrorStream(), false, "cam E");
 				            inputGobbler = new StreamGobbler(recordingProcess.getInputStream(), false, "cam O");
 				            
 				            System.out.println("Starting listener threads...");
 				            errorGobbler.start();
+				            inputGobbler.addActionListener("any key", self); // listen for "press any key to stop..."
 				            inputGobbler.start();
 				            			         
 							recordingProcess.waitFor();
@@ -264,5 +268,10 @@ public class ScreenRecorder extends ProcessWrapper {
 				return null;
 			}
 		});
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent arg0) {
+		fireProcessUpdate(RECORDING_STARTED);
 	}
 }

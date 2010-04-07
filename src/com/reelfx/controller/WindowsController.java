@@ -8,13 +8,17 @@ import java.security.AccessControlContext;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.sound.sampled.Mixer;
 
 import com.reelfx.Applet;
 import com.reelfx.model.AudioRecorder;
 import com.reelfx.model.PostProcessor;
+import com.reelfx.model.PreferenceManager;
 import com.reelfx.model.ScreenRecorder;
 import com.reelfx.model.util.ProcessListener;
 import com.reelfx.model.util.StreamGobbler;
@@ -22,11 +26,13 @@ import com.reelfx.view.Interface;
 
 public class WindowsController extends ApplicationController {
 
-	public static File MERGED_OUTPUT_FILE = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"output-final.mov");
+	public static File MERGED_OUTPUT_FILE = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"screen_capture_temp.avi");
 	
 	private AudioRecorder audio;
 	private boolean stopped = false;
 	private boolean recordingDone = false;
+	
+	private long audioStart, videoStart;
 	
 	public WindowsController() {
 		super();
@@ -115,7 +121,11 @@ public class WindowsController extends ApplicationController {
 		switch(event) {
 
 			case AudioRecorder.RECORDING_STARTED:
+				audioStart = Calendar.getInstance().getTimeInMillis();
 				startVideoRecording();
+				break;
+			case ScreenRecorder.RECORDING_STARTED:
+				videoStart = Calendar.getInstance().getTimeInMillis();
 				break;
 				
 			case ScreenRecorder.RECORDING_COMPLETE:
@@ -126,7 +136,13 @@ public class WindowsController extends ApplicationController {
 					if(postProcess != null)
 						postProcess.removeAllProcessListeners();
 					postProcess = new PostProcessor();
+					Map<Integer,String> opts = new HashMap<Integer, String>();
+					long ms = Math.max(audioStart,videoStart)-Math.min(audioStart,videoStart);
+					float s = ((float)ms)/1000f;
+					System.out.println("Video delay: "+ms+" ms "+s+" s");
+					opts.put(PostProcessor.OFFSET_VIDEO, s+"");
 			    	postProcess.addProcessListener(this);
+			    	postProcess.encodingOptions(opts);
 					postProcess.saveToComputer(MERGED_OUTPUT_FILE);
 				} else {
 					recordingDone = true;
@@ -135,6 +151,11 @@ public class WindowsController extends ApplicationController {
 		}
 	}
 
+	public void deleteRecording() {
+		deleteOutput();
+		super.deleteRecording();
+	}
+	
 	public static void deleteOutput() {
     	AccessController.doPrivileged(new PrivilegedAction<Object>() {
 
