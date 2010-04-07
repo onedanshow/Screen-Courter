@@ -30,14 +30,9 @@ public abstract class ApplicationController implements ProcessListener {
 		} else {
 			gui.setVisible(true);
 			if (!Applet.BIN_FOLDER.exists()) {
-				gui.changeState(Interface.THINKING,
-						"Performing one-time install...");
+				gui.changeState(Interface.THINKING,"Performing one-time install...");
 			} else {
-				if (ScreenRecorder.OUTPUT_FILE.exists()) {
-					gui.changeState(Interface.READY_WITH_OPTIONS);
-				} else {
-					gui.changeState(Interface.READY);
-				}
+				setReadyStateBasedOnPriorRecording();
 			}
 		}
 	}
@@ -112,10 +107,21 @@ public abstract class ApplicationController implements ProcessListener {
 	}
 
 	/**
-	 * Installs VLC, ffmpeg and ffplay if needed.
+	 * Installs ffmpeg, ffplay, and other extensions if needed.
 	 */
 	public void setupExtensions() {
 		// gui.setStatus("Hello");
+	}
+	
+	/**
+	 * Check if we need to deal with a prior screen recording or not
+	 */
+	protected void setReadyStateBasedOnPriorRecording() {
+		if (ScreenRecorder.OUTPUT_FILE.exists()) {
+			gui.changeState(Interface.READY_WITH_OPTIONS);
+		} else {
+			gui.changeState(Interface.READY);
+		}
 	}
 
 	public void showInterface() {
@@ -127,6 +133,9 @@ public abstract class ApplicationController implements ProcessListener {
 		gui.setVisible(false);
 	}
 
+	/**
+	 * Called by the Applet
+	 */
 	public void closeDown() {
 		gui.setVisible(false);
 		gui = null;

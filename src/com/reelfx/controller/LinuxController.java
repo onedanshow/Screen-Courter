@@ -28,7 +28,7 @@ public class LinuxController extends ApplicationController {
 				if(!Applet.BIN_FOLDER.exists()) throw new IOException("Did not copy Linux extensions to the execution directory!");
 			}
 			System.out.println("Have access to execution folder: "+Applet.BIN_FOLDER.getAbsolutePath());
-			gui.changeState(Interface.READY);
+			setReadyStateBasedOnPriorRecording();
         } catch (MalformedURLException e1) {
         	gui.changeState(Interface.FATAL,"Error with install");
 			e1.printStackTrace();

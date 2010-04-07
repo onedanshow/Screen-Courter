@@ -35,7 +35,7 @@ public class MacController extends ApplicationController {
 				if(!Applet.BIN_FOLDER.exists()) throw new IOException("Did not copy Mac extensions to the execution directory!");
 			}
 			System.out.println("Have access to execution folder: "+Applet.BIN_FOLDER.getAbsolutePath());
-			gui.changeState(Interface.READY);
+			setReadyStateBasedOnPriorRecording();
         } catch (MalformedURLException e1) {
         	gui.changeState(Interface.FATAL,"Error with install");
 			e1.printStackTrace();
@@ -61,6 +61,9 @@ public class MacController extends ApplicationController {
 		}
 		
 		if(allowRecording) {
+			if(screen != null) {
+				screen.closeDown();
+			}
 			// start up CamStudio
 			screen = new ScreenRecorder();
 			screen.addProcessListener(this);

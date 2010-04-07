@@ -44,7 +44,7 @@ public class ScreenRecorder extends ProcessWrapper {
 	private static String EXT = Applet.IS_MAC ? ".mov" : Applet.IS_WINDOWS ? ".avi" : ".mp4";
 	
 	// FILE LOCATIONS
-	public static File OUTPUT_FILE = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"output-java"+EXT);
+	public static File OUTPUT_FILE = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"screen_capture"+EXT);
 	//public static File VLC_JAR = new File(System.getProperty("java.class.path")+File.separator+"bin-mac.jar");
 	//public static File VLC_JAR = new File("/Users/daniel/Documents/Java/java-review-tool/lib"+File.separator+"bin-mac.jar");
 	protected static File MAC_EXEC = new File(Applet.BIN_FOLDER.getAbsoluteFile()+File.separator+"mac-screen-recorder");
@@ -232,16 +232,18 @@ public class ScreenRecorder extends ProcessWrapper {
 	}
 	
 	public void closeDown() {
+		System.out.println("Closing down ScreenRecorder...");
 		if(Applet.IS_MAC && recordingProcess != null) {
 	    	PrintWriter pw = new PrintWriter(recordingProcess.getOutputStream());
 	    	pw.println("quit");
 	    	pw.flush();
-	    	recordingProcess.destroy();
 		}
 		// nothing for linux or windows
 	}
 	
+	@Override
     protected void finalize() throws Throwable {
+		System.out.println("Finalizing ScreenRecorder...");
     	super.finalize();
     	closeDown();
     	if(recordingProcess != null)

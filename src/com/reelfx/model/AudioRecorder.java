@@ -54,7 +54,7 @@ import com.reelfx.model.util.ProcessWrapper;
 public class AudioRecorder extends ProcessWrapper implements LineListener
 {
 	
-    public static File OUTPUT_FILE = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"output-java.wav");
+    public static File OUTPUT_FILE = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"screen_capture.wav");
 	
     // AUDIO SETTINGS
     public static float FREQ = 11025; // 22050; //44100;  lowered because it was skipping and dropping audio

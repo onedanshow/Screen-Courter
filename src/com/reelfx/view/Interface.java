@@ -29,6 +29,7 @@ import javax.swing.JWindow;
 import javax.swing.SwingConstants;
 import javax.swing.Timer;
 
+import com.reelfx.Applet;
 import com.reelfx.controller.ApplicationController;
 import com.reelfx.model.ScreenRecorder;
 
@@ -38,6 +39,7 @@ public class Interface extends JFrame implements MouseListener, MouseMotionListe
     
     public final static int READY = 0;
     public final static int READY_WITH_OPTIONS = 1;
+    public final static int PRE_RECORDING = 5;
     public final static int RECORDING = 2;
     public final static int THINKING = 3;
     public final static int FATAL = 4;
@@ -68,11 +70,11 @@ public class Interface extends JFrame implements MouseListener, MouseMotionListe
         
         // TODO handle multiple monitor and limit this UI to one of them
         
-        setTitle("Review for Shot 3000-0100");
+        setTitle("Review for "+Applet.SCREEN_CAPTURE_NAME);
         setResizable(false);
         setDefaultCloseOperation(HIDE_ON_CLOSE);
         
-        setBackground(backgroundColor); // same as Flex review tool
+        //setBackground(backgroundColor); // same as Flex review tool
         //setPreferredSize(dim); // full screen
         //setPreferredSize(new Dimension(500, 50)); // will auto fit to the size needed, but if you want to specify a size
         setLocation(dim.width/3, dim.height/2);
@@ -81,7 +83,6 @@ public class Interface extends JFrame implements MouseListener, MouseMotionListe
         addMouseListener(this);
         addMouseMotionListener(this);
         addWindowListener(this);
-        //addWindowStateListener(this);
 
         /*if (AWTUtilities.isTranslucencySupported(AWTUtilities.Translucency.PERPIXEL_TRANSPARENT)) {
             System.out.println("Transparency supported!");
@@ -97,12 +98,12 @@ public class Interface extends JFrame implements MouseListener, MouseMotionListe
         recordBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
             	if(recordBtn.getText().equals("Record")) {
-            		prepareForRecording();
             		recordBtn.setText("Stop");
+            		prepareForRecording();
             	}
             	else if(recordBtn.getText().equals("Stop")) {
-            		stopRecording();
             		recordBtn.setText("Record");
+            		stopRecording();
             	}
             }
         });
@@ -119,7 +120,7 @@ public class Interface extends JFrame implements MouseListener, MouseMotionListe
         //status.setBackground(statusColor);
         status.setPreferredSize(new Dimension(50, 40));
         status.setFont(new java.awt.Font("Arial", 1, 13));
-        status.setForeground(Color.WHITE);
+        //status.setForeground(Color.WHITE);
         status.setOpaque(true);
         status.setHorizontalAlignment(SwingConstants.CENTER);
         
@@ -128,9 +129,9 @@ public class Interface extends JFrame implements MouseListener, MouseMotionListe
         // ------- setup post recording options -------
         
         postRecordingOptionsPanel = new JPanel();
-        postRecordingOptionsPanel.setBackground(messageColor);
+        //postRecordingOptionsPanel.setBackground(messageColor);
         postRecordingOptionsPanel.setMaximumSize(new Dimension(180,1000));
-        postRecordingOptionsPanel.setBorder(javax.swing.BorderFactory.createLineBorder(backgroundColor, 8));
+        //postRecordingOptionsPanel.setBorder(javax.swing.BorderFactory.createLineBorder(backgroundColor, 8));
         postRecordingOptionsPanel.setLayout(new javax.swing.BoxLayout(postRecordingOptionsPanel, javax.swing.BoxLayout.Y_AXIS));
         /*
         message = new JTextArea();
@@ -222,9 +223,24 @@ public class Interface extends JFrame implements MouseListener, MouseMotionListe
     		postRecordingOptionsPanel.setVisible(true);
     		break;
     		
-    	case RECORDING:
+    	case PRE_RECORDING:
     		if(currentState == READY_WITH_OPTIONS && !deleteRecording())
     			break;
+    		recordBtn.setEnabled(false);
+    		audioSelect.setVisible(false);
+    		status.setEnabled(true);
+    		status.setVisible(true);
+    		if(statusText != null) {
+    			status.setVisible(true);
+    			status.setText(statusText);
+    		} else {
+    			status.setText("");
+    			status.setVisible(false);
+    		}
+    		postRecordingOptionsPanel.setVisible(false);
+    		break;
+    		
+    	case RECORDING:
     		recordBtn.setEnabled(true);
     		recordBtn.setText("Stop");
     		audioSelect.setVisible(false);
@@ -257,7 +273,7 @@ public class Interface extends JFrame implements MouseListener, MouseMotionListe
     }
     
     public void prepareForRecording() {    	
-    	changeState(Interface.THINKING,"Ready");
+    	changeState(PRE_RECORDING,"Ready");
         controller.prepareForRecording();
     	
         if(timer == null) {
@@ -271,7 +287,7 @@ public class Interface extends JFrame implements MouseListener, MouseMotionListe
     @Override
 	public void actionPerformed(ActionEvent e) { // for the timer
 		if(status.getText().equals("Ready")) {
-			changeState(THINKING,"Set");
+			changeState(PRE_RECORDING,"Set");
 		} else if(status.getText().equals("Set")) {
 			changeState(RECORDING,"Go!");
 			startRecording();
@@ -315,7 +331,7 @@ public class Interface extends JFrame implements MouseListener, MouseMotionListe
      */
     public boolean deleteRecording() {
     	int n = JOptionPane.showConfirmDialog(this,
-    		    "This will delete the last review you recorded.",
+    		    "Are you sure you want to delete the last review you recorded?",
     		    "Are you sure?",
     		    JOptionPane.YES_NO_OPTION);
     	if (n == JOptionPane.YES_OPTION) {
@@ -356,17 +372,17 @@ public class Interface extends JFrame implements MouseListener, MouseMotionListe
 
 	@Override
 	public void windowActivated(WindowEvent e) { // gains focus or returned from minimize
-		System.out.println("Window activated.");
+		//System.out.println("Window activated.");
 	}
 
 	@Override
 	public void windowClosing(WindowEvent e) {
-		System.out.println("Window closing");
+		//System.out.println("Window closing");
 	}
 
 	@Override
 	public void windowDeactivated(WindowEvent e) { // lose focus or minimized
-		System.out.println("Window deactivated");
+		//System.out.println("Window deactivated");
 	}
 
 	@Override
@@ -380,40 +396,4 @@ public class Interface extends JFrame implements MouseListener, MouseMotionListe
 	
 	@Override
 	public void windowClosed(WindowEvent e) {} // not called with close operation set to HIDE_FRAME
-
-	/*
-	@Override
-	public void windowStateChanged(WindowEvent e) {
-		System.out.println(e.toString());
-		
-		switch(e.getNewState()) {
-		
-		case WindowEvent.WINDOW_ACTIVATED:
-			System.out.println("Window activated!");
-			break;
-		case WindowEvent.WINDOW_DEACTIVATED:
-			System.out.println("Window deactivated!");
-			break;
-		case WindowEvent.WINDOW_CLOSING:
-			System.out.println("Window closing!");
-			break;
-		case WindowEvent.WINDOW_CLOSED: // not trigger when close operation is HIDE_FRAME
-			System.out.println("Window closed!");
-			break;
-		// never called
-		case WindowEvent.WINDOW_ICONIFIED:
-			System.out.println("Window iconified!");
-			break;
-		case WindowEvent.WINDOW_DEICONIFIED:
-			System.out.println("Window deiconified!");
-			break;
-		case WindowEvent.WINDOW_GAINED_FOCUS:
-			System.out.println("Window gained focus!");
-			break;
-		case WindowEvent.WINDOW_LOST_FOCUS:
-			System.out.println("Window lost focus!");
-			break;
-		}
-	}
-	*/
 }

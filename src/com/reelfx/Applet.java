@@ -55,7 +55,7 @@ public class Applet extends JApplet {
 	public static File RFX_FOLDER, BIN_FOLDER, DESKTOP_FOLDER;
 	public static URL DOCUMENT_BASE, CODE_BASE;
 	public static JSObject JS_BRIDGE;
-	public static String POST_URL = null, API_KEY = null, HOST_URL = null;
+	public static String POST_URL = null, SCREEN_CAPTURE_NAME = null, API_KEY = null, HOST_URL = null;
 	public static boolean HEADLESS = false;
 	public static boolean IS_MAC = System.getProperty("os.name").toLowerCase().contains("mac");
 	public static boolean IS_LINUX = System.getProperty("os.name").toLowerCase().contains("linux");
@@ -81,6 +81,7 @@ public class Applet extends JApplet {
 			CODE_BASE = getCodeBase();
 			POST_URL = getParameter("post_url");
 			API_KEY = getParameter("api_key");
+			SCREEN_CAPTURE_NAME = getParameter("screen_capture_name");
 			HOST_URL = DOCUMENT_BASE.getProtocol() + "://" + DOCUMENT_BASE.getHost();
 			if(getParameter("headless") != null)
 				HEADLESS = !getParameter("headless").isEmpty() && getParameter("headless").equals("true"); // Boolean.getBoolean(string) didn't work
@@ -412,15 +413,15 @@ public class Applet extends JApplet {
      */
     @Override
     public void destroy() {
-        try {
+        /*try {
             SwingUtilities.invokeAndWait(new Runnable() {
-                public void run() {
+                public void run() {*/
                 	System.out.println("Closing down...");
                 	controller.closeDown();
                 	controller = null;
-                }
+      /*          }
             });
-        } catch (Exception e) { }
+        } catch (Exception e) { }*/
 
     }
 

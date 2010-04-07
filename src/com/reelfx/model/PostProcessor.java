@@ -31,7 +31,7 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 	
 	// FILE LOCATIONS
 	private static String ext = ".mov"; //Applet.IS_MAC ? ".mov" : ".mp4";
-	public static File DEFAULT_OUTPUT_FILE = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"output-final"+ext);
+	public static File DEFAULT_OUTPUT_FILE = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"review"+ext);
 	private File outputFile = null;
 	private boolean postFile = false;
 	
