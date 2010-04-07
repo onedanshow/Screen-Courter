@@ -53,6 +53,7 @@ public class WindowsController extends ApplicationController {
 	
 	@Override
 	public void prepareForRecording() {
+		super.prepareForRecording();
 		screen = new ScreenRecorder();
 		screen.addProcessListener(this);
 		recordingDone = false;

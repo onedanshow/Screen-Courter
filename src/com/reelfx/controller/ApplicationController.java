@@ -8,6 +8,7 @@ import javax.swing.JFileChooser;
 import com.reelfx.Applet;
 import com.reelfx.model.AudioRecorder;
 import com.reelfx.model.PostProcessor;
+import com.reelfx.model.PreferenceManager;
 import com.reelfx.model.PreviewPlayer;
 import com.reelfx.model.ScreenRecorder;
 import com.reelfx.model.util.ProcessListener;
@@ -19,6 +20,7 @@ public abstract class ApplicationController implements ProcessListener {
 	protected ScreenRecorder screen;
 	protected PostProcessor postProcess;
 	protected PreviewPlayer previewPlayer = null;
+	protected PreferenceManager preferences = new PreferenceManager();
 
 	public ApplicationController() {
 		super();
@@ -52,14 +54,16 @@ public abstract class ApplicationController implements ProcessListener {
 			Applet.sendShowStatus("Uploading to Insight...");
 			break;
 		case PostProcessor.POST_COMPLETE:
-			gui
-					.changeState(Interface.READY_WITH_OPTIONS,
-							"Finished uploading.");
+			gui.changeState(Interface.READY_WITH_OPTIONS,"Finished uploading.");
 			Applet.sendHideStatus();
 		}
 	}
 
-	public abstract void prepareForRecording();
+	public void prepareForRecording() {
+		preferences.setPostUrl(Applet.POST_URL);
+		preferences.setScreenCaptureName(Applet.SCREEN_CAPTURE_NAME);
+		preferences.writePreferences();
+	}
 
 	public abstract void startRecording(Mixer mixer, int index);
 
@@ -96,13 +100,14 @@ public abstract class ApplicationController implements ProcessListener {
 			postProcess.removeAllProcessListeners();
 		postProcess = new PostProcessor();
 		postProcess.addProcessListener(this);
-		postProcess.postToInsight();
+		postProcess.postToInsight(preferences.getPostUrl());
 	}
 
 	public void deleteRecording() {
 		ScreenRecorder.deleteOutput();
 		AudioRecorder.deleteOutput();
 		PostProcessor.deleteOutput();
+		PreferenceManager.deleteOutput();
 		gui.changeState(Interface.READY);
 	}
 
@@ -122,6 +127,10 @@ public abstract class ApplicationController implements ProcessListener {
 		} else {
 			gui.changeState(Interface.READY);
 		}
+	}
+	
+	public String getOptionsMessage() {
+		return "You have a review for "+preferences.getScreenCaptureName()+" on (need date)";
 	}
 
 	public void showInterface() {

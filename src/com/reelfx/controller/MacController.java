@@ -61,6 +61,8 @@ public class MacController extends ApplicationController {
 		}
 		
 		if(allowRecording) {
+			super.prepareForRecording();
+			
 			if(screen != null) {
 				screen.closeDown();
 			}

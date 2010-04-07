@@ -33,7 +33,8 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 	private static String ext = ".mov"; //Applet.IS_MAC ? ".mov" : ".mp4";
 	public static File DEFAULT_OUTPUT_FILE = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"review"+ext);
 	private File outputFile = null;
-	private boolean postFile = false;
+	private String postUrl = null;
+	private boolean performPost = false;
 	
 	// STATES
 	public final static int ENCODING_STARTED = 0;
@@ -50,13 +51,14 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 		if(!file.getName().endsWith(ext) && !file.getName().endsWith(".avi"))
 			file = new File(file.getAbsoluteFile()+ext); // extension will probably change for Windows
 		outputFile = file;
-		postFile = false;
+		performPost = false;
 		super.start();
 	}
 	
-	public synchronized void postToInsight() {
+	public synchronized void postToInsight(String url) {
 		outputFile = DEFAULT_OUTPUT_FILE;
-		postFile = true;
+		postUrl = url;
+		performPost = true;
 		super.start();
 	}
 
@@ -110,7 +112,7 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 				fireProcessUpdate(ENCODING_COMPLETE);
 			}
 	        
-	        if(postFile) {
+	        if(performPost) {
 	        	fireProcessUpdate(POST_STARTED);
 	        	
 	        	// base code: http://stackoverflow.com/questions/1067655/how-to-upload-a-file-using-java-httpclient-library-working-with-php-strange-pro
@@ -122,7 +124,7 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 	        	ContentBody body = new FileBody(outputFile,"video/quicktime");
 	        	entity.addPart("review_media_file",body);
 	        	
-	        	HttpPost post = new HttpPost(Applet.POST_URL+"&api_key="+Applet.API_KEY); // TODO make this url construction more robust
+	        	HttpPost post = new HttpPost(postUrl+"&api_key="+Applet.API_KEY); // TODO make this url construction more robust
 	        	post.setEntity(entity);
 	        	
 	        	System.out.println("Posting file to Insight... "+post.getRequestLine());
@@ -167,7 +169,7 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 	 */
 	public void actionPerformed(ActionEvent e) {
 		if(e.getActionCommand().contains("frame")) {
-			System.out.println("Found frame!"); // TODO exact the frame
+			//System.out.println("Found frame!"); // TODO exact the frame
 			fireProcessUpdate(ENCODING_PROGRESS, null);
 		}
 	}

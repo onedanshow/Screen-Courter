@@ -149,7 +149,6 @@ public class Interface extends JFrame implements MouseListener, MouseMotionListe
         message.setOpaque(false);
         message.setMaximumSize(new Dimension(180,1000));
         message.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        message.setText("<html><body><table cellpadding='5' width='100%'><tr><td align='center'>You have a review for Shot 2000-0300 from 04/03/2010</td></tr></table></body></html>");
         message.setAlignmentX(0.5F);
         /* */
         postRecordingOptionsPanel.add(message);
@@ -219,6 +218,7 @@ public class Interface extends JFrame implements MouseListener, MouseMotionListe
     		changeState(READY);
     		if(statusText != null)
     			status.setVisible(true);
+    		message.setText("<html><body><table cellpadding='5' width='100%'><tr><td align='center'>"+controller.getOptionsMessage()+"</td></tr></table></body></html>");
     		postRecordingOptionsPanel.setEnabled(true);
     		postRecordingOptionsPanel.setVisible(true);
     		break;
@@ -292,8 +292,8 @@ public class Interface extends JFrame implements MouseListener, MouseMotionListe
 			changeState(RECORDING,"Go!");
 			startRecording();
 		} else {
+			status.setText((timerCount/60 < 10 ? "0" : "")+timerCount/60+":"+(timerCount%60 < 10 ? "0" : "")+timerCount%60);
 			timerCount++;
-			status.setText(timerCount/60+":"+timerCount%60);
 		}
 	}
 
@@ -331,7 +331,7 @@ public class Interface extends JFrame implements MouseListener, MouseMotionListe
      */
     public boolean deleteRecording() {
     	int n = JOptionPane.showConfirmDialog(this,
-    		    "Are you sure you want to delete the last review you recorded?",
+    		    "This will delete the last review you recorded. Are you sure?",
     		    "Are you sure?",
     		    JOptionPane.YES_NO_OPTION);
     	if (n == JOptionPane.YES_OPTION) {
