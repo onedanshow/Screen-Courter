@@ -30,7 +30,7 @@ public class MacController extends ApplicationController {
     			if(!MAC_EXEC.exists()) throw new IOException("Did not copy VLC to its execution directory!");
     		} else */
 			if(!Applet.BIN_FOLDER.exists()){
-				Applet.copyFolderFromRemoteJar(new URL(Applet.HOST_URL+"/bin-mac.jar"), "bin-mac");
+				Applet.copyFolderFromRemoteJar(new URL(Applet.HOST_URL+"/bin-mac.jar?"+Math.random()*10000), "bin-mac");
 				Runtime.getRuntime().exec("chmod 755 "+Applet.BIN_FOLDER+File.separator+"mac-screen-recorder").waitFor();
 				if(!Applet.BIN_FOLDER.exists()) throw new IOException("Did not copy Mac extensions to the execution directory!");
 			}

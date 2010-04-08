@@ -38,6 +38,9 @@
 		<!-- CHANGE THIS TO THE FOLDER OF YOUR LOCAL HOST -->
 		<property name="server" value="/Users/daniel/Sites/review_tool/"/>
 		<copy file="build/applet.jar" todir="${server}"/>
+		<copy file="bin-mac.jar" todir="${server}"/>
+		<copy file="bin-windows.jar" todir="${server}"/>
+		<copy file="bin-linux.jar" todir="${server}"/>
 		<copy file="src/template.html" tofile="${server}index.html" overwrite="true" />
 		<random max="100000000" property="randomValue"></random>
 		<replace file="${server}index.html" token="@@@UNIQUE@@@" value="${randomValue}"/>
@@ -47,6 +50,9 @@
 		<!-- CHANGE THIS TO THE FOLDER OF YOUR LOCAL INSIGHT PUBLIC FOLDER -->
 		<property name="server" value="/Users/daniel/Sites/classic/public/"/>
 		<copy file="build/applet.jar" todir="${server}"/>
+		<copy file="bin-mac.jar" todir="${server}"/>
+		<copy file="bin-windows.jar" todir="${server}"/>
+		<copy file="bin-linux.jar" todir="${server}"/>
 	</target>
 	
 	<!-- Taken from: http://docs.huihoo.com/apache/apachecon/eu2007/extending_ant.pdf -->
