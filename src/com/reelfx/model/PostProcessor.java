@@ -24,6 +24,7 @@ import org.apache.http.params.CoreProtocolPNames;
 import org.apache.http.util.EntityUtils;
 
 import com.reelfx.Applet;
+import com.reelfx.controller.WindowsController;
 import com.reelfx.model.util.ProcessWrapper;
 import com.reelfx.model.util.StreamGobbler;
 
@@ -81,7 +82,11 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 			String ffmpeg = "ffmpeg" + (Applet.IS_WINDOWS ? ".exe" : "");
 			
 			// TODO check if merged output file exists?
-			if(Applet.IS_WINDOWS) {
+			if(Applet.IS_WINDOWS && outputFile.getAbsolutePath().equals(WindowsController.MERGED_OUTPUT_FILE.getAbsolutePath())
+					&& WindowsController.MERGED_OUTPUT_FILE.exists()) {
+				// do no encoding
+			}
+			else if(Applet.IS_WINDOWS) {
 				fireProcessUpdate(ENCODING_STARTED);
 				Map<String,Object> metadata = parseMediaFile(ScreenRecorder.OUTPUT_FILE.getAbsolutePath());
 				printMetadata(metadata);
@@ -95,10 +100,10 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 		    	if(AudioRecorder.OUTPUT_FILE.exists()) { // if opted for microphone
 		    		ffmpegArgs.addAll(parseParameters("-i "+AudioRecorder.OUTPUT_FILE.getAbsolutePath()));
 		    		// delay the video a tad because it's generally starts behind ( http://howto-pages.org/ffmpeg/#delay )
-		    		ffmpegArgs.addAll(parseParameters("-itsoffset 00:00:0"+encodingOpts.get(OFFSET_VIDEO)+" -i "+ScreenRecorder.OUTPUT_FILE));
-		    	} else {
-		    		ffmpegArgs.addAll(parseParameters("-i "+ScreenRecorder.OUTPUT_FILE));
+		    		if(encodingOpts.containsKey(OFFSET_VIDEO))
+		    			ffmpegArgs.addAll(parseParameters("-itsoffset 00:00:0"+encodingOpts.get(OFFSET_VIDEO)));
 		    	}
+		    	ffmpegArgs.addAll(parseParameters("-i "+ScreenRecorder.OUTPUT_FILE));
 		    	// export settings
 		    	ffmpegArgs.addAll(getFfmpegCopyParams());
 		    	//ffmpegArgs.addAll(getFfmpegX264FastFirstPastBaselineParams());
@@ -133,9 +138,9 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 	        	
 	        	MultipartEntity entity = new MultipartEntity();
 	        	ContentBody body = new FileBody(outputFile,"video/quicktime");
-	        	entity.addPart("review_media_file",body);
+	        	entity.addPart("capture_file",body);
 	        	
-	        	HttpPost post = new HttpPost(postUrl+"&api_key="+Applet.API_KEY); // TODO make this url construction more robust
+	        	HttpPost post = new HttpPost(postUrl+"?api_key="+Applet.API_KEY); // TODO make this url construction more robust
 	        	post.setEntity(entity);
 	        	
 	        	System.out.println("Posting file to Insight... "+post.getRequestLine());

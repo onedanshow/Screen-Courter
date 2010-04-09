@@ -3,10 +3,15 @@ package com.reelfx.view;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
+import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -33,7 +38,7 @@ import com.reelfx.Applet;
 import com.reelfx.controller.ApplicationController;
 import com.reelfx.model.ScreenRecorder;
 
-public class Interface extends JFrame implements MouseListener, MouseMotionListener, WindowListener, ActionListener {
+public class Interface extends JFrame implements MouseListener, MouseMotionListener, WindowListener, ActionListener, ComponentListener {
 
     private static final long serialVersionUID = 4803377343174867777L;
     
@@ -57,6 +62,8 @@ public class Interface extends JFrame implements MouseListener, MouseMotionListe
     private Color statusColor = new Color(255, 102, 102);
     private Color messageColor = new Color(255, 255, 153);
     private int currentState = READY, timerCount = 0;
+    private Dimension screen;
+    private JWindow countdown;
     
     public Interface(ApplicationController controller) {
         super();
@@ -64,11 +71,10 @@ public class Interface extends JFrame implements MouseListener, MouseMotionListe
         this.controller = controller;
         
         Toolkit tk = Toolkit.getDefaultToolkit();
-        Dimension dim = tk.getScreenSize();
-        
+        screen = tk.getScreenSize();
+        // From Docs: Gets the size of the screen. On systems with multiple displays, the primary display is used. Multi-screen aware display dimensions are available from GraphicsConfiguration and GraphicsDevice
+
         // ------- setup the JFrame -------
-        
-        // TODO handle multiple monitor and limit this UI to one of them
         
         setTitle("Review for "+Applet.SCREEN_CAPTURE_NAME);
         setResizable(false);
@@ -77,12 +83,13 @@ public class Interface extends JFrame implements MouseListener, MouseMotionListe
         //setBackground(backgroundColor); // same as Flex review tool
         //setPreferredSize(dim); // full screen
         //setPreferredSize(new Dimension(500, 50)); // will auto fit to the size needed, but if you want to specify a size
-        setLocation(dim.width/3, dim.height/2);
+        setLocation((int)(screen.width*0.75), screen.height/6);
         setLayout(new BorderLayout(0, 3));
         setAlwaysOnTop(true);
         addMouseListener(this);
         addMouseMotionListener(this);
         addWindowListener(this);
+        addComponentListener(this);
 
         /*if (AWTUtilities.isTranslucencySupported(AWTUtilities.Translucency.PERPIXEL_TRANSPARENT)) {
             System.out.println("Transparency supported!");
@@ -370,6 +377,8 @@ public class Interface extends JFrame implements MouseListener, MouseMotionListe
 		Point p = e.getLocationOnScreen();
 		p.x -= mouseOffset.x;
 		p.y -= mouseOffset.y;
+		p.x = Math.min(Math.max(p.x, 0), screen.width-this.getWidth());
+		p.y = Math.min(Math.max(p.y, 0), screen.height-this.getHeight());
 		setLocation(p);
 	}
 
@@ -401,4 +410,21 @@ public class Interface extends JFrame implements MouseListener, MouseMotionListe
 	
 	@Override
 	public void windowClosed(WindowEvent e) {} // not called with close operation set to HIDE_FRAME
+
+	@Override
+	public void componentHidden(ComponentEvent e) {}
+
+	@Override
+	public void componentMoved(ComponentEvent e) {  // temporary until I return to a JWindow and not a JFrame
+		Point p = this.getLocation();
+		p.x = Math.min(Math.max(p.x, 0), screen.width-this.getWidth());
+		p.y = Math.min(Math.max(p.y, 0), screen.height-this.getHeight());
+		setLocation(p);
+	}
+
+	@Override
+	public void componentResized(ComponentEvent e) {}
+
+	@Override
+	public void componentShown(ComponentEvent e) {}
 }
