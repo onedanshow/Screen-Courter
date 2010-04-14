@@ -1,6 +1,8 @@
 package com.reelfx.controller;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import javax.sound.sampled.Mixer;
 import javax.swing.JFileChooser;
@@ -62,6 +64,7 @@ public abstract class ApplicationController implements ProcessListener {
 	public void prepareForRecording() {
 		preferences.setPostUrl(Applet.POST_URL);
 		preferences.setScreenCaptureName(Applet.SCREEN_CAPTURE_NAME);
+		preferences.setDate(new Date());
 		preferences.writePreferences();
 	}
 
@@ -130,7 +133,8 @@ public abstract class ApplicationController implements ProcessListener {
 	}
 	
 	public String getOptionsMessage() {
-		return "You have a review for "+preferences.getScreenCaptureName()+" on (need date)";
+		SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM d HH:mm");
+		return "You have a review for "+preferences.getScreenCaptureName()+" on "+sdf.format(preferences.getDate());
 	}
 
 	public void showInterface() {

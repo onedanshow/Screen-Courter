@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -39,7 +40,7 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 	
 	// ENCODING SETTINGS
 	public final static int OFFSET_VIDEO = 0;
-	private Map<Integer, String> encodingOpts;
+	private Map<Integer, String> encodingOpts = new HashMap<Integer, String>();
 	
 	// STATES
 	public final static int ENCODING_STARTED = 0;
