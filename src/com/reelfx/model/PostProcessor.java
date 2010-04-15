@@ -1,5 +1,7 @@
 package com.reelfx.model;
 
+import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -107,6 +109,9 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 		    	ffmpegArgs.addAll(parseParameters("-i "+ScreenRecorder.OUTPUT_FILE));
 		    	// export settings
 		    	ffmpegArgs.addAll(getFfmpegCopyParams());
+		    	// resize screen
+		    	Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+		    	ffmpegArgs.addAll(parseParameters("-s 1024x"+Math.round(1024.0/(double)dim.width*(double)dim.height)));
 		    	//ffmpegArgs.addAll(getFfmpegX264FastFirstPastBaselineParams());
 		    	ffmpegArgs.add(outputFile.getAbsolutePath());
 		    	System.out.println("Executing this command: "+prettyCommand(ffmpegArgs));
