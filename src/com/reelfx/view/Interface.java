@@ -229,7 +229,17 @@ public class Interface extends JFrame implements MouseListener, MouseMotionListe
     		break;
     		
     	case READY_WITH_OPTIONS:
-    		changeState(READY);
+    		recordBtn.setEnabled(true);
+    		recordBtn.setText("Record");
+    		audioSelect.setEnabled(true);
+    		audioSelect.setVisible(true);
+    		if(statusText != null) {
+    			status.setVisible(true);
+    			status.setText(statusText);
+    		} else {
+    			status.setText("");
+    			status.setVisible(false);
+    		}
     		message.setText("<html><body><table cellpadding='5' width='100%'><tr><td align='center'>"+controller.getOptionsMessage()+"</td></tr></table></body></html>");
     		postRecordingOptionsPanel.setEnabled(true);
     		postRecordingOptionsPanel.setVisible(true);
