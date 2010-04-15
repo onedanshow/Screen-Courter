@@ -63,7 +63,7 @@ public class Interface extends JFrame implements MouseListener, MouseMotionListe
     private Color messageColor = new Color(255, 255, 153);
     private int currentState = READY, timerCount = 0;
     private Dimension screen;
-    private JWindow countdown;
+    private CountDown countdown = new CountDown();
     
     public Interface(ApplicationController controller) {
         super();
@@ -304,6 +304,11 @@ public class Interface extends JFrame implements MouseListener, MouseMotionListe
         }
         else
         	timer.restart(); // calls actionPerformed
+        
+        /*
+        countdown.setVisible(true);
+    	countdown.pack();
+        */
     }
     
     @Override
