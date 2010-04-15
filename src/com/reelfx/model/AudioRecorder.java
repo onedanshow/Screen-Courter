@@ -57,7 +57,7 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
     public static File OUTPUT_FILE = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"screen_capture.wav");
 	
     // AUDIO SETTINGS
-    public static float FREQ = 11025; // 22050; //44100;  lowered because it was skipping and dropping audio
+    public static float FREQ = 11025.0F; // 22050; //44100;  lowered because it was skipping and dropping audio
     
     // STATES
     public final static int RECORDING_STARTED = 200;
@@ -74,7 +74,7 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 		   is hardcoded here. We use PCM 44.1 kHz, 16 bit signed, stereo.
 		*/
 		// tried switching to mono, but it threw an exception
-		AudioFormat	audioFormat = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, 44100.0F, 16, 2, 4, 44100.0F, false);
+		AudioFormat	audioFormat = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, FREQ, 16, 2, 4, FREQ, false);
 
 		/* Now, we are trying to get a TargetDataLine. The
 		   TargetDataLine is used later to read audio data from it.
