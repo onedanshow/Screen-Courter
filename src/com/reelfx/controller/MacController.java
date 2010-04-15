@@ -46,32 +46,24 @@ public class MacController extends ApplicationController {
 			gui.changeState(Interface.FATAL,"Error with install");
 			e.printStackTrace();
 		}
+		
+		if(Applet.IS_MAC && !System.getProperty("os.version").contains("10.6")) {
+			gui.changeState(Interface.FATAL, "Sorry, Snow Leopard required.");
+		}
 	}
 
 	@Override
 	public void prepareForRecording() {
-		boolean allowRecording = true;
+		super.prepareForRecording();
 		
-		if(Applet.IS_MAC && System.getProperty("os.version").startsWith("10.6"))
-			Applet.sendInfo("You have Snow Leopard.");
-		else {
-			Applet.sendError("You need to have Snow Leopard installed to record a review.");
-			allowRecording = false;
-			screen = null;
+		if(screen != null) {
+			screen.closeDown();
 		}
-		
-		if(allowRecording) {
-			super.prepareForRecording();
-			
-			if(screen != null) {
-				screen.closeDown();
-			}
-			// start up CamStudio
-			screen = new ScreenRecorder();
-			screen.addProcessListener(this);
-			screen.start();
-			// TODO check that it starts up correctly
-		}
+		// start up CamStudio
+		screen = new ScreenRecorder();
+		screen.addProcessListener(this);
+		screen.start();
+		// TODO check that it starts up correctly
 	}
 
 	@Override
