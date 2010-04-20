@@ -23,12 +23,14 @@ import java.io.File;
 import java.sql.Time;
 import java.util.Calendar;
 
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.JWindow;
 import javax.swing.SwingConstants;
@@ -51,7 +53,7 @@ public class Interface extends JFrame implements MouseListener, MouseMotionListe
     
     public JButton recordBtn, previewBtn, saveBtn, insightBtn, deleteBtn;
     public AudioSelectBox audioSelect;
-    public JPanel recordingOptionsPanel, postRecordingOptionsPanel;
+    public JPanel recordingOptionsPanel, statusPanel, postRecordingOptionsPanel;
     
     private JLabel status, message;
     //private JTextArea message;
@@ -84,7 +86,8 @@ public class Interface extends JFrame implements MouseListener, MouseMotionListe
         //setPreferredSize(dim); // full screen
         //setPreferredSize(new Dimension(500, 50)); // will auto fit to the size needed, but if you want to specify a size
         setLocation((int)(screen.width*0.75), screen.height/6);
-        setLayout(new BorderLayout(0, 3));
+        //setLayout(new BorderLayout(0, 3));
+        setLayout(new BoxLayout(getContentPane(), BoxLayout.PAGE_AXIS));
         setAlwaysOnTop(true);
         addMouseListener(this);
         addMouseMotionListener(this);
@@ -98,7 +101,7 @@ public class Interface extends JFrame implements MouseListener, MouseMotionListe
         // ------- setup recording options -------
         
         recordingOptionsPanel = new JPanel();
-        recordingOptionsPanel.setMaximumSize(new Dimension(180,1000));
+        //recordingOptionsPanel.setMaximumSize(new Dimension(180,1000));
         recordingOptionsPanel.setOpaque(false);
         
         recordBtn = new JButton("Record");
@@ -117,29 +120,33 @@ public class Interface extends JFrame implements MouseListener, MouseMotionListe
         audioSelect = new AudioSelectBox();
         recordingOptionsPanel.add(audioSelect);
         
-        add(recordingOptionsPanel,BorderLayout.NORTH);
+        add(recordingOptionsPanel); //,BorderLayout.NORTH);
         
         // ------- setup status bar -------
         
         status = new JLabel();
         //status.setBackground(statusColor);
-        status.setPreferredSize(new Dimension(50, 40));
+        //status.setPreferredSize(new Dimension(50, 40));
         status.setFont(new java.awt.Font("Arial", 1, 13));
         //status.setForeground(Color.WHITE);
         status.setOpaque(true);
         status.setHorizontalAlignment(SwingConstants.CENTER);
         
-        add(status,BorderLayout.CENTER);
+        statusPanel = new JPanel();
+        statusPanel.setOpaque(false);
+        statusPanel.add(status);
+        
+        add(statusPanel); //,BorderLayout.CENTER);
         
         // ------- setup post recording options -------
         
         postRecordingOptionsPanel = new JPanel();
         //postRecordingOptionsPanel.setBackground(messageColor);
-        postRecordingOptionsPanel.setMaximumSize(new Dimension(180,1000));
+        //postRecordingOptionsPanel.setMaximumSize(new Dimension(180,1000));
         //postRecordingOptionsPanel.setBorder(javax.swing.BorderFactory.createLineBorder(backgroundColor, 8));
-        postRecordingOptionsPanel.setLayout(new javax.swing.BoxLayout(postRecordingOptionsPanel, javax.swing.BoxLayout.Y_AXIS));
+        postRecordingOptionsPanel.setLayout(new BoxLayout(postRecordingOptionsPanel, BoxLayout.Y_AXIS));
         
-        postRecordingOptionsPanel.add(new javax.swing.JSeparator());
+        postRecordingOptionsPanel.add(new JSeparator());
         
         /*
         message = new JTextArea();
@@ -201,7 +208,7 @@ public class Interface extends JFrame implements MouseListener, MouseMotionListe
         });
         postRecordingOptionsPanel.add(deleteBtn);
         
-        add(postRecordingOptionsPanel,BorderLayout.SOUTH);
+        add(postRecordingOptionsPanel); //,BorderLayout.SOUTH);
         
         System.out.println("Interface initialized...");
     }
@@ -219,12 +226,13 @@ public class Interface extends JFrame implements MouseListener, MouseMotionListe
     		audioSelect.setEnabled(true);
     		audioSelect.setVisible(true);
     		if(statusText != null) {
-    			status.setVisible(true);
     			status.setText(statusText);
+    			statusPanel.setVisible(true);
     		} else {
     			status.setText("");
-    			status.setVisible(false);
+    			statusPanel.setVisible(false);
     		}
+    		postRecordingOptionsPanel.setEnabled(true);
     		postRecordingOptionsPanel.setVisible(false);
     		break;
     		
@@ -234,13 +242,15 @@ public class Interface extends JFrame implements MouseListener, MouseMotionListe
     		audioSelect.setEnabled(true);
     		audioSelect.setVisible(true);
     		if(statusText != null) {
-    			status.setVisible(true);
     			status.setText(statusText);
+    			statusPanel.setVisible(true);
     		} else {
     			status.setText("");
-    			status.setVisible(false);
+    			statusPanel.setVisible(false);
     		}
-    		message.setText("<html><body><table cellpadding='5' width='100%'><tr><td align='center'>"+controller.getOptionsMessage()+"</td></tr></table></body></html>");
+    		if(!controller.getOptionsMessage().isEmpty()) {
+    			message.setText("<html><body><table cellpadding='5' width='100%'><tr><td align='center'>"+controller.getOptionsMessage()+"</td></tr></table></body></html>");
+    		}
     		postRecordingOptionsPanel.setEnabled(true);
     		postRecordingOptionsPanel.setVisible(true);
     		break;
@@ -253,12 +263,13 @@ public class Interface extends JFrame implements MouseListener, MouseMotionListe
     		status.setEnabled(true);
     		status.setVisible(true);
     		if(statusText != null) {
-    			status.setVisible(true);
     			status.setText(statusText);
+    			statusPanel.setVisible(true);
     		} else {
     			status.setText("");
-    			status.setVisible(false);
+    			statusPanel.setVisible(false);
     		}
+    		postRecordingOptionsPanel.setEnabled(true);
     		postRecordingOptionsPanel.setVisible(false);
     		break;
     		
@@ -267,11 +278,11 @@ public class Interface extends JFrame implements MouseListener, MouseMotionListe
     		recordBtn.setText("Stop");
     		audioSelect.setVisible(false);
     		if(statusText != null) {
-    			status.setVisible(true);
     			status.setText(statusText);
+    			statusPanel.setVisible(true);
     		} else {
     			status.setText("");
-    			status.setVisible(false);
+    			statusPanel.setVisible(false);
     		}
     		postRecordingOptionsPanel.setVisible(false);
     		break;
@@ -281,12 +292,13 @@ public class Interface extends JFrame implements MouseListener, MouseMotionListe
     		recordBtn.setEnabled(false);
     		audioSelect.setEnabled(false);
     		if(statusText != null) {
-    			status.setVisible(true);
     			status.setText(statusText);
+    			statusPanel.setVisible(true);
     		} else {
     			status.setText("");
-    			status.setVisible(false);
+    			statusPanel.setVisible(false);
     		}
+    		postRecordingOptionsPanel.setEnabled(true);
     		postRecordingOptionsPanel.setVisible(false);
     		break;
     	}
