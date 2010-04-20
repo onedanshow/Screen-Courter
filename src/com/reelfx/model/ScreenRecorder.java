@@ -50,7 +50,7 @@ public class ScreenRecorder extends ProcessWrapper implements ActionListener {
 	//public static File VLC_JAR = new File(System.getProperty("java.class.path")+File.separator+"bin-mac.jar");
 	//public static File VLC_JAR = new File("/Users/daniel/Documents/Java/java-review-tool/lib"+File.separator+"bin-mac.jar");
 	protected static File MAC_EXEC = new File(Applet.BIN_FOLDER.getAbsoluteFile()+File.separator+"mac-screen-recorder");
-	protected static File CAM_EXEC = new File(Applet.BIN_FOLDER.getAbsoluteFile()+File.separator+"CamCommandLine.exe");
+	protected static File FFMPEG_EXEC = new File(Applet.BIN_FOLDER.getAbsoluteFile()+File.separator+"ffmpeg"+(Applet.IS_WINDOWS ? ".exe" : ""));
 	
 	// VIDEO SETTINGS
 	public static double SCALE = 0.8;
@@ -112,8 +112,7 @@ public class ScreenRecorder extends ProcessWrapper implements ActionListener {
 							
 			    			deleteOutput();
 			    			
-			    			//Toolkit tk = Toolkit.getDefaultToolkit();
-			    	        //Dimension dim = tk.getScreenSize();
+			    			// TODO refactor this with Windows code when I revisit Linux
 			    	        
 			    			// only get it for the screen we're on
 			    			int height = Applet.GRAPHICS_CONFIG.getDevice().getDisplayMode().getHeight();
@@ -169,25 +168,27 @@ public class ScreenRecorder extends ProcessWrapper implements ActionListener {
 					public Object run() {
 						
 						try {
-							List<String> camArgs = new ArrayList<String>();
-				            camArgs.add(CAM_EXEC.getAbsolutePath());
-				            camArgs.addAll(parseParameters("-outfile "+OUTPUT_FILE));
+							List<String> ffmpegArgs = new ArrayList<String>();
+				            ffmpegArgs.add(FFMPEG_EXEC.getAbsolutePath());
+				            ffmpegArgs.addAll(parseParameters("-y -f gdigrab -r 20 -i cursor:desktop -vcodec mpeg4 -b 5000k "+OUTPUT_FILE));
 				            
-				        	System.out.println("Executing this command: "+prettyCommand(camArgs));
-				            ProcessBuilder pb = new ProcessBuilder(camArgs);
+				        	System.out.println("Executing this command: "+prettyCommand(ffmpegArgs));
+				            ProcessBuilder pb = new ProcessBuilder(ffmpegArgs);
 							recordingProcess = pb.start();
-				            //fireProcessUpdate(RECORDING_STARTED);
+				            //fireProcessUpdate(RECORDING_STARTED); // moved to action listener method
 				            
-				            errorGobbler = new StreamGobbler(recordingProcess.getErrorStream(), false, "cam E");
-				            inputGobbler = new StreamGobbler(recordingProcess.getInputStream(), false, "cam O");
+							// unfortunately, ffmpeg doesn't get the microphone on Windows
+							
+				            errorGobbler = new StreamGobbler(recordingProcess.getErrorStream(), false, "ffmpeg E");
+				            inputGobbler = new StreamGobbler(recordingProcess.getInputStream(), false, "ffmpeg O");
 				            
 				            System.out.println("Starting listener threads...");
 				            errorGobbler.start();
-				            inputGobbler.addActionListener("any key", self); // listen for "press any key to stop..."
+				            errorGobbler.addActionListener("frame", self);
 				            inputGobbler.start();
 				            			         
 							recordingProcess.waitFor();
-				            
+
 				            fireProcessUpdate(RECORDING_COMPLETE);
 			            
 						}
@@ -219,18 +220,22 @@ public class ScreenRecorder extends ProcessWrapper implements ActionListener {
 		// nothing for linux or windows
 	}
 	
-	public void stopRecording() {   
-		if(Applet.IS_LINUX) {
-	    	PrintWriter pw = new PrintWriter(recordingProcess.getOutputStream());
-	    	pw.print("q");
-	    	pw.flush();
+	public void stopRecording() {  
+		System.out.println("Screen recording stopped...");
+		if(Applet.IS_LINUX || Applet.IS_WINDOWS) {
+	    	//PrintWriter pw = new PrintWriter(recordingProcess.getOutputStream(),true);
+	    	//pw.print("q");
+	    	try {
+				recordingProcess.getOutputStream().write("q".getBytes());
+				recordingProcess.getOutputStream().flush();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	    	
 		} else if(Applet.IS_MAC) {
 	    	PrintWriter pw = new PrintWriter(recordingProcess.getOutputStream());
 	    	pw.println("stop");
-	    	pw.flush();
-		} else if(Applet.IS_WINDOWS) {
-			PrintWriter pw = new PrintWriter(recordingProcess.getOutputStream());
-	    	pw.print("\n");
 	    	pw.flush();
 		}
 	}
@@ -240,6 +245,10 @@ public class ScreenRecorder extends ProcessWrapper implements ActionListener {
 		if(Applet.IS_MAC && recordingProcess != null) {
 	    	PrintWriter pw = new PrintWriter(recordingProcess.getOutputStream());
 	    	pw.println("quit");
+	    	pw.flush();
+		} else if((Applet.IS_LINUX || Applet.IS_WINDOWS) && recordingProcess != null) {
+	    	PrintWriter pw = new PrintWriter(recordingProcess.getOutputStream());
+	    	pw.print("q");
 	    	pw.flush();
 		}
 		// nothing for linux or windows
