@@ -60,9 +60,9 @@ public class WindowsController extends ApplicationController {
 	@Override
 	public void prepareForRecording() {
 		super.prepareForRecording();
+		recordingDone = false;
 		screen = new ScreenRecorder();
 		screen.addProcessListener(this);
-		recordingDone = false;
 	}
 
 	private Mixer audioSource = null;
@@ -88,22 +88,13 @@ public class WindowsController extends ApplicationController {
 		        } else {
 		        	System.out.println("No audio source specified.");
 		        	audio = null;
-		        	startVideoRecording();
 		        }
-				// start up CamStudio
+				// start up ffmpeg
 				screen.start();
 		
 				return null;
 			}
 		});
-	}
-	
-	// --------- START VIDEO (once audio has trigger it) ---------
-	private void startVideoRecording() {
-		if(!stopped) // had issue with AudioRecorder firing a START event immediately after stop
-			screen.startRecording();
-		else
-			System.err.println("Received start video request when stopped!");
 	}
 
 	@Override
@@ -122,7 +113,6 @@ public class WindowsController extends ApplicationController {
 
 			case AudioRecorder.RECORDING_STARTED:
 				audioStart = Calendar.getInstance().getTimeInMillis();
-				startVideoRecording();
 				break;
 			case ScreenRecorder.RECORDING_STARTED:
 				videoStart = Calendar.getInstance().getTimeInMillis();
@@ -137,10 +127,18 @@ public class WindowsController extends ApplicationController {
 						postProcess.removeAllProcessListeners();
 					postProcess = new PostProcessor();
 					Map<Integer,String> opts = new HashMap<Integer, String>();
-					long ms = Math.max(audioStart,videoStart)-Math.min(audioStart,videoStart);
-					float s = ((float)ms)/1000f;
-					System.out.println("Video delay: "+ms+" ms "+s+" s");
-					opts.put(PostProcessor.OFFSET_VIDEO, s+"");
+					/*  despite my best effort, they seem to match up just fine when just started at the same time
+					if(audioStart < videoStart) {
+						long ms = videoStart - audioStart;
+						float s = ((float)ms)/1000f;
+						System.out.println("Video delay: "+ms+" ms "+s+" s");
+						opts.put(PostProcessor.OFFSET_VIDEO, s+"");
+					} else if(videoStart < audioStart) {
+						long ms = audioStart - videoStart;
+						float s = ((float)ms)/1000f;
+						System.out.println("Audio delay: "+ms+" ms "+s+" s");
+						opts.put(PostProcessor.OFFSET_AUDIO, s+"");
+					}*/
 			    	postProcess.addProcessListener(this);
 			    	postProcess.encodingOptions(opts);
 					postProcess.saveToComputer(MERGED_OUTPUT_FILE);

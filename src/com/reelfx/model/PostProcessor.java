@@ -42,6 +42,7 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 	
 	// ENCODING SETTINGS
 	public final static int OFFSET_VIDEO = 0;
+	public final static int OFFSET_AUDIO = 1;
 	private Map<Integer, String> encodingOpts = new HashMap<Integer, String>();
 	
 	// STATES
@@ -91,8 +92,9 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 			}
 			else if(Applet.IS_WINDOWS) {
 				fireProcessUpdate(ENCODING_STARTED);
-				Map<String,Object> metadata = parseMediaFile(ScreenRecorder.OUTPUT_FILE.getAbsolutePath());
-				printMetadata(metadata);
+				// get information about the media file:
+				//Map<String,Object> metadata = parseMediaFile(ScreenRecorder.OUTPUT_FILE.getAbsolutePath());
+				//printMetadata(metadata);
 				
 				if(outputFile.exists() && !outputFile.delete()) // ffmpeg will halt and ask what to do if file exists
 					throw new IOException("Could not delete the old exported file!");
@@ -101,8 +103,11 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 		    	ffmpegArgs.add(Applet.BIN_FOLDER.getAbsoluteFile()+File.separator+ffmpeg);
 		    	// audio and video files
 		    	if(AudioRecorder.OUTPUT_FILE.exists()) { // if opted for microphone
+		    		// delay the audio if needed ( http://howto-pages.org/ffmpeg/#delay )
+		    		if(encodingOpts.containsKey(OFFSET_AUDIO))
+		    			ffmpegArgs.addAll(parseParameters("-itsoffset 00:00:0"+encodingOpts.get(OFFSET_AUDIO))); // assume offset is less than 10 seconds
 		    		ffmpegArgs.addAll(parseParameters("-i "+AudioRecorder.OUTPUT_FILE.getAbsolutePath()));
-		    		// delay the video a tad because it's generally starts behind ( http://howto-pages.org/ffmpeg/#delay )
+		    		// delay the video if needed ( http://howto-pages.org/ffmpeg/#delay )
 		    		if(encodingOpts.containsKey(OFFSET_VIDEO))
 		    			ffmpegArgs.addAll(parseParameters("-itsoffset 00:00:0"+encodingOpts.get(OFFSET_VIDEO)));
 		    	}

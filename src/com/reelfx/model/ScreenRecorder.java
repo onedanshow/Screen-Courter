@@ -184,7 +184,7 @@ public class ScreenRecorder extends ProcessWrapper implements ActionListener {
 				            
 				            System.out.println("Starting listener threads...");
 				            errorGobbler.start();
-				            errorGobbler.addActionListener("frame", self);
+				            errorGobbler.addActionListener("Stream mapping:", self);
 				            inputGobbler.start();
 				            			         
 							recordingProcess.waitFor();
@@ -223,16 +223,9 @@ public class ScreenRecorder extends ProcessWrapper implements ActionListener {
 	public void stopRecording() {  
 		System.out.println("Screen recording stopped...");
 		if(Applet.IS_LINUX || Applet.IS_WINDOWS) {
-	    	//PrintWriter pw = new PrintWriter(recordingProcess.getOutputStream(),true);
-	    	//pw.print("q");
-	    	try {
-				recordingProcess.getOutputStream().write("q".getBytes());
-				recordingProcess.getOutputStream().flush();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-	    	
+	    	PrintWriter pw = new PrintWriter(recordingProcess.getOutputStream());
+	    	pw.print("q");
+	    	pw.flush();
 		} else if(Applet.IS_MAC) {
 	    	PrintWriter pw = new PrintWriter(recordingProcess.getOutputStream());
 	    	pw.println("stop");
