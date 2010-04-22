@@ -60,8 +60,8 @@ public class PreviewPlayer extends ProcessWrapper {
 				        ProcessBuilder pb = new ProcessBuilder(ffplayArgs);
 				        ffplayProcess = pb.start();
 				
-				        errorGobbler = new StreamGobbler(ffplayProcess.getErrorStream(), false, "ffplay E");
-				        inputGobbler = new StreamGobbler(ffplayProcess.getInputStream(), false, "ffplay O");
+				        errorGobbler = new StreamGobbler(ffplayProcess.getErrorStream(), true, "ffplay E");
+				        inputGobbler = new StreamGobbler(ffplayProcess.getInputStream(), true, "ffplay O");
 				
 				        System.out.println("Starting listener threads...");
 				        errorGobbler.start();

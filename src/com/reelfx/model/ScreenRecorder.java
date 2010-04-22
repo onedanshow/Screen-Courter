@@ -216,7 +216,11 @@ public class ScreenRecorder extends ProcessWrapper implements ActionListener {
 	    	PrintWriter pw = new PrintWriter(recordingProcess.getOutputStream());
 	    	pw.println("start");
 	    	pw.flush();
-		}
+		} /*else if(Applet.IS_WINDOWS) {
+			PrintWriter pw = new PrintWriter(recordingProcess.getOutputStream());
+	    	pw.print("\n");
+	    	pw.flush();
+		}*/
 		// nothing for linux or windows
 	}
 	
