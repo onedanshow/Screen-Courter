@@ -127,18 +127,18 @@ public class WindowsController extends ApplicationController {
 						postProcess.removeAllProcessListeners();
 					postProcess = new PostProcessor();
 					Map<Integer,String> opts = new HashMap<Integer, String>();
-					//  despite my best effort, they seem to match up just fine when just started at the same time
-					if(audioStart < videoStart) {
+					//*  despite my best effort, they seem to match up just fine when just started at the same time
+					if(audioStart > videoStart) {
 						long ms = videoStart - audioStart;
 						float s = ((float)ms)/1000f;
 						System.out.println("Video delay: "+ms+" ms "+s+" s");
 						opts.put(PostProcessor.OFFSET_VIDEO, s+"");
-					} else if(videoStart < audioStart) {
+					} else if(videoStart > audioStart) {
 						long ms = audioStart - videoStart;
 						float s = ((float)ms)/1000f;
 						System.out.println("Audio delay: "+ms+" ms "+s+" s");
 						opts.put(PostProcessor.OFFSET_AUDIO, s+"");
-					} // */
+					} //*/
 			    	postProcess.addProcessListener(this);
 			    	postProcess.encodingOptions(opts);
 					postProcess.saveToComputer(MERGED_OUTPUT_FILE);

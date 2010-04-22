@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
@@ -132,6 +133,7 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 		        inputGobbler.start();  
 		        
 		        ffmpegProcess.waitFor();
+		        
 		        fireProcessUpdate(ENCODING_COMPLETE);
 			}
 			else if(Applet.IS_LINUX || Applet.IS_MAC) {
