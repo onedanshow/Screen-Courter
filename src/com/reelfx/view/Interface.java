@@ -232,11 +232,10 @@ public class Interface extends JFrame implements MouseListener, MouseMotionListe
     			status.setText("");
     			statusPanel.setVisible(false);
     		}
-    		postRecordingOptionsPanel.setEnabled(true);
     		postRecordingOptionsPanel.setVisible(false);
     		break;
     		
-    	case READY_WITH_OPTIONS:
+		case READY_WITH_OPTIONS:
     		recordBtn.setEnabled(true);
     		recordBtn.setText("Record");
     		audioSelect.setEnabled(true);
@@ -251,7 +250,6 @@ public class Interface extends JFrame implements MouseListener, MouseMotionListe
     		if(!controller.getOptionsMessage().isEmpty()) {
     			message.setText("<html><body><table cellpadding='5' width='100%'><tr><td align='center'>"+controller.getOptionsMessage()+"</td></tr></table></body></html>");
     		}
-    		postRecordingOptionsPanel.setEnabled(true);
     		postRecordingOptionsPanel.setVisible(true);
     		break;
     		
@@ -269,7 +267,6 @@ public class Interface extends JFrame implements MouseListener, MouseMotionListe
     			status.setText("");
     			statusPanel.setVisible(false);
     		}
-    		postRecordingOptionsPanel.setEnabled(true);
     		postRecordingOptionsPanel.setVisible(false);
     		break;
     		
@@ -298,7 +295,6 @@ public class Interface extends JFrame implements MouseListener, MouseMotionListe
     			status.setText("");
     			statusPanel.setVisible(false);
     		}
-    		postRecordingOptionsPanel.setEnabled(true);
     		postRecordingOptionsPanel.setVisible(false);
     		break;
     	}
