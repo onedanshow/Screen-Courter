@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Mixer;
 
 import com.reelfx.Applet;
@@ -28,7 +29,7 @@ public class WindowsController extends ApplicationController {
 
 	public static File MERGED_OUTPUT_FILE = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"screen_capture_temp.avi");
 	
-	private AudioRecorder audio;
+	private AudioRecorder mic, systemAudio;
 	private boolean stopped = false;
 	private boolean recordingDone = false;
 	
@@ -82,12 +83,28 @@ public class WindowsController extends ApplicationController {
 				AudioRecorder.deleteOutput();
 				stopped = false;
 		        if(audioSource != null) {
-		        	audio = new AudioRecorder(audioSource);
-		        	audio.addProcessListener(listener);
-		        	audio.startRecording();
+		        	mic = new AudioRecorder(audioSource);
+		        	mic.addProcessListener(listener);
+		        	mic.startRecording();
+		        	/*
+		        	Mixer systemMixer = null;
+		        	for(Mixer.Info info : AudioSystem.getMixerInfo())
+		        		// select the "stereo mix" on Windows
+		            	if(!info.getName().toLowerCase().contains("port")
+		            			&& info.getName().toLowerCase().contains("stereo mix")
+		            			&& AudioSystem.getMixer(info).getTargetLineInfo().length != 0)
+		            		systemMixer = AudioSystem.getMixer(info);
+		        	
+		        	if(systemMixer != null) {
+			        	systemAudio = new AudioRecorder(systemMixer);
+			        	//systemAudio.addProcessListener(listener);
+			        	systemAudio.startRecording();
+		        	}
+		        	*/
 		        } else {
 		        	System.out.println("No audio source specified.");
-		        	audio = null;
+		        	mic = null;
+		        	systemAudio = null;
 		        }
 				// start up ffmpeg
 				screen.start();
@@ -101,8 +118,10 @@ public class WindowsController extends ApplicationController {
 	public void stopRecording() {
 		stopped = true;
 		
-		if(audio != null)
-            audio.stopRecording();
+		if(mic != null)
+            mic.stopRecording();
+		if(systemAudio != null)
+			systemAudio.stopRecording();
 		
 		screen.stopRecording();
 	}

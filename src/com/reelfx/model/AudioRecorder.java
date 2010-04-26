@@ -32,6 +32,7 @@ package com.reelfx.model;
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.File;
 import java.security.AccessController;
@@ -41,6 +42,7 @@ import javax.sound.sampled.DataLine;
 import javax.sound.sampled.LineEvent;
 import javax.sound.sampled.LineListener;
 import javax.sound.sampled.Mixer;
+import javax.sound.sampled.SourceDataLine;
 import javax.sound.sampled.TargetDataLine;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
@@ -57,13 +59,14 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
     public static File OUTPUT_FILE = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"screen_capture.wav");
 	
     // AUDIO SETTINGS
-    public static float FREQ = 11025.0F; // 22050; //44100;  lowered because it was skipping and dropping audio
+    public static float FREQ = 22050; //11025.0F; // 22050; //44100;  lowered because it was skipping and dropping audio
     
     // STATES
     public final static int RECORDING_STARTED = 200;
     public final static int RECORDING_COMPLETE = 201;
     
 	private TargetDataLine m_line = null;
+    //private SourceDataLine m_line = null;
 	private AudioFileFormat.Type m_targetType;
 	private AudioInputStream m_audioInputStream;
 	private File m_outputFile;
@@ -86,10 +89,12 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 			if(mixer != null) {// try with the mixer given
 				System.out.println("Grabbing the specified audio mixer: "+mixer.getLineInfo().toString());
 				m_line = (TargetDataLine) mixer.getLine(info);
+				m_outputFile = OUTPUT_FILE;
 			}
 			else { // try to grab one ourselves
-				System.out.println("Grabbing whatever AudioSystem line I can get...");
+				System.out.println("Grabbing whatever AudioSystem line I can get...(system audio?)");
 				m_line = (TargetDataLine) AudioSystem.getLine(info);
+				m_outputFile = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"screen_capture_system.wav");
 			}
 			m_line.addLineListener(this);
 			m_line.open(audioFormat);
@@ -99,15 +104,13 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 			out("Unable to get a recording line");
 			e.printStackTrace();
 		}
-		
+
 		m_audioInputStream = new AudioInputStream(m_line);
 
 		/* Again for simplicity, we've hardcoded the audio file
 		   type, too.
 		*/
 		m_targetType = AudioFileFormat.Type.WAVE;
-		
-		m_outputFile = OUTPUT_FILE;
 	}
 
 	/** Starts the recording.

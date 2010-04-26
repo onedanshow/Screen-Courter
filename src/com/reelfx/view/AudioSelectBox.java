@@ -20,9 +20,13 @@ public class AudioSelectBox extends JComboBox implements MouseListener {
 	private void listAudioSources() {
 		removeAllItems();
 		
-		// find all audio inputs that have target outputs (excluding those with 'port' is a Linux hack, possibly temporary)
+		// find all audio inputs that have target outputs 
+		// (excluding those with 'port' is a Linux hack, possibly temporary)
+		// (exclude 'stereo mix' for capturing system audio
 		for(Mixer.Info info : AudioSystem.getMixerInfo())
-        	if(!info.getName().toLowerCase().contains("port") && AudioSystem.getMixer(info).getTargetLineInfo().length != 0)
+        	if(!info.getName().toLowerCase().contains("port")
+        			//&& !info.getName().toLowerCase().contains("stereo mix")
+        			&& AudioSystem.getMixer(info).getTargetLineInfo().length != 0)
         		addItem(info.getName());
 		
 		addItem("No Audio");
