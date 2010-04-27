@@ -7,6 +7,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URL;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
@@ -15,6 +16,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.http.Header;
+import org.apache.http.HeaderElement;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpVersion;
@@ -52,7 +55,8 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 	public final static int ENCODING_COMPLETE = 2;
 	public final static int POST_STARTED = 3;
 	public final static int POST_PROGRESS = 4;
-	public final static int POST_COMPLETE = 5;
+	public final static int POST_FAILED = 5;
+	public final static int POST_COMPLETE = 6;
 	
 	protected Process ffmpegProcess;
 	protected StreamGobbler errorGobbler, inputGobbler;
@@ -161,18 +165,27 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 	        	HttpResponse response = client.execute(post);
 	        	HttpEntity responseEntity = response.getEntity();
 
-	        	System.out.println(response.getStatusLine());
-	        	// TODO verify that the response came back properly
-	            if (responseEntity != null) {
-	            	System.out.println(EntityUtils.toString(responseEntity));
+	        	System.out.println("Response Status Code: "+response.getStatusLine());
+	            /*if (responseEntity != null) {
+	            	System.out.println(EntityUtils.toString(responseEntity)); // to see the response body
+	            }*/
+	            
+	            // redirection to show page (meaning everything was correct)
+	            if(response.getStatusLine().getStatusCode() == 302) {
+	            	Header header = response.getFirstHeader("Location");
+	            	System.out.println("Redirecting to "+header.getValue());
+	            	Applet.changePage(header.getValue());
+	            	//Applet.APPLET.showDocument(new URL(header.getValue()),"_self");
+	            	fireProcessUpdate(POST_COMPLETE);
+	            } else {
+	            	fireProcessUpdate(POST_FAILED);
 	            }
+	            	
 	            if (responseEntity != null) {
 	            	responseEntity.consumeContent();
 	            }
 	        	
 	        	client.getConnectionManager().shutdown();
-	        	
-	        	fireProcessUpdate(POST_COMPLETE);
 	        }
 	        
 	        // TODO monitor the progress of the event

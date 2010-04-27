@@ -22,7 +22,7 @@ import com.reelfx.model.PreferenceManager;
 import com.reelfx.model.ScreenRecorder;
 import com.reelfx.model.util.ProcessListener;
 import com.reelfx.model.util.StreamGobbler;
-import com.reelfx.view.Interface;
+import com.reelfx.view.RecordInterface;
 
 public class WindowsController extends ApplicationController {
 
@@ -49,10 +49,10 @@ public class WindowsController extends ApplicationController {
 			System.out.println("Have access to execution folder: "+Applet.BIN_FOLDER.getAbsolutePath());
 			setReadyStateBasedOnPriorRecording();
         } catch (MalformedURLException e1) {
-        	gui.changeState(Interface.FATAL,"Error with install");
+        	recordGUI.changeState(RecordInterface.FATAL,"Error with install");
 			e1.printStackTrace();
 		} catch (IOException e) {
-			gui.changeState(Interface.FATAL,"Error with install");
+			recordGUI.changeState(RecordInterface.FATAL,"Error with install");
 			e.printStackTrace();
 		}
 	}
