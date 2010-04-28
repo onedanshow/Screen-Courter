@@ -55,6 +55,7 @@ public class LinuxController extends ApplicationController {
 
 	@Override
 	public void stopRecording() {
+		super.stopRecording();
 		screen.stopRecording();
 	}
 

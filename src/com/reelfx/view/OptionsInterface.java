@@ -1,12 +1,15 @@
 package com.reelfx.view;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 
@@ -16,14 +19,24 @@ public class OptionsInterface extends JPanel {
 	
 	private static final long serialVersionUID = 4036818007133606840L;
 	
-	public JButton recordBtn, previewBtn, saveBtn, insightBtn, deleteBtn;
+    public final static int OPTIONS = 0;
+    public final static int OPTIONS_NO_UPLOAD = 1; 
+    public final static int THINKING = 2;
+    public final static int DISABLED = 3;
+    public final static int FATAL = 4;
+	
+	public JButton previewBtn, saveBtn, insightBtn, deleteBtn;
 	private final ApplicationController controller;
 	private JLabel message;
+	private int currentState = OPTIONS;
+	private JPanel self;
 	
 	public OptionsInterface(final ApplicationController controller) {
 		super();
 		setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
-		
+		setBackground(new Color(230,230,230));
+		setBorder(BorderFactory.createLineBorder(new Color(102, 102, 102)));
+		self = this;
 		this.controller = controller;
         
         /*
@@ -38,18 +51,18 @@ public class OptionsInterface extends JPanel {
         message.setAlignmentX(0.5F);
         /* */
         message = new JLabel();
-        message.setFont(new java.awt.Font("Arial", 0, 13));
+        message.setFont(new java.awt.Font("Arial", 0, 11));
         message.setOpaque(false);
         message.setMaximumSize(new Dimension(180,1000));
         message.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         message.setAlignmentX(0.5F);
         
-        add(new JSeparator(JSeparator.VERTICAL));
-        
         add(message);
         
+        add(new JSeparator(JSeparator.VERTICAL));
+        
         previewBtn = new JButton("Preview It");
-        previewBtn.setFont(new java.awt.Font("Arial", 0, 13));
+        previewBtn.setFont(new java.awt.Font("Arial", 0, 11));
         previewBtn.setAlignmentX(0.5F);
         previewBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -59,17 +72,17 @@ public class OptionsInterface extends JPanel {
         add(previewBtn);
 
         saveBtn = new JButton("Save to My Computer");
-        saveBtn.setFont(new java.awt.Font("Arial", 0, 13));
+        saveBtn.setFont(new java.awt.Font("Arial", 0, 11));
         saveBtn.setAlignmentX(0.5F);
         saveBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                //controller.saveRecording();
+                controller.askForAndSaveRecording();
             }
         });
         add(saveBtn);
 
         insightBtn = new JButton("Post to Insight");
-        insightBtn.setFont(new java.awt.Font("Arial", 0, 13));
+        insightBtn.setFont(new java.awt.Font("Arial", 0, 11));
         insightBtn.setAlignmentX(0.5F);
         insightBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -79,14 +92,57 @@ public class OptionsInterface extends JPanel {
         add(insightBtn);
         
         deleteBtn = new JButton("Delete It");
-        deleteBtn.setFont(new java.awt.Font("Arial", 0, 13));
+        deleteBtn.setFont(new java.awt.Font("Arial", 0, 11));
         deleteBtn.setAlignmentX(0.5F);
         deleteBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-            	controller.deleteRecording();
+            	int n = JOptionPane.showConfirmDialog(self,
+            		    "This will delete your screen recording. Are you sure?",
+            		    "Are you sure?",
+            		    JOptionPane.YES_NO_OPTION);
+            	if (n == JOptionPane.YES_OPTION) {
+                    controller.deleteRecording();
+                }
             }
         });
         add(deleteBtn);
 	}
 	
+    public void changeState(int state) {
+    	changeState(state, null);
+    }
+    
+    public void changeState(int state, String messageText) {
+    	
+		if(messageText == null) {
+			message.setText("<html><body><table cellpadding='5' width='100%'><tr><td align='center'>ReelFX Screen Recorder</td></tr></table></body></html>");
+		} else {
+			message.setText("<html><body><table cellpadding='5' width='100%'><tr><td align='center'>"+messageText+"</td></tr></table></body></html>");
+		}
+		
+    	switch(state) {	    		
+		case OPTIONS:
+    		previewBtn.setEnabled(true);
+    		saveBtn.setEnabled(true);
+    		insightBtn.setEnabled(true);
+    		deleteBtn.setEnabled(true);
+    		break;
+		case OPTIONS_NO_UPLOAD:
+			previewBtn.setEnabled(true);
+    		saveBtn.setEnabled(true);
+    		insightBtn.setEnabled(false);
+    		deleteBtn.setEnabled(true);
+			break;
+		case FATAL:
+		case DISABLED:
+		case THINKING:
+    		previewBtn.setEnabled(false);
+    		saveBtn.setEnabled(false);
+    		insightBtn.setEnabled(false);
+    		deleteBtn.setEnabled(false);
+    		break;
+    	}
+    	
+    	currentState = state; // needs to be at end
+    }
 }

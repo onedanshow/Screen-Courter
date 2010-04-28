@@ -1,5 +1,6 @@
 package com.reelfx.view;
 
+import java.awt.Font;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
@@ -14,6 +15,7 @@ public class AudioSelectBox extends JComboBox implements MouseListener {
 	public AudioSelectBox() {
 		super();
 		addMouseListener(this);
+		setFont(new Font("Arial", 0, 11));
 		listAudioSources();
 	}
 

@@ -151,23 +151,27 @@ public class Applet extends JApplet {
 		controller.askForAndSaveRecording();
 	}
 	
-	public void showInterface() {
-		controller.showInterface();
+	public void showRecordingInterface() {
+		controller.showRecordingInterface();
 	}
 	
-	public void hideInterface() {
-		controller.hideInterface();
+	public void hideRecordingInterface() {
+		controller.hideRecordingInterface();
 	}
 	
 	public static void handleExistingRecording() {
-		jsCall("sct_handle_existing_recording();");
+		jsCall("sct_handle_existing_recording()");
+	}
+	
+	public static void handleFreshRecording() {
+		jsCall("sct_handle_fresh_recording()");
 	}
 	
 	public static void handleDeletedRecording() {
-		jsCall("sct_handle_deleted_recording();");
+		jsCall("sct_handle_deleted_recording()");
 	}
 	
-	public static void changePage(String url) {
+	public static void redirectWebPage(String url) {
 		jsCall("sct_redirect_page(\""+url+"\");");
 	}
 	
@@ -192,8 +196,9 @@ public class Applet extends JApplet {
 		if(JS_BRIDGE == null) {
 			System.err.println("Call to "+method+" but no JS Bridge exists. Probably in development mode...");
 		} else {
-			JSObject doc = (JSObject) JS_BRIDGE.getMember("document");
-			doc.eval(method);
+			//JSObject doc = (JSObject) JS_BRIDGE.getMember("document");
+			//doc.eval(method);
+			JS_BRIDGE.eval(method);
 		}
 	}
 	

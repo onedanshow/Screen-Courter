@@ -73,7 +73,8 @@ public class MacController extends ApplicationController {
 	}
 
 	@Override
-	public void stopRecording() {		
+	public void stopRecording() {	
+		super.stopRecording();
 		if(screen != null)
 			screen.stopRecording();
 	}

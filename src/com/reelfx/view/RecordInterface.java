@@ -3,6 +3,7 @@ package com.reelfx.view;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.MouseInfo;
@@ -23,6 +24,7 @@ import java.io.File;
 import java.sql.Time;
 import java.util.Calendar;
 
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -60,7 +62,7 @@ public class RecordInterface extends JFrame implements MouseListener, MouseMotio
     private Timer timer;
     private ApplicationController controller;
     private JFileChooser fileSelect = new JFileChooser();
-    private Color backgroundColor = new Color(34, 34, 34);    
+    private Color backgroundColor = new Color(230,230,230);    
     private Color statusColor = new Color(255, 102, 102);
     private Color messageColor = new Color(255, 255, 153);
     private int currentState = READY, timerCount = 0;
@@ -81,8 +83,7 @@ public class RecordInterface extends JFrame implements MouseListener, MouseMotio
         setTitle("Review for "+Applet.SCREEN_CAPTURE_NAME);
         setResizable(false);
         setDefaultCloseOperation(HIDE_ON_CLOSE);
-        
-        //setBackground(backgroundColor); // same as Flex review tool
+        setBackground(backgroundColor);
         //setPreferredSize(dim); // full screen
         //setPreferredSize(new Dimension(500, 50)); // will auto fit to the size needed, but if you want to specify a size
         setLocation((int)(screen.width*0.75), screen.height/6);
@@ -115,6 +116,7 @@ public class RecordInterface extends JFrame implements MouseListener, MouseMotio
             	}
             }
         });
+        recordBtn.setFont(new Font("Arial", 0, 11));
         recordingOptionsPanel.add(recordBtn);
         
         audioSelect = new AudioSelectBox();
@@ -127,7 +129,7 @@ public class RecordInterface extends JFrame implements MouseListener, MouseMotio
         status = new JLabel();
         //status.setBackground(statusColor);
         //status.setPreferredSize(new Dimension(50, 40));
-        status.setFont(new java.awt.Font("Arial", 1, 13));
+        status.setFont(new java.awt.Font("Arial", 1, 11));
         //status.setForeground(Color.WHITE);
         status.setOpaque(true);
         status.setHorizontalAlignment(SwingConstants.CENTER);
@@ -160,7 +162,7 @@ public class RecordInterface extends JFrame implements MouseListener, MouseMotio
         message.setAlignmentX(0.5F);
         /* */
         message = new JLabel();
-        message.setFont(new java.awt.Font("Arial", 0, 13));
+        message.setFont(new java.awt.Font("Arial", 0, 11));
         message.setOpaque(false);
         message.setMaximumSize(new Dimension(180,1000));
         message.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -247,15 +249,13 @@ public class RecordInterface extends JFrame implements MouseListener, MouseMotio
     			status.setText("");
     			statusPanel.setVisible(false);
     		}
-    		if(!controller.getOptionsMessage().isEmpty()) {
+    		/*if(!controller.getOptionsMessage().isEmpty()) {
     			message.setText("<html><body><table cellpadding='5' width='100%'><tr><td align='center'>"+controller.getOptionsMessage()+"</td></tr></table></body></html>");
-    		}
+    		}*/
     		postRecordingOptionsPanel.setVisible(true);
     		break;
     		
     	case PRE_RECORDING:
-    		if(currentState == READY_WITH_OPTIONS && !deleteRecording())
-    			break;
     		recordBtn.setEnabled(false);
     		audioSelect.setVisible(false);
     		status.setEnabled(true);
@@ -302,7 +302,10 @@ public class RecordInterface extends JFrame implements MouseListener, MouseMotio
     	pack();
     }
     
-    public void prepareForRecording() {    	
+    public void prepareForRecording() {   
+    	// do I need permission to delete a file first?
+    	if(ScreenRecorder.OUTPUT_FILE.exists() && !deleteRecording()) return;
+    	
     	changeState(PRE_RECORDING,"Ready");
         controller.prepareForRecording();
     	
@@ -340,7 +343,8 @@ public class RecordInterface extends JFrame implements MouseListener, MouseMotio
     	timer.stop();
     	timerCount = 0;
     	controller.stopRecording();
-    	changeState(READY_WITH_OPTIONS);
+    	//changeState(READY_WITH_OPTIONS);
+    	changeState(READY);
     }
 
     public void previewRecording() {
@@ -348,9 +352,7 @@ public class RecordInterface extends JFrame implements MouseListener, MouseMotio
     }
 
     public void saveRecording() {   
-    	setAlwaysOnTop(false);
     	int returnVal = fileSelect.showSaveDialog(this);
-    	setAlwaysOnTop(true);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File file = fileSelect.getSelectedFile();
             controller.saveRecording(file);
@@ -366,7 +368,7 @@ public class RecordInterface extends JFrame implements MouseListener, MouseMotio
      */
     public boolean deleteRecording() {
     	int n = JOptionPane.showConfirmDialog(this,
-    		    "This will delete the last review you recorded. Are you sure?",
+    		    "This will delete your screen recording. Are you sure?",
     		    "Are you sure?",
     		    JOptionPane.YES_NO_OPTION);
     	if (n == JOptionPane.YES_OPTION) {
