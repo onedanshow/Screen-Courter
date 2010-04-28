@@ -99,6 +99,7 @@ public class WindowsController extends ApplicationController {
 
 	@Override
 	public void stopRecording() {
+		super.stopRecording();
 		stopped = true;
 		
 		if(audio != null)
@@ -139,7 +140,7 @@ public class WindowsController extends ApplicationController {
 						System.out.println("Audio delay: "+ms+" ms "+s+" s");
 						opts.put(PostProcessor.OFFSET_AUDIO, s+"");
 					} //*/
-			    	postProcess.addProcessListener(this);
+			    	postProcess.setSilent(true); // no need to notify UI for this encoding
 			    	postProcess.encodingOptions(opts);
 					postProcess.saveToComputer(MERGED_OUTPUT_FILE);
 				} else {

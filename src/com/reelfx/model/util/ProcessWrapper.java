@@ -19,7 +19,8 @@ import com.reelfx.model.ScreenRecorder;
 
 public abstract class ProcessWrapper extends Thread {
 	protected List<ProcessListener> listeners = new ArrayList<ProcessListener>();
-	
+	protected boolean silentMode = false;
+
 	// KEYS
 	public static class Metadata {
 		public static String DURATION = "dur";
@@ -52,10 +53,20 @@ public abstract class ProcessWrapper extends Thread {
     }
     
     protected void fireProcessUpdate(int event,Object body) {
+    	if(isSilent()) return;
+    	
     	for (ProcessListener listener : listeners) {
             listener.processUpdate(event,body);
         }
     }
+    
+	public boolean isSilent() {
+		return silentMode;
+	}
+
+	public void setSilent(boolean silentMode) {
+		this.silentMode = silentMode;
+	}
     
     public List<String> getFfmpegCopyParams() {
     	List<String> ffmpegArgs = new ArrayList<String>();
