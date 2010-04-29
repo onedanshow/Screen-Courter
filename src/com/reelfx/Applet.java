@@ -429,7 +429,8 @@ public class Applet extends JApplet {
             SwingUtilities.invokeAndWait(new Runnable() {
                 public void run() {*/
                 	System.out.println("Closing down...");
-                	controller.closeDown();
+                	if(controller != null)
+                		controller.closeDown();
                 	controller = null;
       /*          }
             });
