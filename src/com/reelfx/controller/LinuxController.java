@@ -9,7 +9,7 @@ import javax.sound.sampled.Mixer;
 
 import com.reelfx.Applet;
 import com.reelfx.model.ScreenRecorder;
-import com.reelfx.view.Interface;
+import com.reelfx.view.RecordInterface;
 
 public class LinuxController extends ApplicationController {
 	
@@ -30,13 +30,13 @@ public class LinuxController extends ApplicationController {
 			System.out.println("Have access to execution folder: "+Applet.BIN_FOLDER.getAbsolutePath());
 			setReadyStateBasedOnPriorRecording();
         } catch (MalformedURLException e1) {
-        	gui.changeState(Interface.FATAL,"Error with install");
+        	recordGUI.changeState(RecordInterface.FATAL,"Error with install");
 			e1.printStackTrace();
 		} catch (InterruptedException e) {
-			gui.changeState(Interface.FATAL,"Error with install");
+			recordGUI.changeState(RecordInterface.FATAL,"Error with install");
 			e.printStackTrace();
 		} catch (IOException e) {
-			gui.changeState(Interface.FATAL,"Error with install");
+			recordGUI.changeState(RecordInterface.FATAL,"Error with install");
 			e.printStackTrace();
 		}
 	}
@@ -55,6 +55,7 @@ public class LinuxController extends ApplicationController {
 
 	@Override
 	public void stopRecording() {
+		super.stopRecording();
 		screen.stopRecording();
 	}
 
