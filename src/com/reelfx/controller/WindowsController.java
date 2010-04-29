@@ -22,7 +22,7 @@ import com.reelfx.model.PreferenceManager;
 import com.reelfx.model.ScreenRecorder;
 import com.reelfx.model.util.ProcessListener;
 import com.reelfx.model.util.StreamGobbler;
-import com.reelfx.view.Interface;
+import com.reelfx.view.RecordInterface;
 
 public class WindowsController extends ApplicationController {
 
@@ -49,10 +49,10 @@ public class WindowsController extends ApplicationController {
 			System.out.println("Have access to execution folder: "+Applet.BIN_FOLDER.getAbsolutePath());
 			setReadyStateBasedOnPriorRecording();
         } catch (MalformedURLException e1) {
-        	gui.changeState(Interface.FATAL,"Error with install");
+        	recordGUI.changeState(RecordInterface.FATAL,"Error with install");
 			e1.printStackTrace();
 		} catch (IOException e) {
-			gui.changeState(Interface.FATAL,"Error with install");
+			recordGUI.changeState(RecordInterface.FATAL,"Error with install");
 			e.printStackTrace();
 		}
 	}
@@ -99,6 +99,7 @@ public class WindowsController extends ApplicationController {
 
 	@Override
 	public void stopRecording() {
+		super.stopRecording();
 		stopped = true;
 		
 		if(audio != null)
@@ -139,7 +140,7 @@ public class WindowsController extends ApplicationController {
 						System.out.println("Audio delay: "+ms+" ms "+s+" s");
 						opts.put(PostProcessor.OFFSET_AUDIO, s+"");
 					} //*/
-			    	postProcess.addProcessListener(this);
+			    	postProcess.setSilent(true); // no need to notify UI for this encoding
 			    	postProcess.encodingOptions(opts);
 					postProcess.saveToComputer(MERGED_OUTPUT_FILE);
 				} else {

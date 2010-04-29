@@ -11,7 +11,7 @@ import netscape.javascript.JSException;
 
 import com.reelfx.Applet;
 import com.reelfx.model.ScreenRecorder;
-import com.reelfx.view.Interface;
+import com.reelfx.view.RecordInterface;
 
 public class MacController extends ApplicationController {
 
@@ -37,18 +37,18 @@ public class MacController extends ApplicationController {
 			System.out.println("Have access to execution folder: "+Applet.BIN_FOLDER.getAbsolutePath());
 			setReadyStateBasedOnPriorRecording();
         } catch (MalformedURLException e1) {
-        	gui.changeState(Interface.FATAL,"Error with install");
+        	recordGUI.changeState(RecordInterface.FATAL,"Error with install");
 			e1.printStackTrace();
 		} catch (InterruptedException e) {
-			gui.changeState(Interface.FATAL,"Error with install");
+			recordGUI.changeState(RecordInterface.FATAL,"Error with install");
 			e.printStackTrace();
 		} catch (IOException e) {
-			gui.changeState(Interface.FATAL,"Error with install");
+			recordGUI.changeState(RecordInterface.FATAL,"Error with install");
 			e.printStackTrace();
 		}
 		
 		if(Applet.IS_MAC && !System.getProperty("os.version").contains("10.6")) {
-			gui.changeState(Interface.FATAL, "Sorry, Snow Leopard required.");
+			recordGUI.changeState(RecordInterface.FATAL, "Sorry, Snow Leopard required.");
 		}
 	}
 
@@ -73,7 +73,8 @@ public class MacController extends ApplicationController {
 	}
 
 	@Override
-	public void stopRecording() {		
+	public void stopRecording() {	
+		super.stopRecording();
 		if(screen != null)
 			screen.stopRecording();
 	}

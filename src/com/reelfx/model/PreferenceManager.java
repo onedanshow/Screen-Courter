@@ -20,6 +20,7 @@ public class PreferenceManager {
 	
 	private String postUrl, screenCaptureName, userID;
 	private Date date;
+	private boolean uploaded = false;
 
 	public PreferenceManager() {
 		super();
@@ -37,6 +38,7 @@ public class PreferenceManager {
 	        screenCaptureName = input.readLine();
 	        userID = input.readLine();
 	        date = new SimpleDateFormat("EEE MMM d HH:mm:ss zzz yyyy").parse(input.readLine());
+	        uploaded = Boolean.parseBoolean(input.readLine());
 	      } 
 	      catch (ParseException e) {			
 			e.printStackTrace();
@@ -58,6 +60,7 @@ public class PreferenceManager {
 				output.write(screenCaptureName+"\n");
 				output.write(userID+"\n");
 				output.write(date+"\n");
+				output.write(uploaded+"\n");
 			}
 			finally {
 				output.close();
@@ -98,6 +101,14 @@ public class PreferenceManager {
 
 	public void setDate(Date date) {
 		this.date = date;
+	}
+	
+	public boolean isUploaded() {
+		return uploaded;
+	}
+
+	public void setUploaded(boolean uploaded) {
+		this.uploaded = uploaded;
 	}
 	
 	public static void deleteOutput() {

@@ -1,6 +1,7 @@
 package com.reelfx;
 
 
+import java.applet.AppletContext;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
@@ -54,6 +55,7 @@ public class Applet extends JApplet {
 	
 	public static File RFX_FOLDER, BIN_FOLDER, DESKTOP_FOLDER;
 	public static URL DOCUMENT_BASE, CODE_BASE;
+	public static JApplet APPLET;
 	public static JSObject JS_BRIDGE;
 	public static String POST_URL = null, SCREEN_CAPTURE_NAME = null, API_KEY = null, HOST_URL = null;
 	public static boolean HEADLESS = false;
@@ -69,6 +71,7 @@ public class Applet extends JApplet {
 	@Override
     public void init() {
 		try {
+			// finish initializing all static variables
 			RFX_FOLDER = new File(getRfxFolderPath()); // should be first
 			BIN_FOLDER = new File(getBinFolderPath());
 			DESKTOP_FOLDER = new File(getDesktopFolderPath());
@@ -79,47 +82,27 @@ public class Applet extends JApplet {
 			}
 			DOCUMENT_BASE = getDocumentBase();
 			CODE_BASE = getCodeBase();
+			APPLET = this; // breaking OOP so I can have a "root"
 			POST_URL = getParameter("post_url");
 			API_KEY = getParameter("api_key");
 			SCREEN_CAPTURE_NAME = getParameter("screen_capture_name");
 			HOST_URL = DOCUMENT_BASE.getProtocol() + "://" + DOCUMENT_BASE.getHost();
 			if(getParameter("headless") != null)
-				HEADLESS = !getParameter("headless").isEmpty() && getParameter("headless").equals("true"); // Boolean.getBoolean(string) didn't work
-		
-			// base code: http://stackoverflow.com/questions/2234476/how-to-detect-the-current-display-with-java
-			GRAPHICS_CONFIG = getGraphicsConfiguration();
-			GraphicsDevice myScreen = GRAPHICS_CONFIG.getDevice();
-			GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
-			GraphicsDevice[] allScreens = env.getScreenDevices();
-			int myScreenIndex = -1;
-			for (int i = 0; i < allScreens.length; i++) {
-			    if (allScreens[i].equals(myScreen))
-			    {
-			        myScreenIndex = i;
-			        break;
-			    }
-			}
-			System.out.println("Applet window is on screen" + myScreenIndex);
-
-			System.out.println(getAppletInfo());			 
-			/*
-			System.out.println("Have these system variables:");
-			Map<String, String> sysEnv = System.getenv();
-	        for (String envName : sysEnv.keySet()) {
-	            System.out.format("%s=%s%n", envName, sysEnv.get(envName));
-	        }
-			*/			
+				HEADLESS = !getParameter("headless").isEmpty() && getParameter("headless").equals("true"); // Boolean.getBoolean(string) didn't work			 
 			if( RFX_FOLDER.exists() && !RFX_FOLDER.isDirectory() && !RFX_FOLDER.delete() )
 		        throw new IOException("Could not delete file for folder: " + RFX_FOLDER.getAbsolutePath());
 			if( !RFX_FOLDER.exists() && !RFX_FOLDER.mkdir() )
 		        throw new IOException("Could not create folder: " + RFX_FOLDER.getAbsolutePath());
 			
-			System.out.println("Have access to folder: "+RFX_FOLDER.getAbsolutePath()+File.separator);
+			// print information to console
+			System.out.println(getAppletInfo());
 			
-			// execute a job on the event-dispatching thread; creating this applet's GUI.
+			// TODO create base GUI here
+			
+			// execute a job on the event-dispatching thread; creating this applet's GUI
             SwingUtilities.invokeAndWait(new Runnable() {
                 public void run() {
-                	// start up the GUI
+                	// start up the os-specific controller
                 	if(IS_MAC)
                 		controller = new MacController();
                 	else if(IS_LINUX)
@@ -127,7 +110,7 @@ public class Applet extends JApplet {
                 	else if(IS_WINDOWS)
                 		controller = new WindowsController();
                 	else 
-                		System.err.println("Want to launch controller but don't which operating system this is.");
+                		System.err.println("Want to launch controller but don't which operating system this is!");
                 }
             });
             SwingUtilities.invokeLater(new Runnable() {
@@ -138,7 +121,6 @@ public class Applet extends JApplet {
             });
         
 		} catch (IOException e) {
-			System.err.println("Could not create temporary folder!");
 			e.printStackTrace();
 		}	catch (Exception e) {
             System.err.println("Could not create GUI!");
@@ -169,50 +151,56 @@ public class Applet extends JApplet {
 		controller.askForAndSaveRecording();
 	}
 	
-	public void showInterface() {
-		controller.showInterface();
+	public void showRecordingInterface() {
+		controller.showRecordingInterface();
 	}
 	
-	public void hideInterface() {
-		controller.hideInterface();
+	public void hideRecordingInterface() {
+		controller.hideRecordingInterface();
+	}
+	
+	public static void handleExistingRecording() {
+		jsCall("sct_handle_existing_recording()");
+	}
+	
+	public static void handleFreshRecording() {
+		jsCall("sct_handle_fresh_recording()");
+	}
+	
+	public static void handleDeletedRecording() {
+		jsCall("sct_handle_deleted_recording()");
+	}
+	
+	public static void redirectWebPage(String url) {
+		jsCall("sct_redirect_page(\""+url+"\");");
 	}
 	
 	public static void sendShowStatus(String message) {
-		if(JS_BRIDGE == null) {
-			System.err.println("Call to sendShowStatus but no JS Bridge exists. Probably in development mode...");
-		} else {
-			JSObject doc = (JSObject) JS_BRIDGE.getMember("document");
-			doc.eval("showStatus(\""+message+"\");");
-		}
+		jsCall("sct_show_status(\""+message+"\");");
 	}
 	
 	public static void sendHideStatus() {
-		if(JS_BRIDGE == null) {
-			System.err.println("Call to sendShowStatus but no JS Bridge exists. Probably in development mode...");
-		} else {
-			JSObject doc = (JSObject) JS_BRIDGE.getMember("document");
-			doc.eval("hideStatus();");
-		}
+		jsCall("sct_hide_status();");
 	}
 	
 	public static void sendInfo(String message) {
-		if(JS_BRIDGE == null) {
-			System.err.println("Call to sendShowStatus but no JS Bridge exists. Probably in development mode...");
-		} else {
-			JSObject doc = (JSObject) JS_BRIDGE.getMember("document");
-			doc.eval("info(\""+message+"\");");
-		}
+		jsCall("sct_info(\""+message+"\");");
 	}
 	
 	public static void sendError(String message) {
-		if(JS_BRIDGE == null) {
-			System.err.println("Call to sendShowStatus but no JS Bridge exists. Probably in development mode...");
-		} else {
-			JSObject doc = (JSObject) JS_BRIDGE.getMember("document");
-			doc.eval("error(\""+message+"\");");
-		}
+		jsCall("sct_error(\""+message+"\");");
 	}
 	// ---------- API ----------
+	
+	private static void jsCall(String method) {
+		if(JS_BRIDGE == null) {
+			System.err.println("Call to "+method+" but no JS Bridge exists. Probably in development mode...");
+		} else {
+			//JSObject doc = (JSObject) JS_BRIDGE.getMember("document");
+			//doc.eval(method);
+			JS_BRIDGE.eval(method);
+		}
+	}
 	
 	/** 
 	 * Copies an entire folder out of a jar to a physical location. 
@@ -351,8 +339,23 @@ public class Applet extends JApplet {
 	@Override
 	public String getAppletInfo() {
 		
+		// base code: http://stackoverflow.com/questions/2234476/how-to-detect-the-current-display-with-java
+		GRAPHICS_CONFIG = getGraphicsConfiguration();
+		GraphicsDevice myScreen = GRAPHICS_CONFIG.getDevice();
+		GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		GraphicsDevice[] allScreens = env.getScreenDevices();
+		int myScreenIndex = -1;
+		for (int i = 0; i < allScreens.length; i++) {
+		    if (allScreens[i].equals(myScreen))
+		    {
+		        myScreenIndex = i;
+		        break;
+		    }
+		}
+		
 		try {
 			return 
+				"APPLET PROPERLY INITIALIZED WITH THIS VARIABLES:\n"+
 				"Java Version: \t"+System.getProperty("java.version")+"\n"+
 				"OS Name: \t"+System.getProperty("os.name")+"\n"+
 				"OS Version: \t"+System.getProperty("os.version")+"\n"+
@@ -365,12 +368,21 @@ public class Applet extends JApplet {
 				"Code Base: \t"+getCodeBase()+"\n"+
 				"Document Base: \t"+getDocumentBase()+"\n"+
 				"Execution URL: \t"+Applet.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()+"\n"+
-				"Multiple Monitors: \t"+(GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices().length > 1)+"\n"+
+				"Multiple Monitors: \t"+(allScreens.length > 1)+"\n"+
+				"Applet window is on screen" + myScreenIndex+"\n"+
 				"Headless: \t"+HEADLESS+"\n";
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
 			return "Error";
 		}
+		
+		/*
+		System.out.println("Have these system variables:");
+		Map<String, String> sysEnv = System.getenv();
+        for (String envName : sysEnv.keySet()) {
+            System.out.format("%s=%s%n", envName, sysEnv.get(envName));
+        }
+		*/
 		
 		//System.out.println("Free space: \n"+TEMP_FOLDER.getFreeSpace()+" GBs"); // Java 1.6 only
 		//System.out.println("Total space: \n"+TEMP_FOLDER.getTotalSpace()+" GBs");
@@ -417,7 +429,8 @@ public class Applet extends JApplet {
             SwingUtilities.invokeAndWait(new Runnable() {
                 public void run() {*/
                 	System.out.println("Closing down...");
-                	controller.closeDown();
+                	if(controller != null)
+                		controller.closeDown();
                 	controller = null;
       /*          }
             });
