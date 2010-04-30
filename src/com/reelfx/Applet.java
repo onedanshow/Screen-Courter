@@ -42,7 +42,7 @@ import com.sun.JarClassLoader;
  * the only plugin.jar's I found for Java via the 'locate' command were either bad symlinks or inside
  * .bundle so I had to create a good symlink called plugin-daniel.jar in /System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Home/lib
  * that pointed to /System/Library/Frameworks/JavaVM.framework/Versions/A/Resources/Deploy.bundle/Contents/Resources/Java/plugin.jar
- * I had not issue adding it on Windows.
+ * I had not issue adding it on Windows or Linux.
  * 
  * further information: http://java.sun.com/j2se/1.5.0/docs/guide/plugin/developer_guide/java_js.html
  */

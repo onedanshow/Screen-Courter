@@ -19,11 +19,11 @@ public class OptionsInterface extends JPanel {
 	
 	private static final long serialVersionUID = 4036818007133606840L;
 	
-    public final static int OPTIONS = 0;
-    public final static int OPTIONS_NO_UPLOAD = 1; 
-    public final static int THINKING = 2;
-    public final static int DISABLED = 3;
-    public final static int FATAL = 4;
+    public final static int OPTIONS = 600;
+    public final static int OPTIONS_NO_UPLOAD = 601; 
+    public final static int THINKING = 602;
+    public final static int DISABLED = 603;
+    public final static int FATAL = 604;
 	
 	public JButton previewBtn, saveBtn, insightBtn, deleteBtn;
 	private final ApplicationController controller;

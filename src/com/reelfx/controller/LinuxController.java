@@ -13,6 +13,8 @@ import com.reelfx.view.RecordInterface;
 
 public class LinuxController extends ApplicationController {
 	
+	public static File MERGED_OUTPUT_FILE = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"screen_capture_temp.mov");
+	
 	public LinuxController() {
 		super();
 	}

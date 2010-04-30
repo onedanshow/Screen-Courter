@@ -52,11 +52,6 @@ public class ScreenRecorder extends ProcessWrapper implements ActionListener {
 	protected static File MAC_EXEC = new File(Applet.BIN_FOLDER.getAbsoluteFile()+File.separator+"mac-screen-recorder");
 	protected static File FFMPEG_EXEC = new File(Applet.BIN_FOLDER.getAbsoluteFile()+File.separator+"ffmpeg"+(Applet.IS_WINDOWS ? ".exe" : ""));
 	
-	// VIDEO SETTINGS
-	public static double SCALE = 0.8;
-	public static int FPS = 15;  // can't go above 20, else it starts dropping frames/audio
-	public static int BIT_RATE = 384; // started at 5028 and went down
-	
 	// STATES
 	public final static int RECORDING_STARTED = 100;
 	public final static int RECORDING_COMPLETE = 101;
@@ -110,10 +105,6 @@ public class ScreenRecorder extends ProcessWrapper implements ActionListener {
 						
 						try {
 							
-			    			deleteOutput();
-			    			
-			    			// TODO refactor this with Windows code when I revisit Linux
-			    	        
 			    			// only get it for the screen we're on
 			    			int height = Applet.GRAPHICS_CONFIG.getDevice().getDisplayMode().getHeight();
 			    			int width = Applet.GRAPHICS_CONFIG.getDevice().getDisplayMode().getWidth();
@@ -122,25 +113,29 @@ public class ScreenRecorder extends ProcessWrapper implements ActionListener {
 			    			//ffmpegArgs.add("/usr/bin/ffmpeg");
 			    	    	ffmpegArgs.add(Applet.BIN_FOLDER.getAbsoluteFile()+File.separator+"ffmpeg");
 			    	    	// screen capture settings
-			    	    	ffmpegArgs.addAll(parseParameters("-f x11grab -s "+width+"x"+height+" -r "+FPS+" -b "+BIT_RATE+"k -i :0.0+0,0"));
+			    	    	ffmpegArgs.addAll(parseParameters("-y -f x11grab -s "+width+"x"+height+" -r 20 -i :0.0+0,0"));
 			    	    	// microphone settings (good resource: http://www.oreilly.de/catalog/multilinux/excerpt/ch14-05.htm)
-			    	    	if(audioSource != null) {
+			    	    	/* 04/29/2010 - ffmpeg gets much better framerate when not recording microphone (let Java do this)
+			    	    	 * if(audioSource != null) { 
 			    	    		String driver = audioIndex > 0 ? "/dev/dsp"+audioIndex : "/dev/dsp";
 			    	    		ffmpegArgs.addAll(parseParameters("-f oss -ac 1 -ar "+AudioRecorder.FREQ+" -i "+driver));
-			    	    	}
+			    	    	}*/
 			    	    	// output file settings
-			    	    	ffmpegArgs.addAll(parseParameters("-vcodec libx264 -r "+FPS+" -s "+Math.round(width*SCALE)+"x"+Math.round(height*SCALE)));
+			    	    	ffmpegArgs.addAll(parseParameters("-vcodec mpeg4 -r 20 -b 5000k")); // -s "+Math.round(width*SCALE)+"x"+Math.round(height*SCALE))
 			    	    	ffmpegArgs.add(OUTPUT_FILE.getAbsolutePath());
+			    	    	
 			    	    	System.out.println("Executing this command: "+prettyCommand(ffmpegArgs));
+			    	    	
 			    	        ProcessBuilder pb = new ProcessBuilder(ffmpegArgs);
 			    	        recordingProcess = pb.start();
-			    	        fireProcessUpdate(RECORDING_STARTED);
+			    	        // fireProcessUpdate(RECORDING_STARTED); // moved to action listener method
 			    	        
 			    	        errorGobbler = new StreamGobbler(recordingProcess.getErrorStream(), false, "ffmpeg E");
 				            inputGobbler = new StreamGobbler(recordingProcess.getInputStream(), false, "ffmpeg O");
 				            
 				            System.out.println("Starting listener threads...");
 				            errorGobbler.start();
+				            errorGobbler.addActionListener("Stream mapping:", self);
 				            inputGobbler.start();
 				            
 				            recordingProcess.waitFor();
@@ -177,7 +172,7 @@ public class ScreenRecorder extends ProcessWrapper implements ActionListener {
 							recordingProcess = pb.start();
 				            //fireProcessUpdate(RECORDING_STARTED); // moved to action listener method
 				            
-							// unfortunately, ffmpeg doesn't get the microphone on Windows
+							// ffmpeg doesn't get the microphone on Windows, but this allows it to record a better frame rate
 							
 				            errorGobbler = new StreamGobbler(recordingProcess.getErrorStream(), false, "ffmpeg E");
 				            inputGobbler = new StreamGobbler(recordingProcess.getInputStream(), false, "ffmpeg O");
@@ -216,11 +211,7 @@ public class ScreenRecorder extends ProcessWrapper implements ActionListener {
 	    	PrintWriter pw = new PrintWriter(recordingProcess.getOutputStream());
 	    	pw.println("start");
 	    	pw.flush();
-		} /*else if(Applet.IS_WINDOWS) {
-			PrintWriter pw = new PrintWriter(recordingProcess.getOutputStream());
-	    	pw.print("\n");
-	    	pw.flush();
-		}*/
+		}
 		// nothing for linux or windows
 	}
 	
