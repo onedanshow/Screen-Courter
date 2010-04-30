@@ -11,6 +11,7 @@ import netscape.javascript.JSException;
 
 import com.reelfx.Applet;
 import com.reelfx.model.ScreenRecorder;
+import com.reelfx.view.OptionsInterface;
 import com.reelfx.view.RecordInterface;
 
 public class MacController extends ApplicationController {
@@ -38,12 +39,15 @@ public class MacController extends ApplicationController {
 			setReadyStateBasedOnPriorRecording();
         } catch (MalformedURLException e1) {
         	recordGUI.changeState(RecordInterface.FATAL,"Error with install");
+        	optionsGUI.changeState(OptionsInterface.FATAL, "Sorry, an error occurred while installing the native extensions. Please contact an Insight admin.");
 			e1.printStackTrace();
 		} catch (InterruptedException e) {
 			recordGUI.changeState(RecordInterface.FATAL,"Error with install");
+			optionsGUI.changeState(OptionsInterface.FATAL, "Sorry, an error occurred while installing the native extensions. Please contact an Insight admin.");
 			e.printStackTrace();
 		} catch (IOException e) {
 			recordGUI.changeState(RecordInterface.FATAL,"Error with install");
+			optionsGUI.changeState(OptionsInterface.FATAL, "Sorry, an error occurred while installing the native extensions. Please contact an Insight admin.");
 			e.printStackTrace();
 		}
 		

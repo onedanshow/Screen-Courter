@@ -22,6 +22,7 @@ import com.reelfx.model.PreferenceManager;
 import com.reelfx.model.ScreenRecorder;
 import com.reelfx.model.util.ProcessListener;
 import com.reelfx.model.util.StreamGobbler;
+import com.reelfx.view.OptionsInterface;
 import com.reelfx.view.RecordInterface;
 
 public class WindowsController extends ApplicationController {
@@ -31,7 +32,6 @@ public class WindowsController extends ApplicationController {
 	private AudioRecorder audio;
 	private boolean stopped = false;
 	private boolean recordingDone = false;
-	
 	private long audioStart, videoStart;
 	
 	public WindowsController() {
@@ -50,9 +50,11 @@ public class WindowsController extends ApplicationController {
 			setReadyStateBasedOnPriorRecording();
         } catch (MalformedURLException e1) {
         	recordGUI.changeState(RecordInterface.FATAL,"Error with install");
+        	optionsGUI.changeState(OptionsInterface.FATAL, "Sorry, an error occurred while installing the native extensions. Please contact an Insight admin.");
 			e1.printStackTrace();
 		} catch (IOException e) {
 			recordGUI.changeState(RecordInterface.FATAL,"Error with install");
+			optionsGUI.changeState(OptionsInterface.FATAL, "Sorry, an error occurred while installing the native extensions. Please contact an Insight admin.");
 			e.printStackTrace();
 		}
 	}
@@ -128,7 +130,6 @@ public class WindowsController extends ApplicationController {
 						postProcess.removeAllProcessListeners();
 					postProcess = new PostProcessor();
 					Map<Integer,String> opts = new HashMap<Integer, String>();
-					//*  despite my best effort, they seem to match up just fine when just started at the same time
 					if(audioStart > videoStart) {
 						long ms = videoStart - audioStart;
 						float s = ((float)ms)/1000f;
@@ -139,7 +140,7 @@ public class WindowsController extends ApplicationController {
 						float s = ((float)ms)/1000f;
 						System.out.println("Audio delay: "+ms+" ms "+s+" s");
 						opts.put(PostProcessor.OFFSET_AUDIO, s+"");
-					} //*/
+					}
 			    	postProcess.setSilent(true); // no need to notify UI for this encoding
 			    	postProcess.encodingOptions(opts);
 					postProcess.saveToComputer(MERGED_OUTPUT_FILE);
