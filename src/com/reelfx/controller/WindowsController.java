@@ -189,5 +189,23 @@ public class WindowsController extends ApplicationController {
 			}
 		});
 	}
+	
+	class VolumeMonitor extends Thread {
+		public boolean gogo = true;
+		
+		@Override
+		public void run() {
+			super.run();
+			try {
+				
+				while(gogo) {
+					System.out.println("Volume level: "+mic.getVolumeLevel());
+					Thread.sleep(333);
+				}
+				
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
 }
-

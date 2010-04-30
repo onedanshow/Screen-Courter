@@ -38,10 +38,13 @@ import java.io.File;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
+import javax.sound.sampled.Control;
 import javax.sound.sampled.DataLine;
+import javax.sound.sampled.FloatControl;
 import javax.sound.sampled.LineEvent;
 import javax.sound.sampled.LineListener;
 import javax.sound.sampled.Mixer;
+import javax.sound.sampled.Port;
 import javax.sound.sampled.SourceDataLine;
 import javax.sound.sampled.TargetDataLine;
 import javax.sound.sampled.AudioFormat;
@@ -104,7 +107,7 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 			out("Unable to get a recording line");
 			e.printStackTrace();
 		}
-
+		
 		m_audioInputStream = new AudioInputStream(m_line);
 
 		/* Again for simplicity, we've hardcoded the audio file
@@ -197,7 +200,7 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 			public Object run() {
 		    	try
 				{
-					AudioSystem.write(m_audioInputStream, m_targetType, m_outputFile);
+					AudioSystem.write(m_audioInputStream, m_targetType, m_outputFile); //loops until done
 					System.out.println("Writing audio...");
 				}
 				catch (IOException e)
@@ -208,6 +211,10 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 			}
     	});
 	}
+    
+    public float getVolumeLevel() {
+    	return m_line.getLevel();
+    }
     
     /**
      * Part of the LineListener implementation. 

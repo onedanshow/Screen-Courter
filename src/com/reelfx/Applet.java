@@ -30,6 +30,7 @@ import com.reelfx.controller.LinuxController;
 import com.reelfx.controller.MacController;
 import com.reelfx.controller.WindowsController;
 import com.reelfx.view.AudioSelectBox;
+import com.reelfx.view.VolumeVisualizer;
 import com.sun.JarClassLoader;
 
 /**
@@ -97,7 +98,8 @@ public class Applet extends JApplet {
 			// print information to console
 			System.out.println(getAppletInfo());
 			
-			// TODO create base GUI here
+			VolumeVisualizer vv = new VolumeVisualizer();
+			//vv.start();
 			
 			// execute a job on the event-dispatching thread; creating this applet's GUI
             SwingUtilities.invokeAndWait(new Runnable() {

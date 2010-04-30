@@ -11,6 +11,7 @@ import javax.swing.JComboBox;
 public class AudioSelectBox extends JComboBox implements MouseListener {
 	
 	private static final long serialVersionUID = -1739456139353607514L;
+	private VolumeMonitor monitor;
 
 	public AudioSelectBox() {
 		super();
@@ -68,4 +69,15 @@ public class AudioSelectBox extends JComboBox implements MouseListener {
 	}
 
 	public void mouseReleased(MouseEvent e) {}
+	
+	class VolumeMonitor extends Thread {
+		public boolean gogo = true;
+		
+		@Override
+		public void run() {
+			super.run();
+			
+			
+		}
+	}
 }
