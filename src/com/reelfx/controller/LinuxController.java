@@ -84,10 +84,11 @@ public class LinuxController extends ApplicationController {
 
 	@Override
 	public void stopRecording() {
-		super.stopRecording();
 		if(audio != null)
             audio.stopRecording();
+		System.out.println("About to stop screen recording...");
 		screen.stopRecording();
+		super.stopRecording(); // call after (has nothing by GUI updates)
 	}
 
 	public void processUpdate(int event,Object body) {

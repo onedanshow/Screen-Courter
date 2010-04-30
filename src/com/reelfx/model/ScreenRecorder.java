@@ -43,7 +43,7 @@ import org.apache.commons.io.FileUtils;
  */
 public class ScreenRecorder extends ProcessWrapper implements ActionListener {
 	
-	private static String EXT = Applet.IS_MAC ? ".mov" : Applet.IS_WINDOWS ? ".avi" : ".mp4";
+	private static String EXT = Applet.IS_WINDOWS ? ".avi" : ".mov";
 	
 	// FILE LOCATIONS
 	public static File OUTPUT_FILE = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"screen_capture"+EXT);

@@ -31,6 +31,7 @@ import org.apache.http.params.CoreProtocolPNames;
 import org.apache.http.util.EntityUtils;
 
 import com.reelfx.Applet;
+import com.reelfx.controller.LinuxController;
 import com.reelfx.controller.WindowsController;
 import com.reelfx.model.util.ProcessWrapper;
 import com.reelfx.model.util.StreamGobbler;
@@ -108,7 +109,12 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 						&& WindowsController.MERGED_OUTPUT_FILE.exists()) {
 					// do no encoding
 				}
-				else if(Applet.IS_WINDOWS) {
+				else if(Applet.IS_LINUX 
+						&& outputFile.getAbsolutePath().equals(LinuxController.MERGED_OUTPUT_FILE.getAbsolutePath())
+						&& LinuxController.MERGED_OUTPUT_FILE.exists()) {
+					// do no encoding
+				}
+				else if(Applet.IS_WINDOWS || Applet.IS_LINUX) {
 					fireProcessUpdate(ENCODING_STARTED);
 					// get information about the media file:
 					//Map<String,Object> metadata = parseMediaFile(ScreenRecorder.OUTPUT_FILE.getAbsolutePath());
@@ -153,7 +159,7 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 			        
 			        fireProcessUpdate(ENCODING_COMPLETE);
 				}
-				else if(Applet.IS_LINUX || Applet.IS_MAC) {
+				else if(Applet.IS_MAC) {
 					FileUtils.copyFile(ScreenRecorder.OUTPUT_FILE, outputFile);
 					fireProcessUpdate(ENCODING_COMPLETE);
 				}

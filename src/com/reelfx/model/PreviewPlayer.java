@@ -16,6 +16,7 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 
 import com.reelfx.Applet;
+import com.reelfx.controller.LinuxController;
 import com.reelfx.controller.WindowsController;
 import com.reelfx.model.util.ProcessWrapper;
 import com.reelfx.model.util.StreamGobbler;
@@ -38,22 +39,24 @@ public class PreviewPlayer extends ProcessWrapper {
 		    		if(Applet.IS_MAC && Desktop.isDesktopSupported()) {
 		    			Desktop.getDesktop().open(ScreenRecorder.OUTPUT_FILE);
 		    		}	
-		    		else if (false) { //Applet.IS_WINDOWS && Desktop.isDesktopSupported()) {
+		    		/*else if (Applet.IS_WINDOWS && Desktop.isDesktopSupported()) {
 		        		Desktop.getDesktop().open(WindowsController.MERGED_OUTPUT_FILE);
 		    			/*List<String> ffplayArgs = new ArrayList<String>();
 		    			ffplayArgs.add(WindowsController.MERGED_OUTPUT_FILE.getAbsolutePath());
 		    			new ProcessBuilder(ffplayArgs).start();*/
-		        	} 
+		        	//} 
 		    		else {
 		        		String ffplay = "ffplay" + (Applet.IS_WINDOWS ? ".exe" : "");
 						
 				        List<String> ffplayArgs = new ArrayList<String>();
 				        ffplayArgs.add(Applet.BIN_FOLDER.getAbsolutePath()+File.separator+ffplay);
-				        if(Applet.IS_WINDOWS) {
+				        if(Applet.IS_WINDOWS || Applet.IS_LINUX) {
 				        	ffplayArgs.addAll(parseParameters("-x 800 -y 600"));
 				        }
 				        if(Applet.IS_WINDOWS)
 				        	ffplayArgs.add(WindowsController.MERGED_OUTPUT_FILE.getAbsolutePath());
+				        else if(Applet.IS_LINUX)
+				        	ffplayArgs.add(LinuxController.MERGED_OUTPUT_FILE.getAbsolutePath());
 				        else
 				        	ffplayArgs.add(ScreenRecorder.OUTPUT_FILE.getAbsolutePath());
 				        	
