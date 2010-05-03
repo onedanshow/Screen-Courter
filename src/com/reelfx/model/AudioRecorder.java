@@ -163,16 +163,12 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 	*/
 	public void stopRecording()
 	{
-		AccessController.doPrivileged(new PrivilegedAction<Object>() {
-
-			@Override
-			public Object run() {
-				m_line.stop();
-				m_line.close();
-				return null;
-			}
-		});
-		// TODO handle stopping this thread properly
+		System.out.println("Starting to the stop the line...");
+		m_line.flush();
+		m_line.stop();
+		System.out.println("Starting to close the line...");
+		m_line.close();
+		System.out.println("Done closing and stopping the audio line");
 	}
 
 

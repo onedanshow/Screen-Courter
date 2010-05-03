@@ -46,12 +46,12 @@ public class RecordInterface extends JFrame implements MouseListener, MouseMotio
 
     private static final long serialVersionUID = 4803377343174867777L;
     
-    public final static int READY = 0;
-    public final static int READY_WITH_OPTIONS = 1;
-    public final static int PRE_RECORDING = 5;
-    public final static int RECORDING = 2;
-    public final static int THINKING = 3;
-    public final static int FATAL = 4;
+    public final static int READY = 500;
+    public final static int READY_WITH_OPTIONS = 501;
+    public final static int PRE_RECORDING = 505;
+    public final static int RECORDING = 502;
+    public final static int THINKING = 503;
+    public final static int FATAL = 504;
     
     public JButton recordBtn, previewBtn, saveBtn, insightBtn, deleteBtn;
     public AudioSelectBox audioSelect;
