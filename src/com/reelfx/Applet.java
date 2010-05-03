@@ -98,7 +98,7 @@ public class Applet extends JApplet {
 			// print information to console
 			System.out.println(getAppletInfo());
 			
-			VolumeVisualizer vv = new VolumeVisualizer();
+			//VolumeVisualizer vv = new VolumeVisualizer();
 			//vv.start();
 			
 			// execute a job on the event-dispatching thread; creating this applet's GUI

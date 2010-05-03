@@ -86,6 +86,9 @@ public class WindowsController extends ApplicationController {
 		        	mic = new AudioRecorder(audioSource);
 		        	mic.addProcessListener(listener);
 		        	mic.startRecording();
+		        	
+		        	VolumeMonitor vm = new VolumeMonitor();
+		        	vm.start();
 		        	/*
 		        	Mixer systemMixer = null;
 		        	for(Mixer.Info info : AudioSystem.getMixerInfo())
@@ -203,7 +206,7 @@ public class WindowsController extends ApplicationController {
 					Thread.sleep(333);
 				}
 				
-			} catch (InterruptedException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}

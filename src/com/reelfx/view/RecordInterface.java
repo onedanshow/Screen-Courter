@@ -379,6 +379,12 @@ public class RecordInterface extends JFrame implements MouseListener, MouseMotio
         }
 
     }
+    
+    @Override
+    public void dispose() {
+    	super.dispose();
+    	audioSelect.destroy();
+    }
 
     // ----- listener methods till EOF ------
     
