@@ -63,7 +63,7 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 	
     // AUDIO SETTINGS
     public static float FREQ = 22050; //11025.0F; // 22050; //44100;  lowered because it was skipping and dropping audio
-    public static AudioFormat AUDIO_FORMAT = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, FREQ, 16, 2, 4, FREQ, false);
+    public static AudioFormat AUDIO_FORMAT = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, FREQ, 8, 2, 2, FREQ, false);
     
     // STATES
     public final static int RECORDING_STARTED = 200;
@@ -212,10 +212,6 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 			}
     	});
 	}
-    
-    public float getVolumeLevel() {
-    	return m_line.getLevel();
-    }
     
     /**
      * Part of the LineListener implementation. 

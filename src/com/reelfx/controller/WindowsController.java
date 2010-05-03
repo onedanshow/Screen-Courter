@@ -86,9 +86,7 @@ public class WindowsController extends ApplicationController {
 		        	mic = new AudioRecorder(audioSource);
 		        	mic.addProcessListener(listener);
 		        	mic.startRecording();
-		        	
-		        	VolumeMonitor vm = new VolumeMonitor();
-		        	vm.start();
+
 		        	/*
 		        	Mixer systemMixer = null;
 		        	for(Mixer.Info info : AudioSystem.getMixerInfo())
@@ -191,24 +189,5 @@ public class WindowsController extends ApplicationController {
 				return null;
 			}
 		});
-	}
-	
-	class VolumeMonitor extends Thread {
-		public boolean gogo = true;
-		
-		@Override
-		public void run() {
-			super.run();
-			try {
-				
-				while(gogo) {
-					System.out.println("Volume level: "+mic.getVolumeLevel());
-					Thread.sleep(333);
-				}
-				
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
 	}
 }
