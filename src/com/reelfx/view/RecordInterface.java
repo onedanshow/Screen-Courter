@@ -47,15 +47,14 @@ public class RecordInterface extends JFrame implements MouseListener, MouseMotio
     private static final long serialVersionUID = 4803377343174867777L;
     
     public final static int READY = 500;
-    public final static int READY_WITH_OPTIONS = 501;
     public final static int PRE_RECORDING = 505;
     public final static int RECORDING = 502;
     public final static int THINKING = 503;
     public final static int FATAL = 504;
     
-    public JButton recordBtn, previewBtn, saveBtn, insightBtn, deleteBtn;
+    public JButton recordBtn;
     public AudioSelectBox audioSelect;
-    public JPanel recordingOptionsPanel, statusPanel, postRecordingOptionsPanel;
+    public JPanel recordingOptionsPanel, statusPanel;
     
     private JLabel status, message;
     //private JTextArea message;
@@ -140,78 +139,6 @@ public class RecordInterface extends JFrame implements MouseListener, MouseMotio
         
         add(statusPanel); //,BorderLayout.CENTER);
         
-        // ------- setup post recording options -------
-        
-        postRecordingOptionsPanel = new JPanel();
-        //postRecordingOptionsPanel.setBackground(messageColor);
-        //postRecordingOptionsPanel.setMaximumSize(new Dimension(180,1000));
-        //postRecordingOptionsPanel.setBorder(javax.swing.BorderFactory.createLineBorder(backgroundColor, 8));
-        postRecordingOptionsPanel.setLayout(new BoxLayout(postRecordingOptionsPanel, BoxLayout.Y_AXIS));
-        
-        postRecordingOptionsPanel.add(new JSeparator());
-        
-        /*
-        message = new JTextArea();
-        message.setFont(new java.awt.Font("Arial", 0, 13));
-        message.setMinimumSize(new Dimension(200,20));
-        message.setOpaque(false);
-        message.setLineWrap(true);
-        message.setBorder(javax.swing.BorderFactory.createLineBorder(messageColor, 5));
-        //message.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        message.setText("You have a review for \"Shot 2000-0300\" from 04/03/2010");
-        message.setAlignmentX(0.5F);
-        /* */
-        message = new JLabel();
-        message.setFont(new java.awt.Font("Arial", 0, 11));
-        message.setOpaque(false);
-        message.setMaximumSize(new Dimension(180,1000));
-        message.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        message.setAlignmentX(0.5F);
-        /* */
-        postRecordingOptionsPanel.add(message);
-        
-        previewBtn = new JButton("Preview It");
-        previewBtn.setFont(new java.awt.Font("Arial", 0, 13));
-        previewBtn.setAlignmentX(0.5F);
-        previewBtn.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                previewRecording();
-            }
-        });
-        postRecordingOptionsPanel.add(previewBtn);
-
-        saveBtn = new JButton("Save to My Computer");
-        saveBtn.setFont(new java.awt.Font("Arial", 0, 13));
-        saveBtn.setAlignmentX(0.5F);
-        saveBtn.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                saveRecording();
-            }
-        });
-        postRecordingOptionsPanel.add(saveBtn);
-
-        insightBtn = new JButton("Post to Insight");
-        insightBtn.setFont(new java.awt.Font("Arial", 0, 13));
-        insightBtn.setAlignmentX(0.5F);
-        insightBtn.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                postRecording();
-            }
-        });
-        postRecordingOptionsPanel.add(insightBtn);
-        
-        deleteBtn = new JButton("Delete It");
-        deleteBtn.setFont(new java.awt.Font("Arial", 0, 13));
-        deleteBtn.setAlignmentX(0.5F);
-        deleteBtn.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-            	deleteRecording();
-            }
-        });
-        postRecordingOptionsPanel.add(deleteBtn);
-        
-        add(postRecordingOptionsPanel); //,BorderLayout.SOUTH);
-        
         System.out.println("RecordInterface initialized...");
     }
     
@@ -226,7 +153,6 @@ public class RecordInterface extends JFrame implements MouseListener, MouseMotio
     		recordBtn.setEnabled(true);
     		recordBtn.setText("Record");
     		audioSelect.setEnabled(true);
-    		audioSelect.setVisible(true);
     		if(statusText != null) {
     			status.setText(statusText);
     			statusPanel.setVisible(true);
@@ -234,30 +160,11 @@ public class RecordInterface extends JFrame implements MouseListener, MouseMotio
     			status.setText("");
     			statusPanel.setVisible(false);
     		}
-    		postRecordingOptionsPanel.setVisible(false);
-    		break;
-    		
-		case READY_WITH_OPTIONS:
-    		recordBtn.setEnabled(true);
-    		recordBtn.setText("Record");
-    		audioSelect.setEnabled(true);
-    		audioSelect.setVisible(true);
-    		if(statusText != null) {
-    			status.setText(statusText);
-    			statusPanel.setVisible(true);
-    		} else {
-    			status.setText("");
-    			statusPanel.setVisible(false);
-    		}
-    		/*if(!controller.getOptionsMessage().isEmpty()) {
-    			message.setText("<html><body><table cellpadding='5' width='100%'><tr><td align='center'>"+controller.getOptionsMessage()+"</td></tr></table></body></html>");
-    		}*/
-    		postRecordingOptionsPanel.setVisible(true);
     		break;
     		
     	case PRE_RECORDING:
     		recordBtn.setEnabled(false);
-    		audioSelect.setVisible(false);
+    		audioSelect.setEnabled(false);
     		status.setEnabled(true);
     		status.setVisible(true);
     		if(statusText != null) {
@@ -267,13 +174,12 @@ public class RecordInterface extends JFrame implements MouseListener, MouseMotio
     			status.setText("");
     			statusPanel.setVisible(false);
     		}
-    		postRecordingOptionsPanel.setVisible(false);
     		break;
     		
     	case RECORDING:
     		recordBtn.setEnabled(true);
     		recordBtn.setText("Stop");
-    		audioSelect.setVisible(false);
+    		audioSelect.setEnabled(false);
     		if(statusText != null) {
     			status.setText(statusText);
     			statusPanel.setVisible(true);
@@ -281,7 +187,6 @@ public class RecordInterface extends JFrame implements MouseListener, MouseMotio
     			status.setText("");
     			statusPanel.setVisible(false);
     		}
-    		postRecordingOptionsPanel.setVisible(false);
     		break;
     		
     	case FATAL:	
@@ -295,7 +200,6 @@ public class RecordInterface extends JFrame implements MouseListener, MouseMotio
     			status.setText("");
     			statusPanel.setVisible(false);
     		}
-    		postRecordingOptionsPanel.setVisible(false);
     		break;
     	}
     	currentState = state; // needs to be at end
@@ -336,14 +240,13 @@ public class RecordInterface extends JFrame implements MouseListener, MouseMotio
 	}
 
     private void startRecording() {
-    	controller.startRecording(audioSelect.getFreshAudioRecorder());
+    	controller.startRecording(audioSelect.getSelectedAudioRecorder());
     }
 
     public void stopRecording() {
     	timer.stop();
     	timerCount = 0;
     	controller.stopRecording();
-    	//changeState(READY_WITH_OPTIONS);
     	changeState(READY);
     }
 

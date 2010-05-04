@@ -89,9 +89,6 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 
 	public AudioRecorder(Mixer mixer)
 	{
-		/* For simplicity, the audio data format used for recording
-		   is hardcoded here. We use PCM 44.1 kHz, 16 bit signed, stereo.
-		*/
 		// tried switching to mono, but it threw an exception
 		//AudioFormat	audioFormat = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, FREQ, 16, 2, 4, FREQ, false);
 
@@ -144,14 +141,6 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 	{
 		m_captureToFile = false;
 		m_saveFile = true;
-		if(m_line != null) {
-			System.out.println("Starting to the stop the line...");
-			m_line.flush();
-			m_line.stop();
-			System.out.println("Starting to close the line...");
-			m_line.close();
-			System.out.println("Done closing and stopping the audio line");
-		}
 	}
 
     @Override
@@ -172,11 +161,19 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 		    		// start looping to grab bytes to sample volume, writing out a file if necessary
 		    		byte[] audioData;	
 		    		while(true) {
-		    			// are we ready to save the file?
+		    			// are we ready to save the file and finish the thread?
 		    			if(m_saveFile || m_line == null) {
 		    				if(bos != null) {
+		    					System.out.println("Saving audio file...");
 								bos.flush();
 								bos.close();
+								// now properly reconstruct the audio file that we just made (if we made one)
+				    			BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(TEMP_FILE));
+				    			long lLengthInFrames = TEMP_FILE.length() / AudioRecorder.AUDIO_FORMAT.getFrameSize();
+				    			AudioInputStream ais = new AudioInputStream(inputStream,AudioRecorder.AUDIO_FORMAT,lLengthInFrames);
+				    			AudioSystem.write(ais, m_targetType, m_outputFile);
+				    			fireProcessUpdate(RECORDING_COMPLETE); // thread may keep going though
+				    			bos = null;
 		    				}
 							m_saveFile = false;
 						}
@@ -202,19 +199,11 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 							bos.write(audioData);
 						}
 					}
-		    		// now properly reconstruct the audio file that we just made (if we made one)
-		    		if(bos != null) {
-		    			BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(TEMP_FILE));
-		    			long lLengthInFrames = TEMP_FILE.length() / AudioRecorder.AUDIO_FORMAT.getFrameSize();
-		    			AudioInputStream ais = new AudioInputStream(inputStream,AudioRecorder.AUDIO_FORMAT,lLengthInFrames);
-		    			AudioSystem.write(ais, m_targetType, m_outputFile);
-		    		}
 				}
 				catch (IOException e)
 				{
 					e.printStackTrace();
 				}
-				fireProcessUpdate(RECORDING_COMPLETE);
 				return null;
 			}
     	});
@@ -232,6 +221,15 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
     public void destroy() {
     	System.out.println("Destroying AudioRecorder...");
     	stopRecording();
+    	if(m_line != null) {
+			System.out.println("Starting to the stop the line...");
+			m_line.flush();
+			m_line.stop();
+			System.out.println("Starting to close the line...");
+			m_line.close();
+			System.out.println("Done closing and stopping the audio line");
+			m_line = null;
+		}
     	m_audioInputStream = null;
     	m_line = null;
     }
@@ -262,6 +260,8 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 			@Override
 			public Object run() {
 				try {
+					if(TEMP_FILE.exists() && !TEMP_FILE.delete())
+						throw new Exception("Can't delete temporary audio file!");
 					if(OUTPUT_FILE.exists() && !OUTPUT_FILE.delete())
 						throw new Exception("Can't delete the old audio file!");
 				} catch (Exception e) {

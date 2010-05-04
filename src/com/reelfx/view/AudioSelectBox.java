@@ -62,6 +62,7 @@ public class AudioSelectBox extends JComboBox implements MouseListener, ItemList
 	}
 	
 	// for when you are starting a new recording (and subsequently a new thread)
+	@Deprecated	// no longer needed since AudioRecorder is a running thread from the get-go
 	public AudioRecorder getFreshAudioRecorder() {
 		selectedMixer = null;
 		if(selectedAudioRecorder != null)
