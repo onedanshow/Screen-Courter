@@ -32,11 +32,16 @@ package com.reelfx.model;
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.File;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.List;
 
 import javax.sound.sampled.Control;
 import javax.sound.sampled.DataLine;
@@ -52,9 +57,11 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.AudioFileFormat;
+import javax.sound.sampled.spi.AudioFileWriter;
 
 import com.reelfx.Applet;
 import com.reelfx.model.util.ProcessWrapper;
+import com.sun.media.sound.JDK13Services;
 
 public class AudioRecorder extends ProcessWrapper implements LineListener
 {
@@ -70,10 +77,12 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
     public final static int RECORDING_COMPLETE = 201;
     
 	private TargetDataLine m_line = null;
-    //private SourceDataLine m_line = null;
 	private AudioFileFormat.Type m_targetType;
 	private AudioInputStream m_audioInputStream;
 	private File m_outputFile;
+	private ByteArrayOutputStream m_byteArrayOutputStream;
+	private boolean m_captureToFile = false, m_saveFile = false;
+	private double m_volume = 0;
 
 	public AudioRecorder(Mixer mixer)
 	{
@@ -87,6 +96,7 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 		   TargetDataLine is used later to read audio data from it.
 		   If requesting the line was successful, we are opening it (important!).
 		*/
+		System.out.println("Creating new AudioRecorder");
 		DataLine.Info info = new DataLine.Info(TargetDataLine.class, AUDIO_FORMAT);
 		try
 		{
@@ -102,10 +112,11 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 			}
 			m_line.addLineListener(this);
 			m_line.open(AUDIO_FORMAT);
+			m_line.start();
 		}
 		catch (LineUnavailableException e)
 		{
-			out("Unable to get a recording line");
+			System.err.println("Unable to get a recording line");
 			e.printStackTrace();
 		}
 		
@@ -123,28 +134,15 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 	*/
 	public void startRecording()
 	{
-		AccessController.doPrivileged(new PrivilegedAction<Object>() {
-
-			@Override
-			public Object run() {
-				System.out.println("Setting up audio line recording...");
-				/* Starting the TargetDataLine. It tells the line that
-				   we now want to read data from it. If this method
-				   isn't called, we won't
-				   be able to read data from the line at all.
-				*/
-				m_line.start();
-
-				
-				return null;
-			}
-		});
-		
+		System.out.println("Setting up audio line recording...");
 		/* Starting the thread. This call results in the
 		   method 'run()' (see below) being called. There, the
 		   data is actually read from the line.
 		*/
-		super.start();
+		m_captureToFile = true;
+		m_saveFile = false;
+		fireProcessUpdate(RECORDING_STARTED); // moved from processUpdate
+		//super.start();
 	}
 
 	/** Stops the recording.
@@ -163,12 +161,16 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 	*/
 	public void stopRecording()
 	{
-		System.out.println("Starting to the stop the line...");
-		m_line.flush();
-		m_line.stop();
-		System.out.println("Starting to close the line...");
-		m_line.close();
-		System.out.println("Done closing and stopping the audio line");
+		m_captureToFile = false;
+		m_saveFile = true;
+		if(m_line != null) {
+			System.out.println("Starting to the stop the line...");
+			m_line.flush();
+			m_line.stop();
+			System.out.println("Starting to close the line...");
+			m_line.close();
+			System.out.println("Done closing and stopping the audio line");
+		}
 	}
 
 
@@ -195,10 +197,39 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 
 			@Override
 			public Object run() {
+				BufferedOutputStream bos = null;
 		    	try
 				{
-					AudioSystem.write(m_audioInputStream, m_targetType, m_outputFile); //loops until done
-					System.out.println("Writing audio...");
+		    		byte[] audioData;
+		    		FileOutputStream fos = new FileOutputStream(m_outputFile);
+		    		bos = new BufferedOutputStream(fos);
+		    		System.out.println("Writing audio...");
+		    		
+		    		while(true) {
+		    			if(m_saveFile || m_line == null) {
+							bos.flush();
+							bos.close();
+							m_saveFile = false;
+							break;
+						}
+		    			audioData = new byte[m_line.getBufferSize() / 5];
+		    			m_line.read(audioData, 0, audioData.length);
+		    			
+		    			double sumMeanSquare = 0;
+				        for(int j=0; j<audioData.length; j++) {
+				        	sumMeanSquare += Math.pow(audioData[j], 2);
+				        }
+				        double averageMeanSquare = Math.round(sumMeanSquare / audioData.length);
+				        
+						m_volume = averageMeanSquare;
+
+						// stolen from AudioSystem.getAudioFileWriters() and AudioSystem.write()
+						//AudioSystem.write(m_audioInputStream, m_targetType, m_outputFile);
+						
+						if(m_captureToFile) {
+							bos.write(audioData);
+						}
+					}
 				}
 				catch (IOException e)
 				{
@@ -209,16 +240,32 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
     	});
 	}
     
+    public TargetDataLine getDataLine() {
+    	return m_line;
+    }
+    
+    public double getVolume() {
+    	return m_volume;
+    }
+    
+    @Override
+    public void destroy() {
+    	System.out.println("Destroying AudioRecorder...");
+    	stopRecording();
+    	m_audioInputStream = null;
+    	m_line = null;
+    }
+    
     /**
      * Part of the LineListener implementation. 
      */
     public void update(LineEvent event) {
 		if(event.getType().equals(LineEvent.Type.OPEN)) {
-			System.out.println("Audio Line Opened...");
+			//System.out.println("Audio Line Opened...");
 		} 
 		else if(event.getType().equals(LineEvent.Type.START)) {
-			System.out.println("Audio Recording Started...");
-			fireProcessUpdate(RECORDING_STARTED);
+			//System.out.println("Audio Recording Started...");
+			//fireProcessUpdate(RECORDING_STARTED); // moved to run() because line is already started
 		} 
 		else if(event.getType().equals(LineEvent.Type.STOP)) {
 			System.out.println("Audio Recording Stopped...");
@@ -227,11 +274,6 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 		else if(event.getType().equals(LineEvent.Type.CLOSE)) {
 			System.out.println("Audio Line Closed...");
 		}
-	}
-
-	private static void out(String strMessage)
-	{
-		System.out.println(strMessage);
 	}
 	
 	public static void deleteOutput() {
@@ -250,54 +292,3 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 		});
 	}
 }
-
-/**	<titleabbrev>SimpleAudioRecorder</titleabbrev>
-<title>Recording to an audio file (simple version)</title>
-
-<formalpara><title>Purpose</title>
-<para>Records audio data and stores it in a file. The data is
-recorded in CD quality (44.1 kHz, 16 bit linear, stereo) and
-stored in a <filename>.wav</filename> file.</para></formalpara>
-
-<formalpara><title>Usage</title>
-<para>
-<cmdsynopsis>
-<command>java SimpleAudioRecorder</command>
-<arg choice="plain"><option>-h</option></arg>
-</cmdsynopsis>
-<cmdsynopsis>
-<command>java SimpleAudioRecorder</command>
-<arg choice="plain"><replaceable>audiofile</replaceable></arg>
-</cmdsynopsis>
-</para></formalpara>
-
-<formalpara><title>Parameters</title>
-<variablelist>
-<varlistentry>
-<term><option>-h</option></term>
-<listitem><para>print usage information, then exit</para></listitem>
-</varlistentry>
-<varlistentry>
-<term><option><replaceable>audiofile</replaceable></option></term>
-<listitem><para>the file name of the
-audio file that should be produced from the recorded data</para></listitem>
-</varlistentry>
-</variablelist>
-</formalpara>
-
-<formalpara><title>Bugs, limitations</title>
-<para>
-You cannot select audio formats and the audio file type
-on the command line. See
-AudioRecorder for a version that has more advanced options.
-Due to a bug in the Sun jdk1.3/1.4, this program does not work
-with it.
-</para></formalpara>
-
-<formalpara><title>Source code</title>
-<para>
-<ulink url="SimpleAudioRecorder.java.html">SimpleAudioRecorder.java</ulink>
-</para>
-</formalpara>
-
-*/

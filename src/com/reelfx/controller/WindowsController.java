@@ -68,10 +68,10 @@ public class WindowsController extends ApplicationController {
 		screen.addProcessListener(this);
 	}
 
-	private Mixer audioSource = null;
+	private AudioRecorder audioSource = null;
 	private ProcessListener listener;
-	public void startRecording(Mixer source, int index) {
-		audioSource = source;
+	public void startRecording(AudioRecorder selectedAudio) {
+		audioSource = selectedAudio;
 		listener = this;
 		
 		recordingDone = false;
@@ -85,7 +85,7 @@ public class WindowsController extends ApplicationController {
 				AudioRecorder.deleteOutput();
 				stopped = false;
 		        if(audioSource != null) {
-		        	mic = new AudioRecorder(audioSource);
+		        	mic = audioSource;
 		        	mic.addProcessListener(listener);
 		        	mic.startRecording();
 

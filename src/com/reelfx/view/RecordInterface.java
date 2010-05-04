@@ -336,7 +336,7 @@ public class RecordInterface extends JFrame implements MouseListener, MouseMotio
 	}
 
     private void startRecording() {
-    	controller.startRecording(audioSelect.getSelectedMixer(),audioSelect.getSelectedIndex());
+    	controller.startRecording(audioSelect.getFreshAudioRecorder());
     }
 
     public void stopRecording() {

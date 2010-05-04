@@ -103,7 +103,7 @@ public abstract class ApplicationController implements ProcessListener {
 		preferences.writePreferences();
 	}
 
-	public abstract void startRecording(Mixer mixer, int index);
+	public abstract void startRecording(AudioRecorder audio);
 
 	public void stopRecording() {
 		recordGUI.changeState(RecordInterface.READY);

@@ -67,11 +67,11 @@ public class LinuxController extends ApplicationController {
 	}
 
 	@Override
-	public void startRecording(Mixer mixer,int index) {
+	public void startRecording(AudioRecorder selectedAudio) {
 		deleteOutput();
 		AudioRecorder.deleteOutput();
-        if(mixer != null) {
-        	audio = new AudioRecorder(mixer);
+        if(selectedAudio != null) {
+        	audio = selectedAudio;
         	audio.addProcessListener(this);
         	audio.startRecording();
         } else {

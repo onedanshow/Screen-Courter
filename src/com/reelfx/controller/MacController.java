@@ -10,6 +10,7 @@ import javax.sound.sampled.Mixer;
 import netscape.javascript.JSException;
 
 import com.reelfx.Applet;
+import com.reelfx.model.AudioRecorder;
 import com.reelfx.model.ScreenRecorder;
 import com.reelfx.view.OptionsInterface;
 import com.reelfx.view.RecordInterface;
@@ -71,7 +72,7 @@ public class MacController extends ApplicationController {
 	}
 
 	@Override
-	public void startRecording(Mixer audioSource,int audioIndex) {
+	public void startRecording(AudioRecorder audio) {
 		if(screen != null)
 			screen.startRecording();
 	}

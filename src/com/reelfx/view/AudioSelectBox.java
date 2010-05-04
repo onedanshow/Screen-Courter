@@ -5,8 +5,10 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.IOException;
 
 import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.Mixer;
@@ -19,8 +21,9 @@ public class AudioSelectBox extends JComboBox implements MouseListener, ItemList
 	
 	private static final long serialVersionUID = -1739456139353607514L;
 	private VolumeMonitor monitor = new VolumeMonitor();
+	private AudioRecorder selectedAudioRecorder = null;
 	private Mixer selectedMixer = null;
-	private TargetDataLine selectedDataLine = null;
+	//private TargetDataLine selectedDataLine = null;
 
 	public AudioSelectBox() {
 		super();
@@ -47,6 +50,24 @@ public class AudioSelectBox extends JComboBox implements MouseListener, ItemList
 		addItem("No Audio");
 	}
 	
+	// for when you are starting a new recording (and subsequently a new thread)
+	public AudioRecorder getFreshAudioRecorder() {
+		selectedMixer = null;
+		if(selectedAudioRecorder != null)
+			selectedAudioRecorder.destroy();
+		selectedAudioRecorder = null;
+		return getSelectedAudioRecorder();
+	}
+	
+	// when you just need an instance
+	public AudioRecorder getSelectedAudioRecorder() {
+		if(selectedAudioRecorder == null) {
+			selectedAudioRecorder = new AudioRecorder(getSelectedMixer());
+			selectedAudioRecorder.start(); // start reading the line
+		}
+		return selectedAudioRecorder;
+	}
+	
 	public Mixer getSelectedMixer() {
 		if(selectedMixer == null)
 			for(Mixer.Info info : AudioSystem.getMixerInfo())
@@ -54,23 +75,6 @@ public class AudioSelectBox extends JComboBox implements MouseListener, ItemList
 	        		selectedMixer = AudioSystem.getMixer(info);
 		
 		return selectedMixer;
-	}
-	
-	public TargetDataLine getSelectedDataLine() {
-		if(selectedDataLine == null) {
-			try {
-				// need to sample in 8-bits so we can calculate the audio easily in the VolumeMonitor
-				//AudioFormat af = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, 11025, 8, 2, 2, 11025, true);
-				selectedDataLine = (TargetDataLine)getSelectedMixer().getLine(new DataLine.Info(TargetDataLine.class,AudioRecorder.AUDIO_FORMAT));
-				System.out.println("Format: "+selectedDataLine.getFormat().toString());
-				selectedDataLine.open(AudioRecorder.AUDIO_FORMAT);
-				selectedDataLine.start();
-			} catch (Exception e) {
-				selectedDataLine = null;
-			}
-		}
-		
-		return selectedDataLine;
 	}
 	
 	public static Mixer getDefaultMixer() {
@@ -89,12 +93,9 @@ public class AudioSelectBox extends JComboBox implements MouseListener, ItemList
 	public void itemStateChanged(ItemEvent e) {
 		if(e.getStateChange() == ItemEvent.SELECTED) {
 			selectedMixer = null;
-			if(selectedDataLine != null) {
-				selectedDataLine.flush();
-				selectedDataLine.stop();
-				selectedDataLine.close();
-			}
-			selectedDataLine = null; 
+			if(selectedAudioRecorder != null)
+				selectedAudioRecorder.destroy();
+			selectedAudioRecorder = null;
 		}
 	}
 
@@ -115,24 +116,39 @@ public class AudioSelectBox extends JComboBox implements MouseListener, ItemList
 	// helpful: http://forums.sun.com/thread.jspa?threadID=5433582
 	class VolumeMonitor extends Thread {
 		public boolean gogo = true;
-		
+		private AudioInputStream ais;
 		@Override
 		public void run() {
 			try {
 				while(gogo) {
-					byte[] audioData = new byte[getSelectedDataLine().getBufferSize() / 5];
-					getSelectedDataLine().read(audioData, 0, audioData.length);
+					Thread.sleep(500);
+					
+					//if(selectedAudioRecorder == null)
+					//	continue;
+					/*
+					byte[] audioData = new byte[2]; //getSelectedAudioRecorder().getDataLine().getBufferSize() / 5];
+					//byte[] b = new byte[2];
+					ais = new AudioInputStream(getSelectedAudioRecorder().getDataLine()); // required to not steal bytes from TargetDataLine
+					//if(!ais.markSupported()) throw new IOException("Mark/reset not supported.");
+					ais.read(audioData, 0, audioData.length);
+					
+					System.out.println("volume: "+Math.pow(audioData[0],2));
+					*/
+					System.out.println("volume: "+getSelectedAudioRecorder().getVolume());
+			        /*
 			        double sumMeanSquare = 0;
 			        for(int j=0; j<audioData.length; j++) {
 			        	sumMeanSquare += Math.pow(audioData[j], 2);
 			        }
-			        double averageMeanSquare = sumMeanSquare / audioData.length;
-					
-					Thread.sleep(100);
+			        double averageMeanSquare = Math.round(sumMeanSquare / audioData.length);
+					System.out.println("volume: "+averageMeanSquare);
+					*/
 				}
 			} catch (InterruptedException e) {
 				e.printStackTrace();
-			}
+			} /*catch (IOException e) {
+				e.printStackTrace();
+			}*/
 		}
 	}
 

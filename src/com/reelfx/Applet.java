@@ -137,7 +137,7 @@ public class Applet extends JApplet {
 	
 	public void startRecording() {
 		// TODO grabs default mixer right now, need a way to select microphones...
-		controller.startRecording(AudioSelectBox.getDefaultMixer(),0);
+		//controller.startRecording(AudioSelectBox.get); // TODO fix when needed
 	}
 	
 	public void stopRecording() {
