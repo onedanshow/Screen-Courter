@@ -32,10 +32,12 @@ package com.reelfx.model;
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.File;
@@ -67,6 +69,7 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 {
 	
     public static File OUTPUT_FILE = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"screen_capture.wav");
+    public static File TEMP_FILE = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"temp.wav");
 	
     // AUDIO SETTINGS
     public static float FREQ = 22050; //11025.0F; // 22050; //44100;  lowered because it was skipping and dropping audio
@@ -200,15 +203,14 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 				BufferedOutputStream bos = null;
 		    	try
 				{
-		    		byte[] audioData;
-		    		FileOutputStream fos = new FileOutputStream(m_outputFile);
-		    		bos = new BufferedOutputStream(fos);
-		    		System.out.println("Writing audio...");
-		    		
+		    		// start grabbing bytes to sample volume, writing out a file if necessary
+		    		byte[] audioData;	
 		    		while(true) {
 		    			if(m_saveFile || m_line == null) {
-							bos.flush();
-							bos.close();
+		    				if(bos != null) {
+								bos.flush();
+								bos.close();
+		    				}
 							m_saveFile = false;
 							break;
 						}
@@ -218,23 +220,32 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 		    			double sumMeanSquare = 0;
 				        for(int j=0; j<audioData.length; j++) {
 				        	sumMeanSquare += Math.pow(audioData[j], 2);
-				        }
-				        double averageMeanSquare = Math.round(sumMeanSquare / audioData.length);
-				        
-						m_volume = averageMeanSquare;
-
-						// stolen from AudioSystem.getAudioFileWriters() and AudioSystem.write()
-						//AudioSystem.write(m_audioInputStream, m_targetType, m_outputFile);
+				        }				        
+						m_volume = Math.round(sumMeanSquare / audioData.length);
 						
 						if(m_captureToFile) {
+							if(bos == null) {
+					    		bos = new BufferedOutputStream(new FileOutputStream(TEMP_FILE));
+					    		System.out.println("Writing audio...");
+							}
 							bos.write(audioData);
 						}
 					}
+		    		// now properly reconstruct the audio file that we just made
+		    		if(bos != null) {
+		    			BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(TEMP_FILE));
+		    			long lLengthInFrames = TEMP_FILE.length() / AudioRecorder.AUDIO_FORMAT.getFrameSize();
+		    			AudioInputStream ais = new AudioInputStream(inputStream,
+		    														AudioRecorder.AUDIO_FORMAT,
+		    														lLengthInFrames);
+		    			AudioSystem.write(ais, m_targetType, m_outputFile);
+		    		}
 				}
 				catch (IOException e)
 				{
 					e.printStackTrace();
 				}
+				fireProcessUpdate(RECORDING_COMPLETE);
 				return null;
 			}
     	});
@@ -269,7 +280,7 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 		} 
 		else if(event.getType().equals(LineEvent.Type.STOP)) {
 			System.out.println("Audio Recording Stopped...");
-			fireProcessUpdate(RECORDING_COMPLETE);
+			//fireProcessUpdate(RECORDING_COMPLETE);
 		} 
 		else if(event.getType().equals(LineEvent.Type.CLOSE)) {
 			System.out.println("Audio Line Closed...");
