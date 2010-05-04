@@ -95,10 +95,6 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 		// tried switching to mono, but it threw an exception
 		//AudioFormat	audioFormat = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, FREQ, 16, 2, 4, FREQ, false);
 
-		/* Now, we are trying to get a TargetDataLine. The
-		   TargetDataLine is used later to read audio data from it.
-		   If requesting the line was successful, we are opening it (important!).
-		*/
 		System.out.println("Creating new AudioRecorder");
 		DataLine.Info info = new DataLine.Info(TargetDataLine.class, AUDIO_FORMAT);
 		try
@@ -124,17 +120,12 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 		}
 		
 		m_audioInputStream = new AudioInputStream(m_line);
-
-		/* Again for simplicity, we've hardcoded the audio file
-		   type, too.
-		*/
 		m_targetType = AudioFileFormat.Type.WAVE;
+		
+		super.start(); // moved from startRecording()
 	}
 
-	/** Starts the recording.
-	    To accomplish this, (i) the line is started and (ii) the
-	    thread is started.
-	*/
+	/** Starts the recording. */
 	public void startRecording()
 	{
 		System.out.println("Setting up audio line recording...");
@@ -145,23 +136,10 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 		m_captureToFile = true;
 		m_saveFile = false;
 		fireProcessUpdate(RECORDING_STARTED); // moved from processUpdate
-		//super.start();
+		// super.start();
 	}
 
-	/** Stops the recording.
-
-	    Note that stopping the thread explicitly is not necessary. Once
-	    no more data can be read from the TargetDataLine, no more data
-	    be read from our AudioInputStream. And if there is no more
-	    data from the AudioInputStream, the method 'AudioSystem.write()'
-	    (called in 'run()' returns. Returning from 'AudioSystem.write()'
-	    is followed by returning from 'run()', and thus, the thread
-	    is terminated automatically.
-
-	    It's not a good idea to call this method just 'stop()'
-	    because stop() is a (deprecated) method of the class 'Thread'.
-	    And we don't want to override this method.
-	*/
+	/** Stops the recording. */
 	public void stopRecording()
 	{
 		m_captureToFile = false;
@@ -176,23 +154,6 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 		}
 	}
 
-
-	/** Main working method.
-	    You may be surprised that here, just 'AudioSystem.write()' is
-	    called. But internally, it works like this: AudioSystem.write()
-	    contains a loop that is trying to read from the passed
-	    AudioInputStream. Since we have a special AudioInputStream
-	    that gets its data from a TargetDataLine, reading from the
-	    AudioInputStream leads to reading from the TargetDataLine. The
-	    data read this way is then written to the passed File. Before
-	    writing of audio data starts, a header is written according
-	    to the desired audio file type. Reading continues until no
-	    more data can be read from the AudioInputStream. In our case,
-	    this happens if no more data can be read from the TargetDataLine.
-	    This, in turn, happens if the TargetDataLine is stopped or closed
-	    (which implies stopping). (Also see the comment above.) Then,
-	    the file is closed and 'AudioSystem.write()' returns.
-	*/
     @Override
 	public void run()
 	{		
@@ -200,29 +161,39 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 
 			@Override
 			public Object run() {
+				// why: http://www.jsresources.org/faq_audio.html#dataline_getlevel
+				// used: http://forums.sun.com/thread.jspa?threadID=5433582
+				// used: http://forums.sun.com/thread.jspa?threadID=5402696
+				// used: http://www.jsresources.org/examples/RawAudioDataConverter.java.html
+				// another approach: http://proteo.me.uk/?p=38
 				BufferedOutputStream bos = null;
 		    	try
 				{
-		    		// start grabbing bytes to sample volume, writing out a file if necessary
+		    		// start looping to grab bytes to sample volume, writing out a file if necessary
 		    		byte[] audioData;	
 		    		while(true) {
+		    			// are we ready to save the file?
 		    			if(m_saveFile || m_line == null) {
 		    				if(bos != null) {
 								bos.flush();
 								bos.close();
 		    				}
 							m_saveFile = false;
-							break;
 						}
+		    			// are we destroying this thread?
+		    			if(m_line == null) {
+		    				break;
+		    			}
+		    			// sample audio
 		    			audioData = new byte[m_line.getBufferSize() / 5];
 		    			m_line.read(audioData, 0, audioData.length);
-		    			
+		    			// calculate the volume (RMS: http://en.wikipedia.org/wiki/Root_mean_square)
 		    			double sumMeanSquare = 0;
 				        for(int j=0; j<audioData.length; j++) {
 				        	sumMeanSquare += Math.pow(audioData[j], 2);
 				        }				        
-						m_volume = Math.round(sumMeanSquare / audioData.length);
-						
+						m_volume = Math.round(Math.sqrt(sumMeanSquare / audioData.length));
+						// write the audio
 						if(m_captureToFile) {
 							if(bos == null) {
 					    		bos = new BufferedOutputStream(new FileOutputStream(TEMP_FILE));
@@ -231,13 +202,11 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 							bos.write(audioData);
 						}
 					}
-		    		// now properly reconstruct the audio file that we just made
+		    		// now properly reconstruct the audio file that we just made (if we made one)
 		    		if(bos != null) {
 		    			BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(TEMP_FILE));
 		    			long lLengthInFrames = TEMP_FILE.length() / AudioRecorder.AUDIO_FORMAT.getFrameSize();
-		    			AudioInputStream ais = new AudioInputStream(inputStream,
-		    														AudioRecorder.AUDIO_FORMAT,
-		    														lLengthInFrames);
+		    			AudioInputStream ais = new AudioInputStream(inputStream,AudioRecorder.AUDIO_FORMAT,lLengthInFrames);
 		    			AudioSystem.write(ais, m_targetType, m_outputFile);
 		    		}
 				}

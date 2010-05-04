@@ -1,19 +1,27 @@
 package com.reelfx.view;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.io.IOException;
 
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.DataLine;
 import javax.sound.sampled.Mixer;
-import javax.sound.sampled.TargetDataLine;
+import javax.swing.ComboBoxEditor;
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.ListCellRenderer;
+import javax.swing.plaf.basic.BasicComboBoxRenderer;
 
 import com.reelfx.model.AudioRecorder;
 
@@ -23,12 +31,15 @@ public class AudioSelectBox extends JComboBox implements MouseListener, ItemList
 	private VolumeMonitor monitor = new VolumeMonitor();
 	private AudioRecorder selectedAudioRecorder = null;
 	private Mixer selectedMixer = null;
-	//private TargetDataLine selectedDataLine = null;
-
+	private VolumeVisualizer visualizer = new VolumeVisualizer();
+	
 	public AudioSelectBox() {
 		super();
 		addMouseListener(this);
 		addItemListener(this);
+		setEditable(true);
+        setEditor(visualizer);
+
 		setFont(new Font("Arial", 0, 11));
 		listAudioSources();
 		
@@ -63,7 +74,6 @@ public class AudioSelectBox extends JComboBox implements MouseListener, ItemList
 	public AudioRecorder getSelectedAudioRecorder() {
 		if(selectedAudioRecorder == null) {
 			selectedAudioRecorder = new AudioRecorder(getSelectedMixer());
-			selectedAudioRecorder.start(); // start reading the line
 		}
 		return selectedAudioRecorder;
 	}
@@ -112,43 +122,19 @@ public class AudioSelectBox extends JComboBox implements MouseListener, ItemList
 
 	public void mouseReleased(MouseEvent e) {}
 	
-	// why: http://www.jsresources.org/faq_audio.html#dataline_getlevel
-	// helpful: http://forums.sun.com/thread.jspa?threadID=5433582
 	class VolumeMonitor extends Thread {
 		public boolean gogo = true;
-		private AudioInputStream ais;
+
 		@Override
 		public void run() {
 			try {
 				while(gogo) {
-					Thread.sleep(500);
-					
-					//if(selectedAudioRecorder == null)
-					//	continue;
-					/*
-					byte[] audioData = new byte[2]; //getSelectedAudioRecorder().getDataLine().getBufferSize() / 5];
-					//byte[] b = new byte[2];
-					ais = new AudioInputStream(getSelectedAudioRecorder().getDataLine()); // required to not steal bytes from TargetDataLine
-					//if(!ais.markSupported()) throw new IOException("Mark/reset not supported.");
-					ais.read(audioData, 0, audioData.length);
-					
-					System.out.println("volume: "+Math.pow(audioData[0],2));
-					*/
-					System.out.println("volume: "+getSelectedAudioRecorder().getVolume());
-			        /*
-			        double sumMeanSquare = 0;
-			        for(int j=0; j<audioData.length; j++) {
-			        	sumMeanSquare += Math.pow(audioData[j], 2);
-			        }
-			        double averageMeanSquare = Math.round(sumMeanSquare / audioData.length);
-					System.out.println("volume: "+averageMeanSquare);
-					*/
+					visualizer.setVolume(getSelectedAudioRecorder().getVolume());
+					Thread.sleep(100);
 				}
 			} catch (InterruptedException e) {
 				e.printStackTrace();
-			} /*catch (IOException e) {
-				e.printStackTrace();
-			}*/
+			}
 		}
 	}
 
@@ -156,4 +142,83 @@ public class AudioSelectBox extends JComboBox implements MouseListener, ItemList
 		// kill the volume listener thread
 		monitor.gogo = false; 
 	}
+	
+	class VolumeVisualizer extends JPanel implements ComboBoxEditor  {
+		private static final long serialVersionUID = -2493872910538751344L;
+		private double volume = 0;
+		
+		public VolumeVisualizer() {
+			super();
+			setLayout(null);
+			setDoubleBuffered(true);
+		}
+
+		public void setVolume(double volume) {
+			if (volume == this.volume) return;
+			this.volume = volume;			
+			revalidate();
+			repaint();
+		}
+		
+		@Override
+		protected void paintComponent(Graphics g) {
+			super.paintComponent(g);
+			Dimension dim = getSize();
+			Graphics2D g2 = (Graphics2D) g;
+			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			g2.setColor(Color.GRAY);
+			g2.fillRoundRect(15, dim.height/4, dim.width-30, dim.height/2, 8, 8);
+			g2.setColor(Color.ORANGE);
+			g2.fillRoundRect(15, dim.height/4, (int)Math.min(dim.width-30, dim.width*volume/50), dim.height/2, 8, 8);
+		}
+		
+		@Override
+		public void addActionListener(ActionListener l) {}
+
+		@Override
+		public Component getEditorComponent() {
+			return this;
+		}
+
+		@Override
+		public Object getItem() {
+			return null;
+		}
+
+		@Override
+		public void removeActionListener(ActionListener l) {}
+
+		@Override
+		public void selectAll() {}
+
+		@Override
+		public void setItem(Object anObject) {}	
+	}
+	
+	/*class ItemRenderer extends JLabel implements ListCellRenderer {
+		private static final long serialVersionUID = 7794106572744408569L;
+
+		public ItemRenderer() {
+            setOpaque(true);
+            setHorizontalAlignment(CENTER);
+            setVerticalAlignment(CENTER);
+        }
+		
+		@Override
+		public Component getListCellRendererComponent(JList list, Object value,
+				int index, boolean isSelected, boolean cellHasFocus) {
+
+			if(cellHasFocus) {
+				setText("C:"+value.toString());
+			}
+			else if(isSelected) {
+				setText("V: "+volume);
+			} else {
+				setText("D:"+value.toString());
+			}
+			
+			return this;
+		}
+	}*/
+
 }
