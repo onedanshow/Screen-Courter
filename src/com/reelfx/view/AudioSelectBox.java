@@ -73,7 +73,7 @@ public class AudioSelectBox extends JComboBox implements MouseListener, ItemList
 	
 	// when you just need an instance
 	public AudioRecorder getSelectedAudioRecorder() {
-		if(selectedAudioRecorder == null) {
+		if(selectedAudioRecorder == null && getSelectedMixer() != null) {
 			selectedAudioRecorder = new AudioRecorder(getSelectedMixer());
 		}
 		return selectedAudioRecorder;
@@ -130,7 +130,9 @@ public class AudioSelectBox extends JComboBox implements MouseListener, ItemList
 		public void run() {
 			try {
 				while(gogo) {
-					visualizer.setVolume(getSelectedAudioRecorder().getVolume());
+					if(getSelectedAudioRecorder() != null) {
+						visualizer.setVolume(getSelectedAudioRecorder().getVolume());
+					}
 					Thread.sleep(100);
 				}
 			} catch (InterruptedException e) {

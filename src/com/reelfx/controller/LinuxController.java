@@ -10,8 +10,6 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.sound.sampled.Mixer;
-
 import com.reelfx.Applet;
 import com.reelfx.model.AudioRecorder;
 import com.reelfx.model.PostProcessor;
@@ -86,9 +84,11 @@ public class LinuxController extends ApplicationController {
 	public void stopRecording() {
 		if(audio != null)
             audio.stopRecording();
+		else
+			recordingDone = true; // if no audio, queue the post process
 		System.out.println("About to stop screen recording...");
 		screen.stopRecording();
-		super.stopRecording(); // call after (has nothing by GUI updates)
+		super.stopRecording(); // call after (has nothing but GUI updates)
 	}
 
 	public void processUpdate(int event,Object body) {
