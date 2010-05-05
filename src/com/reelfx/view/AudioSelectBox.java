@@ -17,11 +17,7 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Mixer;
 import javax.swing.ComboBoxEditor;
 import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.ListCellRenderer;
-import javax.swing.plaf.basic.BasicComboBoxRenderer;
 
 import com.reelfx.model.AudioRecorder;
 
@@ -132,6 +128,8 @@ public class AudioSelectBox extends JComboBox implements MouseListener, ItemList
 				while(gogo) {
 					if(getSelectedAudioRecorder() != null) {
 						visualizer.setVolume(getSelectedAudioRecorder().getVolume());
+					} else {
+						visualizer.setVolume(0);
 					}
 					Thread.sleep(100);
 				}

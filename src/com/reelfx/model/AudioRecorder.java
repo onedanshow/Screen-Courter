@@ -174,6 +174,7 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 				    			AudioSystem.write(ais, m_targetType, m_outputFile);
 				    			fireProcessUpdate(RECORDING_COMPLETE); // thread may keep going though
 				    			bos = null;
+				    			TEMP_FILE.delete();
 		    				}
 							m_saveFile = false;
 						}

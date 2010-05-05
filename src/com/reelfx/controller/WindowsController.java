@@ -124,6 +124,9 @@ public class WindowsController extends ApplicationController {
 		
 		if(mic != null)
             mic.stopRecording();
+		else
+			recordingDone = true; // if no audio, queue the post process
+		
 		if(systemAudio != null)
 			systemAudio.stopRecording();
 		
