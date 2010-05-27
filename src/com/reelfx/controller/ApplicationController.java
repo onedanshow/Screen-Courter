@@ -49,6 +49,7 @@ public abstract class ApplicationController implements ProcessListener {
 		recordGUI = new RecordInterface(this);
 		optionsGUI = new OptionsInterface(this);
 		
+		// note, if this line changes, also change Applet.sendViewNotification
 		Applet.APPLET.getContentPane().add(optionsGUI);
 
 		if (Applet.HEADLESS) {

@@ -5,6 +5,7 @@ import java.applet.AppletContext;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
+import java.awt.Window;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -16,6 +17,7 @@ import java.net.URL;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Enumeration;
+import java.util.EventObject;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
@@ -32,9 +34,12 @@ import com.reelfx.controller.LinuxController;
 import com.reelfx.controller.MacController;
 import com.reelfx.controller.WindowsController;
 import com.reelfx.view.AudioSelectBox;
-import com.reelfx.view.CountDown;
+import com.reelfx.view.CenterInterface;
 import com.reelfx.view.VolumeVisualizer;
+import com.reelfx.view.util.MoveableWindow;
+import com.reelfx.view.util.ViewListener;
 import com.sun.JarClassLoader;
+import com.sun.jdi.IntegerValue;
 
 /**
  * 
@@ -130,7 +135,25 @@ public class Applet extends JApplet {
         }
     }
 	
-	// ---------- API ----------
+	/**
+	 * Sends a notification to all the views and each can update itself accordingly.
+	 * 
+	 * @param notification
+	 * @param body
+	 */
+	public static void sendViewNotification(int notification,Object body) {
+		// applet is a special case (see ApplicationController constructor)
+		((ViewListener) APPLET.getContentPane().getComponent(0)).receiveViewNotification(notification, body);
+		// notify all the open windows
+		Window[] windows = Window.getWindows();
+		for(Window win : windows) {
+			if(win instanceof ViewListener) {
+				((ViewListener) win).receiveViewNotification(notification, body);
+			}
+		}
+	}
+	
+	// ---------- BEGIN JAVASCRIPT API ----------
 	/*
 	public void prepareForRecording() {
 		controller.prepareForRecording();
@@ -267,7 +290,7 @@ public class Applet extends JApplet {
 	public static void sendError(String message) {
 		jsCall("sct_error(\""+message+"\");");
 	}
-	// ---------- API ----------
+	// ---------- END JAVASCRIPT API ----------
 	
 	private static void jsCall(String method) {
 		if(JS_BRIDGE == null) {

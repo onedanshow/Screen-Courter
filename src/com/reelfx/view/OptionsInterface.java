@@ -14,8 +14,9 @@ import javax.swing.JPanel;
 import javax.swing.JSeparator;
 
 import com.reelfx.controller.ApplicationController;
+import com.reelfx.view.util.ViewListener;
 
-public class OptionsInterface extends JPanel {
+public class OptionsInterface extends JPanel implements ViewListener {
 	
 	private static final long serialVersionUID = 4036818007133606840L;
 	
@@ -145,4 +146,9 @@ public class OptionsInterface extends JPanel {
     	
     	currentState = state; // needs to be at end
     }
+
+	@Override
+	public void receiveViewNotification(int notification, Object body) {
+		
+	}
 }

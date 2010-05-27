@@ -37,11 +37,11 @@ import javax.swing.border.Border;
 import com.reelfx.Applet;
 import com.reelfx.controller.ApplicationController;
 import com.reelfx.model.ScreenRecorder;
+import com.reelfx.view.util.MoveableWindow;
 
-public class RecordInterface extends JWindow implements MouseListener,
-		MouseMotionListener, WindowListener, ActionListener {
+public class RecordInterface extends MoveableWindow implements ActionListener {
 
-	private static final long serialVersionUID = 4803377343174867777L;
+	public final static String NAME = "RecordInterface";
 
 	public final static int READY = 500;
 	public final static int PRE_RECORDING = 501;
@@ -58,13 +58,11 @@ public class RecordInterface extends JWindow implements MouseListener,
 	private Timer timer;
 	private ApplicationController controller;
 	private JFileChooser fileSelect = new JFileChooser();
-	private Color backgroundColor = new Color(34, 34, 34); // new
-	// Color(230,230,230);
+	private Color backgroundColor = new Color(34, 34, 34); // new Color(230,230,230);
 	private Color statusColor = new Color(255, 102, 102);
 	private Color messageColor = new Color(255, 255, 153);
 	private int currentState = READY, timerCount = 0;
-	private Dimension screen;
-	private CountDown countdown = new CountDown();
+	private CenterInterface countdown;
 
 	/**
 	 * The small recording GUI that provides recording, microphone, and status
@@ -75,15 +73,10 @@ public class RecordInterface extends JWindow implements MouseListener,
 	 */
 	public RecordInterface(ApplicationController controller) {
 		super();
-
+		setName(NAME);
+		
 		this.controller = controller;
-
-		Toolkit tk = Toolkit.getDefaultToolkit();
-		screen = tk.getScreenSize();
-		// From Docs: Gets the size of the screen. On systems with multiple
-		// displays, the primary display is used. Multi-screen aware display
-		// dimensions are available from GraphicsConfiguration and
-		// GraphicsDevice
+		this.countdown = new CenterInterface(this);
 
 		// ------- setup -------
 
@@ -100,9 +93,6 @@ public class RecordInterface extends JWindow implements MouseListener,
 		// setLayout(new BorderLayout(0, 3));
 		setLayout(new BoxLayout(getContentPane(), BoxLayout.PAGE_AXIS));
 		setAlwaysOnTop(true);
-		addMouseListener(this);
-		addMouseMotionListener(this);
-		addWindowListener(this);
 		//addComponentListener(this);
 
 		/*
@@ -126,8 +116,7 @@ public class RecordInterface extends JWindow implements MouseListener,
 		titlePanel.add(title, BorderLayout.CENTER);
 
 		closeBtn = new JButton("", new ImageIcon(this.getClass()
-				.getClassLoader().getResource(
-						"com/reelfx/view/images/close.png")));
+				.getClassLoader().getResource("com/reelfx/view/images/close.png")));
 		closeBtn.setBorderPainted(false);
 		closeBtn.setContentAreaFilled(false);
 		closeBtn.addActionListener(new ActionListener() {
@@ -177,6 +166,8 @@ public class RecordInterface extends JWindow implements MouseListener,
 		 * statusPanel = new JPanel(); statusPanel.setOpaque(false);
 		 * statusPanel.add(status); add(statusPanel); //,BorderLayout.CENTER);
 		 */
+		
+		countdown.setVisible(true); countdown.pack();
 
 		System.out.println("RecordInterface initialized...");
 	}
@@ -250,6 +241,11 @@ public class RecordInterface extends JWindow implements MouseListener,
 			pack();
 
 		Applet.handleRecordingUpdate(state, statusText);
+	}
+	
+	@Override
+	public void receiveViewNotification(int notification, Object body) {
+
 	}
 
 	public void prepareForRecording() {
@@ -339,66 +335,4 @@ public class RecordInterface extends JWindow implements MouseListener,
 		super.dispose();
 		audioSelect.destroy();
 	}
-
-	// ----- listener methods till EOF ------
-
-	private Point mouseOffset = null;
-	
-	public void mouseClicked(MouseEvent e) {}
-
-	public void mouseEntered(MouseEvent e) {}
-
-	public void mouseExited(MouseEvent e) {}
-
-	public void mousePressed(MouseEvent e) {
-		mouseOffset = new Point(e.getX(), e.getY());
-	}
-
-	public void mouseReleased(MouseEvent e) {
-		mouseOffset = null;
-	}
-	
-	public void mouseDragged(MouseEvent e) {
-		Point p = e.getLocationOnScreen();
-		p.x -= mouseOffset.x;
-		p.y -= mouseOffset.y;
-		p.x = Math.min(Math.max(p.x, 0), screen.width - this.getWidth());
-		p.y = Math.min(Math.max(p.y, 0), screen.height - this.getHeight());
-		setLocation(p);
-	}
-
-	public void mouseMoved(MouseEvent e) {
-	}
-
-	@Override
-	public void windowActivated(WindowEvent e) { // gains focus or returned from
-		// minimize
-		// System.out.println("Window activated.");
-	}
-
-	@Override
-	public void windowClosing(WindowEvent e) {
-		// System.out.println("Window closing");
-	}
-
-	@Override
-	public void windowDeactivated(WindowEvent e) { // lose focus or minimized
-		// System.out.println("Window deactivated");
-	}
-
-	@Override
-	public void windowDeiconified(WindowEvent e) {
-	}
-
-	@Override
-	public void windowIconified(WindowEvent e) {
-	}
-
-	@Override
-	public void windowOpened(WindowEvent e) {
-	}
-
-	@Override
-	public void windowClosed(WindowEvent e) {
-	} // not called with close operation set to HIDE_FRAME
 }

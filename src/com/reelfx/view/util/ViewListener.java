@@ -1,4 +1,4 @@
-package com.reelfx.model.util;
+package com.reelfx.view.util;
 
 import java.util.EventListener;
 
@@ -11,6 +11,6 @@ import java.util.EventListener;
  * @author daniel
  *
  */
-public interface ProcessListener extends EventListener {
-	public void processUpdate(int event,Object body);
+public interface ViewListener extends EventListener {
+	public void receiveViewNotification(int notification,Object body);
 }
