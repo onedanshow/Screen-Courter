@@ -6,10 +6,9 @@
 </head>
 <body onload="onload();">
   <p>There is applet right here:</p>
-<applet id="applet" archive="applet.jar?v=@@@UNIQUE@@@" code="com.reelfx.Applet" width="0" height="0" name="applet" mayscript="mayscript">
-	<param name="headless" value="true">
-	<param name="screen_capture_name" value="Shot 1000-0100">
+<applet id="applet" archive="http://localhost/~daniel/review_tool/applet.jar?@@@UNIQUE@@@" code="com.reelfx.Applet" width="650" height="50" name="applet" mayscript="mayscript">
 	<param name="mayscript" value="true">
+	<param name="cache_option" value="no">
 </applet>
 <!--  Firebug posts an error of "too much recursion" if this guy is in the <head>...odd... -->
 <script type="text/javascript" charset="utf-8">

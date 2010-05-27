@@ -13,6 +13,8 @@ import java.io.OutputStream;
 import java.net.JarURLConnection;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -30,6 +32,7 @@ import com.reelfx.controller.LinuxController;
 import com.reelfx.controller.MacController;
 import com.reelfx.controller.WindowsController;
 import com.reelfx.view.AudioSelectBox;
+import com.reelfx.view.CountDown;
 import com.reelfx.view.VolumeVisualizer;
 import com.sun.JarClassLoader;
 
@@ -98,9 +101,6 @@ public class Applet extends JApplet {
 			// print information to console
 			System.out.println(getAppletInfo());
 			
-			//VolumeVisualizer vv = new VolumeVisualizer();
-			//vv.start();
-			
 			// execute a job on the event-dispatching thread; creating this applet's GUI
             SwingUtilities.invokeAndWait(new Runnable() {
                 public void run() {
@@ -131,6 +131,7 @@ public class Applet extends JApplet {
     }
 	
 	// ---------- API ----------
+	/*
 	public void prepareForRecording() {
 		controller.prepareForRecording();
 	}
@@ -139,26 +140,100 @@ public class Applet extends JApplet {
 		// TODO grabs default mixer right now, need a way to select microphones...
 		//controller.startRecording(AudioSelectBox.get); // TODO fix when needed
 	}
+	*/
 	
-	public void stopRecording() {
-		controller.stopRecording();
+	/**
+	 *  This method piggy backs on record GUI to drive any external (i.e. Flash) GUI.
+	 */
+	public void prepareAndRecord() { 
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
+			@Override
+			public Object run() {
+				try {
+					controller.recordGUI.prepareForRecording();
+				} catch (Exception e) {
+					System.err.println("Can't prepare and start the recording!");
+					e.printStackTrace();
+				}
+				return null;
+			}
+		});
 	}
 	
+	public void stopRecording() {
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
+			@Override
+			public Object run() {
+				try {
+					controller.recordGUI.stopRecording();
+				} catch (Exception e) {
+					System.err.println("Can't stop the recording!");
+					e.printStackTrace();
+				}
+				return null;
+			}
+		});
+	}
+	/*
 	public void previewRecording() {
 		controller.previewRecording();
 	}
-	
+
 	public void postRecording() {
 		// TODO TEMPORARY until I get the Insight posting process down
 		controller.askForAndSaveRecording();
 	}
-	
+	*/
 	public void showRecordingInterface() {
-		controller.showRecordingInterface();
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
+
+			@Override
+			public Object run() {
+				try {
+					SwingUtilities.invokeLater(new Runnable() {
+		                public void run() {
+		                	if(controller != null)
+		                		controller.showRecordingInterface();
+		                }
+		            });
+				} catch (Exception e) {
+					System.err.println("Can't show the recording interface!");
+					e.printStackTrace();
+				}
+				return null;
+			}
+		});
 	}
 	
 	public void hideRecordingInterface() {
-		controller.hideRecordingInterface();
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
+
+			@Override
+			public Object run() {
+				try {
+					
+					SwingUtilities.invokeLater(new Runnable() {
+		                public void run() {
+		                	if(controller != null)
+		                		controller.hideRecordingInterface();
+		                }
+		            });
+				} catch (Exception e) {
+					System.err.println("Can't hide the recording interface!");
+					e.printStackTrace();
+				}
+				return null;
+			}
+		});
+	}
+	
+	public static void handleRecordingUpdate(int state,String status) {
+		if(status == null) status = "";
+		jsCall("sct_handle_recording_update("+state+",\""+status+"\");");
+	}
+	
+	public static void handleRecordingUIHide() {
+		jsCall("sct_handle_recording_ui_hide();");
 	}
 	
 	public static void handleExistingRecording() {
@@ -419,7 +494,7 @@ public class Applet extends JApplet {
 		else
 			throw new IOException("I don't know where to find the user's desktop!");
 	}
-    
+	
     /**
      * Called when the browser closes the web page.
      * 

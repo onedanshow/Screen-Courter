@@ -91,13 +91,13 @@ public class OptionsInterface extends JPanel {
         });
         add(insightBtn);
         
-        deleteBtn = new JButton("Delete It");
+        deleteBtn = new JButton("I'm Done With It");
         deleteBtn.setFont(new java.awt.Font("Arial", 0, 11));
         deleteBtn.setAlignmentX(0.5F);
         deleteBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
             	int n = JOptionPane.showConfirmDialog(self,
-            		    "This will delete your screen recording. Are you sure?",
+            		    "Are you sure that you are done with this screen recording?",
             		    "Are you sure?",
             		    JOptionPane.YES_NO_OPTION);
             	if (n == JOptionPane.YES_OPTION) {

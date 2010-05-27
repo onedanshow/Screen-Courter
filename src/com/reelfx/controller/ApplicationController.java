@@ -36,8 +36,8 @@ import com.reelfx.view.RecordInterface;
 
 public abstract class ApplicationController implements ProcessListener {
 
-	protected RecordInterface recordGUI;
-	protected OptionsInterface optionsGUI;
+	public RecordInterface recordGUI;
+	public OptionsInterface optionsGUI;
 	protected ScreenRecorder screen;
 	protected PostProcessor postProcess;
 	protected PreviewPlayer previewPlayer = null;
@@ -105,6 +105,10 @@ public abstract class ApplicationController implements ProcessListener {
 
 	public abstract void startRecording(AudioRecorder audio);
 
+	public void prepareAndRecord() {
+		recordGUI.prepareForRecording();
+	}
+	
 	public void stopRecording() {
 		recordGUI.changeState(RecordInterface.READY);
 		optionsGUI.changeState(OptionsInterface.OPTIONS,"What would you like to do with your new screen recording?");

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project default="create_local_insight_jar" name="Create Runnable Jar for Project java-review-tool">
+<project default="create_local_test_page" name="Create Runnable Jar for Project java-review-tool">
 	
 	<!-- To make this project work with NetBeans: <import file="nbproject/build-impl.xml"/> -->  
 	<!-- Assumes the class files are already built (which Eclipse does) -->
@@ -9,7 +9,7 @@
 		<!-- this is temporary -->
 		<copy todir="build/classes/org/apache">
 			<fileset dir="lib/org/apache"/>
-		</copy>		
+		</copy>
 		<echo message="Building build/applet.jar ..." />
 		<jar destfile="build/applet.jar" filesetmanifest="mergewithoutmain" basedir="build/classes" includes="com/**,org/**">
 			<manifest>
@@ -33,7 +33,7 @@
 	     <arg value="duke" />
 	   </exec>
 	</target>
-		
+			
 	<target name="create_local_test_page" depends="sign_jar">
 		<!-- CHANGE THIS TO THE FOLDER OF YOUR LOCAL HOST -->
 		<property name="server" value="/Users/daniel/Sites/review_tool/"/>

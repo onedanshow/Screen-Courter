@@ -35,7 +35,6 @@ public class AudioSelectBox extends JComboBox implements MouseListener, ItemList
 		addItemListener(this);
 		setEditable(true);
         setEditor(visualizer);
-
 		setFont(new Font("Arial", 0, 11));
 		listAudioSources();
 		
