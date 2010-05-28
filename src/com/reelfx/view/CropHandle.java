@@ -1,8 +1,15 @@
 package com.reelfx.view;
 
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
+
+import javax.swing.JPanel;
+import javax.swing.border.Border;
+import javax.swing.border.LineBorder;
 
 import com.reelfx.Applet;
 import com.reelfx.view.util.MoveableWindow;
@@ -23,6 +30,10 @@ public class CropHandle extends MoveableWindow implements ViewListener {
 		setName(name);
 		setPreferredSize(new Dimension(12, 12));
 		setAlwaysOnTop(true);
+		JPanel border = new JPanel();
+		border.setBackground(Color.WHITE);
+		border.setBorder(new LineBorder(Color.BLACK, 2));
+		add(border);
 		pack();
 		receiveViewNotification(ViewNotifications.CAPTURE_VIEWPORT_CHANGE);
 	}

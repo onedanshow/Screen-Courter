@@ -41,7 +41,6 @@ import com.reelfx.view.util.MoveableWindow;
 import com.reelfx.view.util.ViewListener;
 import com.reelfx.view.util.ViewNotifications;
 import com.sun.JarClassLoader;
-import com.sun.jdi.IntegerValue;
 
 /**
  * 

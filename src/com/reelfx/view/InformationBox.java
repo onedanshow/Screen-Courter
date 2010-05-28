@@ -1,5 +1,6 @@
 package com.reelfx.view;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Event;
@@ -10,7 +11,9 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.EventObject;
 
+import javax.swing.JPanel;
 import javax.swing.JWindow;
+import javax.swing.border.LineBorder;
 
 import com.reelfx.Applet;
 import com.reelfx.view.util.MoveableWindow;
@@ -31,6 +34,10 @@ public class InformationBox extends MoveableWindow {
 		setPreferredSize(new Dimension(250, 200));
 		setAlwaysOnTop(true);
 		setName(NAME);
+		JPanel border = new JPanel();
+		border.setBackground(Color.WHITE);
+		border.setBorder(new LineBorder(Color.BLACK, 2));
+		add(border);
 		pack();
 		receiveViewNotification(ViewNotifications.CAPTURE_VIEWPORT_CHANGE);
 	}
