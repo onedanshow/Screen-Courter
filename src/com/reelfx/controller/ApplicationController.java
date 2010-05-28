@@ -26,38 +26,55 @@ import org.apache.http.util.EntityUtils;
 
 import com.reelfx.Applet;
 import com.reelfx.model.AudioRecorder;
+import com.reelfx.model.CaptureViewport;
 import com.reelfx.model.PostProcessor;
 import com.reelfx.model.PreferenceManager;
 import com.reelfx.model.PreviewPlayer;
 import com.reelfx.model.ScreenRecorder;
 import com.reelfx.model.util.ProcessListener;
-import com.reelfx.view.OptionsInterface;
-import com.reelfx.view.RecordInterface;
+import com.reelfx.view.CropHandle;
+import com.reelfx.view.InformationBox;
+import com.reelfx.view.PostOptions;
+import com.reelfx.view.RecordControls;
+import com.reelfx.view.util.ViewNotifications;
 
 public abstract class ApplicationController implements ProcessListener {
 
-	public RecordInterface recordGUI;
-	public OptionsInterface optionsGUI;
+	public RecordControls recordGUI;
+	public PostOptions optionsGUI;
+
+	protected InformationBox infoBox;
+	// protected CropHandle TLhandle, TMhandle, TRhandle, MRhandle, BRhandle,
+	// BMhandle, BLhandle, MLhandle;
+
 	protected ScreenRecorder screen;
 	protected PostProcessor postProcess;
 	protected PreviewPlayer previewPlayer = null;
 	protected PreferenceManager preferences = new PreferenceManager();
+	protected CaptureViewport captureViewport = new CaptureViewport();
 
 	public ApplicationController() {
 		super();
 
-		recordGUI = new RecordInterface(this);
-		optionsGUI = new OptionsInterface(this);
-		
-		// note, if this line changes, also change Applet.sendViewNotification
-		Applet.APPLET.getContentPane().add(optionsGUI);
+		// generate the common GUI
+		recordGUI = new RecordControls(this);
+		optionsGUI = new PostOptions(this);
+		infoBox = new InformationBox();
+		new CropHandle(CropHandle.TOP_LEFT);
+		new CropHandle(CropHandle.TOP_MIDDLE);
+		new CropHandle(CropHandle.TOP_RIGHT);
+
+		Applet.APPLET.getContentPane().add(optionsGUI); // note, if this line
+														// changes, also change
+														// Applet.sendViewNotification
 
 		if (Applet.HEADLESS) {
 			// don't show interface initially
 		} else {
-			recordGUI.setVisible(true);
+			Applet.sendViewNotification(ViewNotifications.SHOW_ALL);
 			if (!Applet.BIN_FOLDER.exists()) {
-				recordGUI.changeState(RecordInterface.THINKING,"Performing one-time install...");
+				recordGUI.changeState(RecordControls.THINKING,
+						"Performing one-time install...");
 			} else {
 				setReadyStateBasedOnPriorRecording();
 			}
@@ -67,32 +84,41 @@ public abstract class ApplicationController implements ProcessListener {
 	public void processUpdate(int event, Object body) {
 		switch (event) {
 		case PostProcessor.ENCODING_STARTED:
-			recordGUI.changeState(RecordInterface.THINKING, "Encoding...");
-			optionsGUI.changeState(OptionsInterface.THINKING, "Encoding...");
-			//Applet.sendShowStatus("Encoding...");
+			recordGUI.changeState(RecordControls.THINKING, "Encoding...");
+			optionsGUI.changeState(PostOptions.THINKING, "Encoding...");
+			// Applet.sendShowStatus("Encoding...");
 			break;
 		case PostProcessor.ENCODING_COMPLETE:
-			//recordGUI.changeState(RecordInterface.READY_WITH_OPTIONS, "Finished encoding.");
-			recordGUI.changeState(RecordInterface.READY, "Finished encoding.");
-			optionsGUI.changeState(OptionsInterface.OPTIONS, "Finished encoding.");
-			//Applet.sendHideStatus();
+			// recordGUI.changeState(RecordControls.READY_WITH_OPTIONS,
+			// "Finished encoding.");
+			recordGUI.changeState(RecordControls.READY, "Finished encoding.");
+			optionsGUI.changeState(PostOptions.OPTIONS, "Finished encoding.");
+			// Applet.sendHideStatus();
 			break;
 		case PostProcessor.POST_STARTED:
-			recordGUI.changeState(RecordInterface.THINKING, "Uploading to Insight...");
-			optionsGUI.changeState(OptionsInterface.THINKING, "Uploading your screen recording to Insight. Do NOT close the browser window.");
-			//Applet.sendShowStatus("Uploading to Insight...");
+			recordGUI.changeState(RecordControls.THINKING,
+					"Uploading to Insight...");
+			optionsGUI
+					.changeState(PostOptions.THINKING,
+							"Uploading your screen recording to Insight. Do NOT close the browser window.");
+			// Applet.sendShowStatus("Uploading to Insight...");
 			break;
 		case PostProcessor.POST_FAILED:
-			recordGUI.changeState(RecordInterface.FATAL,"Uploading failed!");
-			optionsGUI.changeState(OptionsInterface.FATAL,"An error occurred while uploading the screen recording. It is stored locally, so you can try again later.");
+			recordGUI.changeState(RecordControls.FATAL, "Uploading failed!");
+			optionsGUI
+					.changeState(
+							PostOptions.FATAL,
+							"An error occurred while uploading the screen recording. It is stored locally, so you can try again later.");
 			break;
 		case PostProcessor.POST_COMPLETE:
-			//recordGUI.changeState(RecordInterface.READY_WITH_OPTIONS,"Finished uploading.");
-			recordGUI.changeState(RecordInterface.READY,"Finished uploading.");
-			optionsGUI.changeState(OptionsInterface.OPTIONS_NO_UPLOAD,"Would you like to do anything else with your screen recording?");
+			// recordGUI.changeState(RecordControls.READY_WITH_OPTIONS,"Finished uploading.");
+			recordGUI.changeState(RecordControls.READY, "Finished uploading.");
+			optionsGUI
+					.changeState(PostOptions.OPTIONS_NO_UPLOAD,
+							"Would you like to do anything else with your screen recording?");
 			preferences.setUploaded(true);
 			preferences.writePreferences();
-			//Applet.sendHideStatus();
+			// Applet.sendHideStatus();
 		}
 	}
 
@@ -109,10 +135,11 @@ public abstract class ApplicationController implements ProcessListener {
 	public void prepareAndRecord() {
 		recordGUI.prepareForRecording();
 	}
-	
+
 	public void stopRecording() {
-		recordGUI.changeState(RecordInterface.READY);
-		optionsGUI.changeState(OptionsInterface.OPTIONS,"What would you like to do with your new screen recording?");
+		recordGUI.changeState(RecordControls.READY);
+		optionsGUI.changeState(PostOptions.OPTIONS,
+				"What would you like to do with your new screen recording?");
 		Applet.handleFreshRecording();
 	}
 
@@ -139,7 +166,7 @@ public abstract class ApplicationController implements ProcessListener {
 		postProcess.addProcessListener(this);
 		postProcess.saveToComputer(file);
 	}
-	
+
 	// called first
 	public void postData() {
 		if (previewPlayer != null)
@@ -167,8 +194,8 @@ public abstract class ApplicationController implements ProcessListener {
 		AudioRecorder.deleteOutput();
 		PostProcessor.deleteOutput();
 		PreferenceManager.deleteOutput();
-		recordGUI.changeState(RecordInterface.READY);
-		optionsGUI.changeState(OptionsInterface.DISABLED);
+		recordGUI.changeState(RecordControls.READY);
+		optionsGUI.changeState(PostOptions.DISABLED);
 		Applet.handleDeletedRecording();
 	}
 
@@ -178,26 +205,28 @@ public abstract class ApplicationController implements ProcessListener {
 	public void setupExtensions() {
 		// recordGUI.setStatus("Hello");
 	}
-	
+
 	/**
 	 * Check if we need to deal with a prior screen recording or not
 	 */
 	protected void setReadyStateBasedOnPriorRecording() {
 		if (ScreenRecorder.OUTPUT_FILE.exists()) {
-			//recordGUI.changeState(RecordInterface.READY_WITH_OPTIONS);
-			recordGUI.changeState(RecordInterface.READY);
+			// recordGUI.changeState(RecordControls.READY_WITH_OPTIONS);
+			recordGUI.changeState(RecordControls.READY);
 			SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM d HH:mm");
-			String message = "You have a screen recording for "+preferences.getScreenCaptureName()+" on "+sdf.format(preferences.getDate())+". ";
-			if(preferences.isUploaded()) {
+			String message = "You have a screen recording for "
+					+ preferences.getScreenCaptureName() + " on "
+					+ sdf.format(preferences.getDate()) + ". ";
+			if (preferences.isUploaded()) {
 				message += "It has already been uploaded.";
-				optionsGUI.changeState(OptionsInterface.OPTIONS_NO_UPLOAD,message);
+				optionsGUI.changeState(PostOptions.OPTIONS_NO_UPLOAD, message);
 			} else {
-				optionsGUI.changeState(OptionsInterface.OPTIONS,message);
+				optionsGUI.changeState(PostOptions.OPTIONS, message);
 			}
 			Applet.handleExistingRecording();
 		} else {
-			recordGUI.changeState(RecordInterface.READY);
-			optionsGUI.changeState(OptionsInterface.DISABLED);
+			recordGUI.changeState(RecordControls.READY);
+			optionsGUI.changeState(PostOptions.DISABLED);
 		}
 	}
 

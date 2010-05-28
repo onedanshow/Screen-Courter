@@ -38,10 +38,11 @@ import com.reelfx.Applet;
 import com.reelfx.controller.ApplicationController;
 import com.reelfx.model.ScreenRecorder;
 import com.reelfx.view.util.MoveableWindow;
+import com.reelfx.view.util.ViewNotifications;
 
-public class RecordInterface extends MoveableWindow implements ActionListener {
+public class RecordControls extends MoveableWindow implements ActionListener {
 
-	public final static String NAME = "RecordInterface";
+	public final static String NAME = "RecordControls";
 
 	public final static int READY = 500;
 	public final static int PRE_RECORDING = 501;
@@ -50,7 +51,7 @@ public class RecordInterface extends MoveableWindow implements ActionListener {
 	public final static int FATAL = 504;
 
 	public JButton recordBtn, closeBtn;
-	public AudioSelectBox audioSelect;
+	public AudioSelector audioSelect;
 	public JPanel titlePanel, recordingOptionsPanel, statusPanel;
 
 	private JLabel title, status, message;
@@ -62,7 +63,6 @@ public class RecordInterface extends MoveableWindow implements ActionListener {
 	private Color statusColor = new Color(255, 102, 102);
 	private Color messageColor = new Color(255, 255, 153);
 	private int currentState = READY, timerCount = 0;
-	private CenterInterface countdown;
 
 	/**
 	 * The small recording GUI that provides recording, microphone, and status
@@ -71,12 +71,11 @@ public class RecordInterface extends MoveableWindow implements ActionListener {
 	 * 
 	 * @param controller
 	 */
-	public RecordInterface(ApplicationController controller) {
+	public RecordControls(ApplicationController controller) {
 		super();
 		setName(NAME);
 		
 		this.controller = controller;
-		this.countdown = new CenterInterface(this);
 
 		// ------- setup -------
 
@@ -87,9 +86,7 @@ public class RecordInterface extends MoveableWindow implements ActionListener {
 
 		setBackground(backgroundColor);
 		// setPreferredSize(dim); // full screen
-		// setPreferredSize(new Dimension(500, 50)); // will auto fit to the
-		// size needed, but if you want to specify a size
-		setLocation((int) (screen.width * 0.75), screen.height / 6);
+		// setPreferredSize(new Dimension(500, 50)); // will auto fit to the size needed, but if you want to specify a size
 		// setLayout(new BorderLayout(0, 3));
 		setLayout(new BoxLayout(getContentPane(), BoxLayout.PAGE_AXIS));
 		setAlwaysOnTop(true);
@@ -157,7 +154,7 @@ public class RecordInterface extends MoveableWindow implements ActionListener {
 		status.setHorizontalAlignment(SwingConstants.CENTER);
 		recordingOptionsPanel.add(status);
 
-		audioSelect = new AudioSelectBox();
+		audioSelect = new AudioSelector();
 		recordingOptionsPanel.add(audioSelect);
 
 		add(recordingOptionsPanel); // ,BorderLayout.NORTH);
@@ -166,10 +163,11 @@ public class RecordInterface extends MoveableWindow implements ActionListener {
 		 * statusPanel = new JPanel(); statusPanel.setOpaque(false);
 		 * statusPanel.add(status); add(statusPanel); //,BorderLayout.CENTER);
 		 */
-		
-		countdown.setVisible(true); countdown.pack();
 
-		System.out.println("RecordInterface initialized...");
+		System.out.println("RecordControls initialized...");
+		
+		pack();
+		receiveViewNotification(ViewNotifications.CAPTURE_VIEWPORT_CHANGE);
 	}
 
 	public void changeState(int state) {
@@ -244,8 +242,45 @@ public class RecordInterface extends MoveableWindow implements ActionListener {
 	}
 	
 	@Override
-	public void receiveViewNotification(int notification, Object body) {
-
+	public void receiveViewNotification(ViewNotifications notification, Object body) {
+		switch(notification) {
+		case CAPTURE_VIEWPORT_CHANGE:
+			Point pt = Applet.CAPTURE_VIEWPORT.getBottomLeftPoint();
+			pt.translate(0, 10);
+			setLocation(pt);
+			break;
+		
+		case SHOW_ALL:
+		case SHOW_RECORD_CONTROLS:
+			setVisible(true);
+			break;
+			
+		case HIDE_ALL:
+		case HIDE_RECORD_CONTROLS:
+			setVisible(false);
+			break;
+		/*
+		case MOUSE_PRESS_INFO_BOX:
+			super.mousePressed((MouseEvent) body); // call super so we don't send notifications					
+			break;
+		
+		case MOUSE_DRAG_INFO_BOX:
+			super.mouseDragged((MouseEvent) body); // call super so we don't send notifications				
+			break;
+		*/
+		}
+	}
+	
+	@Override
+	public void mousePressed(MouseEvent e) {
+		super.mousePressed(e);
+		Applet.sendViewNotification(ViewNotifications.MOUSE_PRESS_RECORD_CONTROLS, e);
+	}
+	
+	@Override
+	public void mouseDragged(MouseEvent e) {
+		super.mouseDragged(e);
+		Applet.sendViewNotification(ViewNotifications.MOUSE_DRAG_RECORD_CONTROLS, e);
 	}
 
 	public void prepareForRecording() {

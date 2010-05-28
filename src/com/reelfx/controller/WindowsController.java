@@ -23,8 +23,8 @@ import com.reelfx.model.PreferenceManager;
 import com.reelfx.model.ScreenRecorder;
 import com.reelfx.model.util.ProcessListener;
 import com.reelfx.model.util.StreamGobbler;
-import com.reelfx.view.OptionsInterface;
-import com.reelfx.view.RecordInterface;
+import com.reelfx.view.PostOptions;
+import com.reelfx.view.RecordControls;
 
 public class WindowsController extends ApplicationController {
 
@@ -50,12 +50,12 @@ public class WindowsController extends ApplicationController {
 			System.out.println("Have access to execution folder: "+Applet.BIN_FOLDER.getAbsolutePath());
 			setReadyStateBasedOnPriorRecording();
         } catch (MalformedURLException e1) {
-        	recordGUI.changeState(RecordInterface.FATAL,"Error with install");
-        	optionsGUI.changeState(OptionsInterface.FATAL, "Sorry, an error occurred while installing the native extensions. Please contact an Insight admin.");
+        	recordGUI.changeState(RecordControls.FATAL,"Error with install");
+        	optionsGUI.changeState(PostOptions.FATAL, "Sorry, an error occurred while installing the native extensions. Please contact an Insight admin.");
 			e1.printStackTrace();
 		} catch (IOException e) {
-			recordGUI.changeState(RecordInterface.FATAL,"Error with install");
-			optionsGUI.changeState(OptionsInterface.FATAL, "Sorry, an error occurred while installing the native extensions. Please contact an Insight admin.");
+			recordGUI.changeState(RecordControls.FATAL,"Error with install");
+			optionsGUI.changeState(PostOptions.FATAL, "Sorry, an error occurred while installing the native extensions. Please contact an Insight admin.");
 			e.printStackTrace();
 		}
 	}

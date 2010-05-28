@@ -35,7 +35,7 @@ import com.reelfx.controller.LinuxController;
 import com.reelfx.controller.WindowsController;
 import com.reelfx.model.util.ProcessWrapper;
 import com.reelfx.model.util.StreamGobbler;
-import com.reelfx.view.OptionsInterface;
+import com.reelfx.view.PostOptions;
 
 public class PostProcessor extends ProcessWrapper implements ActionListener {
 	

@@ -12,5 +12,5 @@ import java.util.EventListener;
  *
  */
 public interface ViewListener extends EventListener {
-	public void receiveViewNotification(int notification,Object body);
+	public void receiveViewNotification(ViewNotifications notification,Object body);
 }

@@ -21,7 +21,7 @@ import javax.swing.JPanel;
 
 import com.reelfx.model.AudioRecorder;
 
-public class AudioSelectBox extends JComboBox implements MouseListener, ItemListener {
+public class AudioSelector extends JComboBox implements MouseListener, ItemListener {
 	
 	private static final long serialVersionUID = -1739456139353607514L;
 	private VolumeMonitor monitor = new VolumeMonitor();
@@ -29,7 +29,7 @@ public class AudioSelectBox extends JComboBox implements MouseListener, ItemList
 	private Mixer selectedMixer = null;
 	private VolumeVisualizer visualizer = new VolumeVisualizer();
 	
-	public AudioSelectBox() {
+	public AudioSelector() {
 		super();
 		addMouseListener(this);
 		addItemListener(this);

@@ -15,8 +15,9 @@ import javax.swing.JSeparator;
 
 import com.reelfx.controller.ApplicationController;
 import com.reelfx.view.util.ViewListener;
+import com.reelfx.view.util.ViewNotifications;
 
-public class OptionsInterface extends JPanel implements ViewListener {
+public class PostOptions extends JPanel implements ViewListener {
 	
 	private static final long serialVersionUID = 4036818007133606840L;
 	
@@ -32,7 +33,7 @@ public class OptionsInterface extends JPanel implements ViewListener {
 	private int currentState = OPTIONS;
 	private JPanel self;
 	
-	public OptionsInterface(final ApplicationController controller) {
+	public PostOptions(final ApplicationController controller) {
 		super();
 		setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
 		setBackground(new Color(230,230,230));
@@ -148,7 +149,7 @@ public class OptionsInterface extends JPanel implements ViewListener {
     }
 
 	@Override
-	public void receiveViewNotification(int notification, Object body) {
+	public void receiveViewNotification(ViewNotifications notification, Object body) {
 		
 	}
 }

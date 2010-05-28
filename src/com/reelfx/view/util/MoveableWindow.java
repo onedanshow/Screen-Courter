@@ -6,6 +6,7 @@ import java.awt.Event;
 import java.awt.Frame;
 import java.awt.GraphicsConfiguration;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.MouseEvent;
@@ -24,12 +25,9 @@ import com.reelfx.Applet;
 public abstract class MoveableWindow extends JWindow implements MouseListener,
 		MouseMotionListener, WindowListener, ViewListener {
 	
-	public final static int MOUSE_PRESS = 300;
-	public final static int MOUSE_RELEASE = 301;
-	public final static int MOUSE_DRAG = 302;
-	
 	protected Point mouseOffset = null;
-	protected Dimension screen;
+	public static Dimension screen;
+	public static Rectangle captureViewport;
 
 	public MoveableWindow() {
 		super();
@@ -60,10 +58,19 @@ public abstract class MoveableWindow extends JWindow implements MouseListener,
 		addWindowListener(this);
 		addMouseListener(this);
 		addMouseMotionListener(this);
-		screen = Toolkit.getDefaultToolkit().getScreenSize();
+		
+		if(screen == null)
+			screen = Toolkit.getDefaultToolkit().getScreenSize();
 		// From Docs: Gets the size of the screen. On systems with multiple
 		// displays, the primary display is used. Multi-screen aware display
 		// dimensions are available from GraphicsConfiguration and GraphicsDevice
+		
+		if(captureViewport == null)
+			captureViewport = new Rectangle(new Point(screen.width/2-400,screen.height/2-300),new Dimension(800,600));
+	}
+	
+	public void receiveViewNotification(ViewNotifications notification) {
+		receiveViewNotification(notification, null);
 	}
 
 	@Override
@@ -88,15 +95,13 @@ public abstract class MoveableWindow extends JWindow implements MouseListener,
 	public void mousePressed(MouseEvent e) {
 		//mouseOffset = new Point(e.getX(), e.getY());
 		mouseOffset = new Point(e.getLocationOnScreen().x-this.getX(),e.getLocationOnScreen().y-this.getY());
-		if(e.getSource() == this)
-			Applet.sendViewNotification(MOUSE_PRESS, e);
 	}
 
 	@Override
 	public void mouseReleased(MouseEvent e) {
 		mouseOffset = null;
-		if(e.getSource() == this)
-			Applet.sendViewNotification(MOUSE_RELEASE, e);
+		//if(e.getSource() == this)
+		//	Applet.sendViewNotification(ViewNotifications.MOUSE_RELEASE, e);
 	}
 
 	@Override
@@ -104,11 +109,10 @@ public abstract class MoveableWindow extends JWindow implements MouseListener,
 		Point p = e.getLocationOnScreen();
 		p.x -= mouseOffset.x;
 		p.y -= mouseOffset.y;
-		p.x = Math.min(Math.max(p.x, 0), screen.width - this.getWidth());
-		p.y = Math.min(Math.max(p.y, 0), screen.height - this.getHeight());
+		// responsibility of capture viewport now 
+		//p.x = Math.min(Math.max(p.x, 0), screen.width - this.getWidth());
+		//p.y = Math.min(Math.max(p.y, 0), screen.height - this.getHeight());
 		setLocation(p);
-		if(e.getSource() == this)
-			Applet.sendViewNotification(MOUSE_DRAG, e);
 	}
 
 	@Override

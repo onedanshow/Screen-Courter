@@ -108,6 +108,7 @@ public class ScreenRecorder extends ProcessWrapper implements ActionListener {
 			    			// only get it for the screen we're on
 			    			int height = Applet.GRAPHICS_CONFIG.getDevice().getDisplayMode().getHeight();
 			    			int width = Applet.GRAPHICS_CONFIG.getDevice().getDisplayMode().getWidth();
+			    			// TODO replace with height/width from capture viewport
 			    	        
 			    			List<String> ffmpegArgs = new ArrayList<String>();
 			    			//ffmpegArgs.add("/usr/bin/ffmpeg");

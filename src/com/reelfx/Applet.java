@@ -33,11 +33,13 @@ import com.reelfx.controller.ApplicationController;
 import com.reelfx.controller.LinuxController;
 import com.reelfx.controller.MacController;
 import com.reelfx.controller.WindowsController;
-import com.reelfx.view.AudioSelectBox;
-import com.reelfx.view.CenterInterface;
+import com.reelfx.model.CaptureViewport;
+import com.reelfx.view.AudioSelector;
+import com.reelfx.view.InformationBox;
 import com.reelfx.view.VolumeVisualizer;
 import com.reelfx.view.util.MoveableWindow;
 import com.reelfx.view.util.ViewListener;
+import com.reelfx.view.util.ViewNotifications;
 import com.sun.JarClassLoader;
 import com.sun.jdi.IntegerValue;
 
@@ -72,7 +74,9 @@ public class Applet extends JApplet {
 	public static boolean IS_LINUX = System.getProperty("os.name").toLowerCase().contains("linux");
 	public static boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("windows");
 	public static boolean DEV_MODE = System.getProperty("user.dir").contains(System.getProperty("user.home")); // assume dev files are in developer's home
+	@Deprecated
 	public static GraphicsConfiguration GRAPHICS_CONFIG = null;
+	public final static CaptureViewport CAPTURE_VIEWPORT = new CaptureViewport();
 	
 	private ApplicationController controller = null;
 	
@@ -141,9 +145,11 @@ public class Applet extends JApplet {
 	 * @param notification
 	 * @param body
 	 */
-	public static void sendViewNotification(int notification,Object body) {
+	public static void sendViewNotification(ViewNotifications notification,Object body) {
 		// applet is a special case (see ApplicationController constructor)
 		((ViewListener) APPLET.getContentPane().getComponent(0)).receiveViewNotification(notification, body);
+		// another special case where the capture viewport is a pseudo-model
+		Applet.CAPTURE_VIEWPORT.receiveViewNotification(notification, body);
 		// notify all the open windows
 		Window[] windows = Window.getWindows();
 		for(Window win : windows) {
@@ -151,6 +157,9 @@ public class Applet extends JApplet {
 				((ViewListener) win).receiveViewNotification(notification, body);
 			}
 		}
+	}
+	public static void sendViewNotification(ViewNotifications notification) {
+		sendViewNotification(notification, null);
 	}
 	
 	// ---------- BEGIN JAVASCRIPT API ----------
@@ -161,7 +170,7 @@ public class Applet extends JApplet {
 	
 	public void startRecording() {
 		// TODO grabs default mixer right now, need a way to select microphones...
-		//controller.startRecording(AudioSelectBox.get); // TODO fix when needed
+		//controller.startRecording(AudioSelector.get); // TODO fix when needed
 	}
 	*/
 	
