@@ -106,13 +106,15 @@ public abstract class MoveableWindow extends JWindow implements MouseListener,
 
 	@Override
 	public void mouseDragged(MouseEvent e) {
+		// responsibility of capture viewport now 
+		/*
 		Point p = e.getLocationOnScreen();
 		p.x -= mouseOffset.x;
 		p.y -= mouseOffset.y;
-		// responsibility of capture viewport now 
-		//p.x = Math.min(Math.max(p.x, 0), screen.width - this.getWidth());
-		//p.y = Math.min(Math.max(p.y, 0), screen.height - this.getHeight());
+		p.x = Math.min(Math.max(p.x, 0), screen.width - this.getWidth());
+		p.y = Math.min(Math.max(p.y, 0), screen.height - this.getHeight());
 		setLocation(p);
+		*/
 	}
 
 	@Override

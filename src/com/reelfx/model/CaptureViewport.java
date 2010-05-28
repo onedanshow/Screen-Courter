@@ -34,15 +34,23 @@ public class CaptureViewport extends Rectangle implements ViewListener {
 			me = (MouseEvent) body;
 			handle = (CropHandle) me.getSource();
 			if(handle.getName().equals(CropHandle.TOP_LEFT)) {
-				setFrameFromDiagonal(handle.getViewportPoint(),getBottomRightPoint());
+				setFrameFromDiagonal(me.getLocationOnScreen(),getBottomRightPoint());
 			} 
 			else if(handle.getName().equals(CropHandle.TOP_MIDDLE)) {
-				setFrameFromDiagonal(new Point(getTopLeftPoint().x,handle.getViewportPoint().y),getBottomRightPoint());
+				setFrameFromDiagonal(new Point((int)getMinX(),me.getLocationOnScreen().y),getBottomRightPoint());
 			} 
 			else if(handle.getName().equals(CropHandle.TOP_RIGHT)) {
 				setFrameFromDiagonal(
-						new Point(getTopLeftPoint().x,handle.getViewportPoint().y),
-						new Point(handle.getViewportPoint().x,getBottomRightPoint().y));
+						new Point((int)getMinX(),me.getLocationOnScreen().y),
+						new Point(me.getLocationOnScreen().x,(int)getMaxY()));
+			}
+			else if(handle.getName().equals(CropHandle.BOTTOM_RIGHT)) {
+				setFrameFromDiagonal(getTopLeftPoint(), me.getLocationOnScreen());
+			}
+			else if(handle.getName().equals(CropHandle.BOTTOM_LEFT)) {
+				setFrameFromDiagonal(
+						new Point(me.getLocationOnScreen().x,(int)getMinY()),
+						new Point((int)getMaxX(),me.getLocationOnScreen().y));
 			}
 			break;
 			
@@ -87,11 +95,11 @@ public class CaptureViewport extends Rectangle implements ViewListener {
 		return new Point((int)getMaxX(),(int)getMinY());
 	}
 	
-	public Point getBottomLeftPoint() {
-		return new Point((int)getMinX(),(int)getMaxY());
-	}
-	
 	public Point getBottomRightPoint() {
 		return new Point((int)getMaxX(),(int)getMaxY());
+	}
+	
+	public Point getBottomLeftPoint() {
+		return new Point((int)getMinX(),(int)getMaxY());
 	}
 }

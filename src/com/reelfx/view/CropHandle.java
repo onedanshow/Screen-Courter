@@ -15,6 +15,8 @@ public class CropHandle extends MoveableWindow implements ViewListener {
 	public final static String TOP_LEFT = "TOP_LEFT";
 	public final static String TOP_MIDDLE = "TOP_MIDDLE";
 	public final static String TOP_RIGHT = "TOP_RIGHT";
+	public final static String BOTTOM_LEFT = "BOTTOM_LEFT";
+	public final static String BOTTOM_RIGHT = "BOTTOM_RIGHT";
 	
 	public CropHandle(String name) {
 		super();
@@ -91,8 +93,12 @@ public class CropHandle extends MoveableWindow implements ViewListener {
 			return Applet.CAPTURE_VIEWPORT.getTopLeftPoint();
 		} else if(getName().equals(TOP_MIDDLE)) {
 			return Applet.CAPTURE_VIEWPORT.getTopMiddlePoint();
-		} else {
+		} else if(getName().equals(TOP_RIGHT)) {
 			return Applet.CAPTURE_VIEWPORT.getTopRightPoint();
+		} else if(getName().equals(BOTTOM_RIGHT)) {
+			return Applet.CAPTURE_VIEWPORT.getBottomRightPoint();
+		} else {
+			return Applet.CAPTURE_VIEWPORT.getBottomLeftPoint();
 		}
 	}
 

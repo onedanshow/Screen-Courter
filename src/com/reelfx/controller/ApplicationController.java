@@ -63,6 +63,8 @@ public abstract class ApplicationController implements ProcessListener {
 		new CropHandle(CropHandle.TOP_LEFT);
 		new CropHandle(CropHandle.TOP_MIDDLE);
 		new CropHandle(CropHandle.TOP_RIGHT);
+		new CropHandle(CropHandle.BOTTOM_LEFT);
+		new CropHandle(CropHandle.BOTTOM_RIGHT);
 
 		Applet.APPLET.getContentPane().add(optionsGUI); // note, if this line
 														// changes, also change
