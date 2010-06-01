@@ -164,7 +164,8 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 				Applet.sendViewNotification(ViewNotifications.SET_CAPTURE_VIEWPORT_RESOLUTION, ((JComboBox)e.getSource()).getSelectedItem());
 			}
 		});
-		recordingOptionsPanel.add(viewportSelect);
+		if(!Applet.IS_MAC && !Applet.DEV_MODE) // TODO temporary
+			recordingOptionsPanel.add(viewportSelect);
 
 		add(recordingOptionsPanel); // ,BorderLayout.NORTH);
 
@@ -250,6 +251,7 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 			audioSelect.setVisible(true);
 			viewportSelect.setEnabled(true);
 			viewportSelect.setVisible(true);
+			currentState = notification;
 			break;
 		
 		case PRE_RECORDING:
@@ -260,6 +262,7 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 			viewportSelect.setVisible(false);
 			status.setEnabled(true);
 			status.setVisible(true);
+			currentState = notification;
 			break;
 		
 		case RECORDING:
@@ -269,6 +272,7 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 			audioSelect.setVisible(false);
 			viewportSelect.setEnabled(false);
 			viewportSelect.setVisible(false);
+			currentState = notification;
 			break;
 		
 		case CAPTURE_VIEWPORT_CHANGE:
@@ -297,6 +301,7 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 			audioSelect.setVisible(true);
 			viewportSelect.setEnabled(false);
 			viewportSelect.setVisible(true);
+			currentState = notification;
 			break;	
 			
 		case MOUSE_DRAG_CROP_HANDLE:
@@ -312,10 +317,7 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 			// statusPanel.setVisible(false);
 		}
 		
-		if (isVisible()) pack();
-		
-		currentState = notification;
-		
+		if (isVisible()) pack();		
 	}
 	
 	@Override
