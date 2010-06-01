@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Event;
+import java.awt.Font;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.Window;
@@ -11,8 +12,12 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.EventObject;
 
+import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JWindow;
+import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
 
 import com.reelfx.Applet;
@@ -31,12 +36,20 @@ public class InformationBox extends MoveableWindow {
 	@Override
 	protected void init() {
 		super.init();
-		setPreferredSize(new Dimension(250, 200));
+		setPreferredSize(new Dimension(230, 30));
 		setAlwaysOnTop(true);
 		setName(NAME);
+		
+		JLabel title = new JLabel("ReelFX Screen Recorder");
+		title.setFont(new Font("Arial", Font.BOLD, 15));
+		JLabel icon = new JLabel(new ImageIcon(this.getClass().getClassLoader().getResource("com/reelfx/view/images/move.png")));
+		
 		JPanel border = new JPanel();
 		border.setBackground(Color.WHITE);
 		border.setBorder(new LineBorder(Color.BLACK, 2));
+		border.add(title);
+		border.add(icon);
+		
 		add(border);
 		pack();
 		receiveViewNotification(ViewNotifications.CAPTURE_VIEWPORT_CHANGE);

@@ -111,8 +111,7 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 		titlePanel.setLayout(new BorderLayout());
 		titlePanel.add(title, BorderLayout.CENTER);
 
-		closeBtn = new JButton("", new ImageIcon(this.getClass()
-				.getClassLoader().getResource("com/reelfx/view/images/close.png")));
+		closeBtn = new JButton("", new ImageIcon(this.getClass().getClassLoader().getResource("com/reelfx/view/images/close.png")));
 		closeBtn.setBorderPainted(false);
 		closeBtn.setContentAreaFilled(false);
 		closeBtn.addActionListener(new ActionListener() {
@@ -413,6 +412,7 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 
 	public void hideInterface() {
 		setVisible(false);
+		Applet.sendViewNotification(ViewNotifications.HIDE_ALL);
 		Applet.handleRecordingUIHide();
 	}
 

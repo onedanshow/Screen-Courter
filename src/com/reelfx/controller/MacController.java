@@ -82,4 +82,9 @@ public class MacController extends ApplicationController {
 		if(screen != null)
 			screen.stopRecording();
 	}
+	
+	@Override
+	public void showRecordingInterface() {
+		Applet.sendViewNotification(ViewNotifications.SHOW_RECORD_CONTROLS);
+	}
 }

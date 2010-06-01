@@ -249,12 +249,11 @@ public abstract class ApplicationController implements ProcessListener {
 	}
 
 	public void showRecordingInterface() {
-		recordGUI.setVisible(true);
-		recordGUI.pack();
+		Applet.sendViewNotification(ViewNotifications.SHOW_ALL);
 	}
 
 	public void hideRecordingInterface() {
-		recordGUI.setVisible(false);
+		Applet.sendViewNotification(ViewNotifications.HIDE_ALL);
 	}
 
 	/**
