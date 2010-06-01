@@ -30,6 +30,25 @@ public class CaptureViewport extends Rectangle implements ViewListener {
 		MouseEvent me;
 		CropHandle handle;
 		switch(notification) {
+		case SET_CAPTURE_VIEWPORT_RESOLUTION:
+			String resolution = ((String) body).toLowerCase();
+			if(resolution.equals("fullscreen")) {
+				setFrameFromDiagonal(0,0,SCREEN.getWidth(),SCREEN.getHeight());
+			} else if(resolution.contains("x")) {
+				String[] dim = resolution.split("x");
+				int width = Integer.parseInt(dim[0]);
+				int height = Integer.parseInt(dim[1]);
+				Point pt = getTopLeftPoint();
+				if(pt.x + width > SCREEN.width) {
+					pt.x -= Math.max(0,pt.x + width - SCREEN.width);
+				}
+				if(pt.y + height > SCREEN.height) {
+					pt.y -= Math.max(0,pt.y + height - SCREEN.height);
+				}
+				setFrameFromDiagonal(pt.x,pt.y,pt.x+width,pt.y+height);
+			}
+			break;
+		
 		case MOUSE_DRAG_CROP_HANDLE:
 			me = (MouseEvent) body;
 			handle = (CropHandle) me.getSource();
@@ -65,20 +84,22 @@ public class CaptureViewport extends Rectangle implements ViewListener {
 			}
 			break;
 			
-		case MOUSE_PRESS_CROP_LINE:
+		//case MOUSE_PRESS_CROP_LINE:
 		case MOUSE_PRESS_RECORD_CONTROLS:	
 		case MOUSE_PRESS_INFO_BOX:
 			me = (MouseEvent) body;
 			mouseOffset = new Point(me.getLocationOnScreen().x-(int)getX(), me.getLocationOnScreen().y-(int)getY());
 			break;
 			
-		case MOUSE_DRAG_CROP_LINE:
+		//case MOUSE_DRAG_CROP_LINE:
 		case MOUSE_DRAG_RECORD_CONTROLS:	
 		case MOUSE_DRAG_INFO_BOX:
+			if(Applet.IS_MAC && !Applet.DEV_MODE) break; // TODO temporary
+			
 			me = (MouseEvent) body;
 			Point p = me.getLocationOnScreen();
 			p.x -= mouseOffset.x;
-			p.y -= mouseOffset.y;
+			p.y -= mouseOffset.y;			
 			p.x = (int) Math.min(Math.max(p.x, 0), SCREEN.width - getWidth());
 			p.y = (int) Math.min(Math.max(p.y, 0), SCREEN.height - getHeight());
 			setLocation(p);

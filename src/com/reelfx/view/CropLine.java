@@ -1,12 +1,15 @@
 package com.reelfx.view;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Stroke;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Line2D;
 
 import javax.swing.JPanel;
-import javax.swing.border.LineBorder;
 
 import com.reelfx.Applet;
 import com.reelfx.view.util.MoveableWindow;
@@ -20,17 +23,13 @@ public class CropLine extends MoveableWindow {
 	public final static String BOTTOM = "BOTTOM";
 	public final static String LEFT = "LEFT";
 	
-	public final static int THICKNESS = 3;
+	public final static int THICKNESS = 2;
 	
 	public CropLine(String name) {
 		super();
 		setName(name);
-		//setPreferredSize(new Dimension(12, 12));
 		setAlwaysOnTop(true);
-		JPanel border = new JPanel();
-		border.setBackground(Color.BLACK);
-		//border.setBorder(new LineBorder(color));
-		add(border);
+		add(new LinePaint());
 		pack();
 		receiveViewNotification(ViewNotifications.CAPTURE_VIEWPORT_CHANGE);
 	}
@@ -40,10 +39,15 @@ public class CropLine extends MoveableWindow {
 		switch(notification) {
 		case CAPTURE_VIEWPORT_CHANGE:
 			Point pt = determineFirstViewportPoint();
-			if(isVertical()) {
-				pt.translate(-1, 0);
-			} else {
+			/*if(getName().equals(TOP)) {
 				pt.translate(0, -1);
+			} else if(getName().equals(RIGHT)) {
+				pt.translate(1,0);
+			} else if(getName().equals(BOTTOM)) {
+				pt.translate(0,1);
+				*/
+			if(getName().equals(LEFT)) {
+				pt.translate(-2,0);
 			}
 			setLocation(pt);
 			int width = isVertical() ? THICKNESS : (int)pt.distance(determineSecondViewportPoint());
@@ -52,14 +56,10 @@ public class CropLine extends MoveableWindow {
 			break;
 			
 		case SHOW_ALL:
-		case SHOW_CROP_HANDLES:
 			setVisible(true);
 			break;
 			
-		case PRE_RECORDING:
-		case RECORDING:
 		case HIDE_ALL:
-		case HIDE_CROP_HANDLES:
 			setVisible(false);
 			break;
 		}
@@ -102,6 +102,27 @@ public class CropLine extends MoveableWindow {
 			return Applet.CAPTURE_VIEWPORT.getBottomLeftPoint();
 		} else {
 			return Applet.CAPTURE_VIEWPORT.getBottomRightPoint();
+		}
+	}
+	
+	class LinePaint extends JPanel {
+		Stroke drawingStroke = new BasicStroke(3, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{6}, 0);
+		
+		public LinePaint() {
+			super();
+			setBackground(Color.WHITE);
+		}
+
+		@Override
+		protected void paintComponent(Graphics g) {
+			super.paintComponent(g);
+			Graphics2D g2d = (Graphics2D) g;
+			g2d.setStroke(drawingStroke);
+			g2d.setColor(Color.black);
+			if(getWidth() > getHeight())
+				g2d.draw(new Line2D.Double(getX(),getY(),getWidth(),getY()));
+			else
+				g2d.draw(new Line2D.Double(getX(),getY(),getX(),getHeight()));
 		}
 	}
 }

@@ -24,6 +24,7 @@ import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -59,6 +60,7 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 	private Color statusColor = new Color(255, 102, 102);
 	private Color messageColor = new Color(255, 255, 153);
 	private int timerCount = 0;
+	private JComboBox viewportSelect;
 	private ViewNotifications currentState; 
 
 	/**
@@ -153,6 +155,17 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 
 		audioSelect = new AudioSelector();
 		recordingOptionsPanel.add(audioSelect);
+		
+		String[] resolutions = {"Custom","320x240","640x480","800x600","1024x768","1280x720","Fullscreen"};
+		viewportSelect = new JComboBox(resolutions);
+		viewportSelect.setSelectedIndex(3); // select the 800x600
+		viewportSelect.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Applet.sendViewNotification(ViewNotifications.SET_CAPTURE_VIEWPORT_RESOLUTION, ((JComboBox)e.getSource()).getSelectedItem());
+			}
+		});
+		recordingOptionsPanel.add(viewportSelect);
 
 		add(recordingOptionsPanel); // ,BorderLayout.NORTH);
 
@@ -236,12 +249,16 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 			recordBtn.setText("Record");
 			audioSelect.setEnabled(true);
 			audioSelect.setVisible(true);
+			viewportSelect.setEnabled(true);
+			viewportSelect.setVisible(true);
 			break;
 		
 		case PRE_RECORDING:
 			recordBtn.setEnabled(false);
 			audioSelect.setEnabled(false);
 			audioSelect.setVisible(false);
+			viewportSelect.setEnabled(false);
+			viewportSelect.setVisible(false);
 			status.setEnabled(true);
 			status.setVisible(true);
 			break;
@@ -251,11 +268,16 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 			recordBtn.setText("Stop");
 			audioSelect.setEnabled(false);
 			audioSelect.setVisible(false);
+			viewportSelect.setEnabled(false);
+			viewportSelect.setVisible(false);
 			break;
 		
 		case CAPTURE_VIEWPORT_CHANGE:
 			Point pt = Applet.CAPTURE_VIEWPORT.getBottomLeftPoint();
 			pt.translate(0, 10);
+			if(pt.y + getHeight() > screen.getHeight()) {
+				pt = new Point((int) (screen.getWidth() - 10 - getWidth()), 10 + (Applet.IS_MAC ? 20 : 0));
+			}
 			setLocation(pt);
 			break;
 		
@@ -274,16 +296,13 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 			recordBtn.setEnabled(false);
 			audioSelect.setEnabled(false);
 			audioSelect.setVisible(true);
+			viewportSelect.setEnabled(false);
+			viewportSelect.setVisible(true);
 			break;	
-		/*
-		case MOUSE_PRESS_INFO_BOX:
-			super.mousePressed((MouseEvent) body); // call super so we don't send notifications					
+			
+		case MOUSE_DRAG_CROP_HANDLE:
+			viewportSelect.setSelectedIndex(0);
 			break;
-		
-		case MOUSE_DRAG_INFO_BOX:
-			super.mouseDragged((MouseEvent) body); // call super so we don't send notifications				
-			break;
-		*/
 		}
 		
 		if (body instanceof MessageNotification) {

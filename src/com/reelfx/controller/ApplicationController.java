@@ -84,7 +84,11 @@ public abstract class ApplicationController implements ProcessListener {
 		if (Applet.HEADLESS) {
 			// don't show interface initially
 		} else {
-			Applet.sendViewNotification(ViewNotifications.SHOW_ALL);
+			if(Applet.IS_MAC && !Applet.DEV_MODE) { // TODO temporary
+				Applet.sendViewNotification(ViewNotifications.SHOW_RECORD_CONTROLS);
+			} else {
+				Applet.sendViewNotification(ViewNotifications.SHOW_ALL);
+			}
 			if (!Applet.BIN_FOLDER.exists()) {
 				Applet.sendViewNotification(ViewNotifications.THINKING, 
 						new MessageNotification("Performing one-time install...","Please wait as the program performs a one-time install / update of its native extensions."));
