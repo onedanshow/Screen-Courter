@@ -84,6 +84,7 @@ public class InformationBox extends MoveableWindow {
 			setVisible(true);
 			break;
 			
+		case PRE_RECORDING:
 		case RECORDING:
 		case HIDE_ALL:
 		case HIDE_INFO_BOX:

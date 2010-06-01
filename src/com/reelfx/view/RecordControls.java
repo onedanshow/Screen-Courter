@@ -321,12 +321,14 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 	
 	@Override
 	public void mousePressed(MouseEvent e) {
+		if(currentState == ViewNotifications.PRE_RECORDING || currentState == ViewNotifications.RECORDING) return;
 		super.mousePressed(e);
 		Applet.sendViewNotification(ViewNotifications.MOUSE_PRESS_RECORD_CONTROLS, e);
 	}
 	
 	@Override
 	public void mouseDragged(MouseEvent e) {
+		if(currentState == ViewNotifications.PRE_RECORDING || currentState == ViewNotifications.RECORDING) return;
 		super.mouseDragged(e);
 		Applet.sendViewNotification(ViewNotifications.MOUSE_DRAG_RECORD_CONTROLS, e);
 	}
