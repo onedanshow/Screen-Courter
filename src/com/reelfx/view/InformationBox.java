@@ -36,11 +36,11 @@ public class InformationBox extends MoveableWindow {
 	@Override
 	protected void init() {
 		super.init();
-		setPreferredSize(new Dimension(230, 30));
+		setPreferredSize(new Dimension(230, 33));
 		setAlwaysOnTop(true);
 		setName(NAME);
 		
-		JLabel title = new JLabel("ReelFX Screen Recorder");
+		JLabel title = new JLabel("ReelFX Screen Recorder    ");
 		title.setFont(new Font("Arial", Font.BOLD, 15));
 		JLabel icon = new JLabel(new ImageIcon(this.getClass().getClassLoader().getResource("com/reelfx/view/images/move.png")));
 		
