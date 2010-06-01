@@ -22,8 +22,11 @@ public class CropHandle extends MoveableWindow implements ViewListener {
 	public final static String TOP_LEFT = "TOP_LEFT";
 	public final static String TOP_MIDDLE = "TOP_MIDDLE";
 	public final static String TOP_RIGHT = "TOP_RIGHT";
-	public final static String BOTTOM_LEFT = "BOTTOM_LEFT";
+	public final static String MIDDLE_RIGHT = "MIDDLE_RIGHT";
 	public final static String BOTTOM_RIGHT = "BOTTOM_RIGHT";
+	public final static String BOTTOM_MIDDLE = "BOTTOM_MIDDLE";
+	public final static String BOTTOM_LEFT = "BOTTOM_LEFT";
+	public final static String MIDDLE_LEFT = "MIDDLE_LEFT";
 	
 	public CropHandle(String name) {
 		super();
@@ -40,7 +43,6 @@ public class CropHandle extends MoveableWindow implements ViewListener {
 
 	@Override
 	public void receiveViewNotification(ViewNotifications notification,Object body) {
-		MouseEvent me;
 		switch(notification) {
 		case CAPTURE_VIEWPORT_CHANGE:
 			Point pt = determineViewportPoint();
@@ -59,19 +61,10 @@ public class CropHandle extends MoveableWindow implements ViewListener {
 		case HIDE_CROP_HANDLES:
 			setVisible(false);
 			break;
-		/*	
-		case MOUSE_PRESS_INFO_BOX:
-			me = (MouseEvent) body;
-			me.setSource(this);
-			mousePressed(me); // call local because we want to send notifications for capture viewport	
-			break;
 		
-		case MOUSE_DRAG_INFO_BOX:
-			me = (MouseEvent) body;
-			me.setSource(this);
-			mouseDragged(me); // call local because we want to send notifications for capture viewport				
+		case MOUSE_PRESS_CROP_LINE:
+			toFront();
 			break;
-			*/	
 		}
 	}
 	
@@ -108,10 +101,16 @@ public class CropHandle extends MoveableWindow implements ViewListener {
 			return Applet.CAPTURE_VIEWPORT.getTopMiddlePoint();
 		} else if(getName().equals(TOP_RIGHT)) {
 			return Applet.CAPTURE_VIEWPORT.getTopRightPoint();
+		} else if(getName().equals(MIDDLE_RIGHT)) {
+			return Applet.CAPTURE_VIEWPORT.getMiddleRightPoint();			
 		} else if(getName().equals(BOTTOM_RIGHT)) {
 			return Applet.CAPTURE_VIEWPORT.getBottomRightPoint();
-		} else {
+		} else if(getName().equals(BOTTOM_MIDDLE)) {
+			return Applet.CAPTURE_VIEWPORT.getBottomMiddlePoint();	
+		} else if(getName().equals(BOTTOM_LEFT)) {
 			return Applet.CAPTURE_VIEWPORT.getBottomLeftPoint();
+		} else {
+			return Applet.CAPTURE_VIEWPORT.getMiddleLeftPoint();
 		}
 	}
 

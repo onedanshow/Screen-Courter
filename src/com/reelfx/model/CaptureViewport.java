@@ -44,22 +44,35 @@ public class CaptureViewport extends Rectangle implements ViewListener {
 						new Point((int)getMinX(),me.getLocationOnScreen().y),
 						new Point(me.getLocationOnScreen().x,(int)getMaxY()));
 			}
+			else if(handle.getName().equals(CropHandle.MIDDLE_RIGHT)) {
+				setFrameFromDiagonal(getTopLeftPoint(),
+						new Point(me.getLocationOnScreen().x,(int)getMaxY()));
+			}
 			else if(handle.getName().equals(CropHandle.BOTTOM_RIGHT)) {
 				setFrameFromDiagonal(getTopLeftPoint(), me.getLocationOnScreen());
+			}
+			else if(handle.getName().equals(CropHandle.BOTTOM_MIDDLE)) {
+				setFrameFromDiagonal(getTopLeftPoint(), 
+						new Point((int)getMaxX(),me.getLocationOnScreen().y));
 			}
 			else if(handle.getName().equals(CropHandle.BOTTOM_LEFT)) {
 				setFrameFromDiagonal(
 						new Point(me.getLocationOnScreen().x,(int)getMinY()),
 						new Point((int)getMaxX(),me.getLocationOnScreen().y));
 			}
+			else if(handle.getName().equals(CropHandle.MIDDLE_LEFT)) {
+				setFrameFromDiagonal(new Point(me.getLocationOnScreen().x,(int)getMinY()), getBottomRightPoint());
+			}
 			break;
 			
+		case MOUSE_PRESS_CROP_LINE:
 		case MOUSE_PRESS_RECORD_CONTROLS:	
 		case MOUSE_PRESS_INFO_BOX:
 			me = (MouseEvent) body;
 			mouseOffset = new Point(me.getLocationOnScreen().x-(int)getX(), me.getLocationOnScreen().y-(int)getY());
 			break;
 			
+		case MOUSE_DRAG_CROP_LINE:
 		case MOUSE_DRAG_RECORD_CONTROLS:	
 		case MOUSE_DRAG_INFO_BOX:
 			me = (MouseEvent) body;
@@ -94,12 +107,24 @@ public class CaptureViewport extends Rectangle implements ViewListener {
 	public Point getTopRightPoint() {
 		return new Point((int)getMaxX(),(int)getMinY());
 	}
+
+	public Point getMiddleRightPoint() {
+		return new Point((int)getMaxX(),(int)getMinY()+(int)Math.floor(getHeight()/2.0));
+	}
 	
 	public Point getBottomRightPoint() {
 		return new Point((int)getMaxX(),(int)getMaxY());
 	}
 	
+	public Point getBottomMiddlePoint() {
+		return new Point((int)getMinX()+(int)Math.floor(getWidth()/2.0),(int)getMaxY());
+	}
+	
 	public Point getBottomLeftPoint() {
 		return new Point((int)getMinX(),(int)getMaxY());
+	}
+	
+	public Point getMiddleLeftPoint() {
+		return new Point((int)getMinX(),(int)getMinY()+(int)Math.floor(getHeight()/2.0));
 	}
 }

@@ -33,6 +33,7 @@ import com.reelfx.model.PreviewPlayer;
 import com.reelfx.model.ScreenRecorder;
 import com.reelfx.model.util.ProcessListener;
 import com.reelfx.view.CropHandle;
+import com.reelfx.view.CropLine;
 import com.reelfx.view.InformationBox;
 import com.reelfx.view.PostOptions;
 import com.reelfx.view.RecordControls;
@@ -61,11 +62,20 @@ public abstract class ApplicationController implements ProcessListener {
 		recordGUI = new RecordControls(this);
 		optionsGUI = new PostOptions(this);
 		infoBox = new InformationBox();
+		
+		new CropLine(CropLine.TOP);
+		new CropLine(CropLine.RIGHT);
+		new CropLine(CropLine.BOTTOM);
+		new CropLine(CropLine.LEFT);
+		
 		new CropHandle(CropHandle.TOP_LEFT);
 		new CropHandle(CropHandle.TOP_MIDDLE);
 		new CropHandle(CropHandle.TOP_RIGHT);
+		new CropHandle(CropHandle.MIDDLE_RIGHT);
 		new CropHandle(CropHandle.BOTTOM_LEFT);
+		new CropHandle(CropHandle.BOTTOM_MIDDLE);
 		new CropHandle(CropHandle.BOTTOM_RIGHT);
+		new CropHandle(CropHandle.MIDDLE_LEFT);
 
 		Applet.APPLET.getContentPane().add(optionsGUI); // note, if this line
 														// changes, also change
