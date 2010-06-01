@@ -14,6 +14,7 @@ import javax.swing.JPanel;
 import javax.swing.JSeparator;
 
 import com.reelfx.controller.ApplicationController;
+import com.reelfx.view.util.MessageNotification;
 import com.reelfx.view.util.ViewListener;
 import com.reelfx.view.util.ViewNotifications;
 
@@ -21,16 +22,10 @@ public class PostOptions extends JPanel implements ViewListener {
 	
 	private static final long serialVersionUID = 4036818007133606840L;
 	
-    public final static int OPTIONS = 600;
-    public final static int OPTIONS_NO_UPLOAD = 601; 
-    public final static int THINKING = 602;
-    public final static int DISABLED = 603;
-    public final static int FATAL = 604;
-	
 	public JButton previewBtn, saveBtn, insightBtn, deleteBtn;
 	private final ApplicationController controller;
 	private JLabel message;
-	private int currentState = OPTIONS;
+	private ViewNotifications currentState;
 	private JPanel self;
 	
 	public PostOptions(final ApplicationController controller) {
@@ -109,7 +104,7 @@ public class PostOptions extends JPanel implements ViewListener {
         });
         add(deleteBtn);
 	}
-	
+/*	
     public void changeState(int state) {
     	changeState(state, null);
     }
@@ -135,21 +130,45 @@ public class PostOptions extends JPanel implements ViewListener {
     		insightBtn.setEnabled(false);
     		deleteBtn.setEnabled(true);
 			break;
+    	}
+    	
+    	//currentState = state; // needs to be at end
+    }
+*/
+	@Override
+	public void receiveViewNotification(ViewNotifications notification, Object body) {
+		switch(notification) {
+		
+		case READY_WITH_OPTIONS:
+    		previewBtn.setEnabled(true);
+    		saveBtn.setEnabled(true);
+    		insightBtn.setEnabled(true);
+    		deleteBtn.setEnabled(true);
+    		break;
+    		
+		case READY_WITH_OPTIONS_NO_UPLOADING:
+			previewBtn.setEnabled(true);
+    		saveBtn.setEnabled(true);
+    		insightBtn.setEnabled(false);
+    		deleteBtn.setEnabled(true);
+			break;
+		
 		case FATAL:
-		case DISABLED:
 		case THINKING:
+		case READY:
     		previewBtn.setEnabled(false);
     		saveBtn.setEnabled(false);
     		insightBtn.setEnabled(false);
     		deleteBtn.setEnabled(false);
     		break;
-    	}
-    	
-    	currentState = state; // needs to be at end
-    }
-
-	@Override
-	public void receiveViewNotification(ViewNotifications notification, Object body) {
+		}
 		
+		if(body instanceof MessageNotification) {
+			message.setText("<html><body><table cellpadding='5' width='100%'><tr><td align='center'>"+((MessageNotification)body).getMessageText()+"</td></tr></table></body></html>");
+		} else {
+			message.setText("<html><body><table cellpadding='5' width='100%'><tr><td align='center'>ReelFX Screen Recorder</td></tr></table></body></html>");
+		}
+		
+		currentState = notification; // needs to be at end
 	}
 }

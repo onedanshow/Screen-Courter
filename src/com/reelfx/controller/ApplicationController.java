@@ -36,6 +36,7 @@ import com.reelfx.view.CropHandle;
 import com.reelfx.view.InformationBox;
 import com.reelfx.view.PostOptions;
 import com.reelfx.view.RecordControls;
+import com.reelfx.view.util.MessageNotification;
 import com.reelfx.view.util.ViewNotifications;
 
 public abstract class ApplicationController implements ProcessListener {
@@ -75,8 +76,9 @@ public abstract class ApplicationController implements ProcessListener {
 		} else {
 			Applet.sendViewNotification(ViewNotifications.SHOW_ALL);
 			if (!Applet.BIN_FOLDER.exists()) {
-				recordGUI.changeState(RecordControls.THINKING,
-						"Performing one-time install...");
+				Applet.sendViewNotification(ViewNotifications.THINKING, 
+						new MessageNotification("Performing one-time install...","Please wait as the program performs a one-time install / update of its native extensions."));
+				//recordGUI.changeState(RecordControls.THINKING,"Performing one-time install...");
 			} else {
 				setReadyStateBasedOnPriorRecording();
 			}
@@ -86,41 +88,35 @@ public abstract class ApplicationController implements ProcessListener {
 	public void processUpdate(int event, Object body) {
 		switch (event) {
 		case PostProcessor.ENCODING_STARTED:
-			recordGUI.changeState(RecordControls.THINKING, "Encoding...");
-			optionsGUI.changeState(PostOptions.THINKING, "Encoding...");
-			// Applet.sendShowStatus("Encoding...");
+			Applet.sendViewNotification(ViewNotifications.THINKING, new MessageNotification("Encoding...", "Encoding..."));
+			//recordGUI.changeState(RecordControls.THINKING, "Encoding...");
+			//optionsGUI.changeState(PostOptions.THINKING, "Encoding...");
 			break;
 		case PostProcessor.ENCODING_COMPLETE:
-			// recordGUI.changeState(RecordControls.READY_WITH_OPTIONS,
-			// "Finished encoding.");
-			recordGUI.changeState(RecordControls.READY, "Finished encoding.");
-			optionsGUI.changeState(PostOptions.OPTIONS, "Finished encoding.");
-			// Applet.sendHideStatus();
+			Applet.sendViewNotification(ViewNotifications.READY_WITH_OPTIONS, 
+					new MessageNotification("Finished encoding.","Your recording has finished encoding."));
+			//recordGUI.changeState(RecordControls.READY, "Finished encoding.");
+			//optionsGUI.changeState(PostOptions.OPTIONS, "Finished encoding.");
 			break;
 		case PostProcessor.POST_STARTED:
-			recordGUI.changeState(RecordControls.THINKING,
-					"Uploading to Insight...");
-			optionsGUI
-					.changeState(PostOptions.THINKING,
-							"Uploading your screen recording to Insight. Do NOT close the browser window.");
-			// Applet.sendShowStatus("Uploading to Insight...");
+			Applet.sendViewNotification(ViewNotifications.THINKING, 
+					new MessageNotification("Uploading to Insight...", "Uploading your screen recording to Insight. Do NOT close the browser window."));
+			//recordGUI.changeState(RecordControls.THINKING,"Uploading to Insight...");
+			//optionsGUI.changeState(PostOptions.THINKING,"Uploading your screen recording to Insight. Do NOT close the browser window.");
 			break;
 		case PostProcessor.POST_FAILED:
-			recordGUI.changeState(RecordControls.FATAL, "Uploading failed!");
-			optionsGUI
-					.changeState(
-							PostOptions.FATAL,
-							"An error occurred while uploading the screen recording. It is stored locally, so you can try again later.");
+			Applet.sendViewNotification(ViewNotifications.FATAL, 
+					new MessageNotification("Upload failed!", "An error occurred while uploading the screen recording. It is stored locally, so you can try again later."));
+			//recordGUI.changeState(RecordControls.FATAL, "Uploading failed!");
+			//optionsGUI.changeState(PostOptions.FATAL,"An error occurred while uploading the screen recording. It is stored locally, so you can try again later.");
 			break;
 		case PostProcessor.POST_COMPLETE:
-			// recordGUI.changeState(RecordControls.READY_WITH_OPTIONS,"Finished uploading.");
-			recordGUI.changeState(RecordControls.READY, "Finished uploading.");
-			optionsGUI
-					.changeState(PostOptions.OPTIONS_NO_UPLOAD,
-							"Would you like to do anything else with your screen recording?");
+			Applet.sendViewNotification(ViewNotifications.READY_WITH_OPTIONS_NO_UPLOADING, 
+					new MessageNotification("Finished uploading.", "Would you like to do anything else with your screen recording?"));			
+			//recordGUI.changeState(RecordControls.READY, "Finished uploading.");
+			//optionsGUI.changeState(PostOptions.OPTIONS_NO_UPLOAD,"Would you like to do anything else with your screen recording?");
 			preferences.setUploaded(true);
 			preferences.writePreferences();
-			// Applet.sendHideStatus();
 		}
 	}
 
@@ -139,9 +135,11 @@ public abstract class ApplicationController implements ProcessListener {
 	}
 
 	public void stopRecording() {
-		recordGUI.changeState(RecordControls.READY);
-		optionsGUI.changeState(PostOptions.OPTIONS,
-				"What would you like to do with your new screen recording?");
+		Applet.sendViewNotification(ViewNotifications.READY_WITH_OPTIONS, 
+				new MessageNotification("", "What would you like to do with your new screen recording?"));
+		//recordGUI.changeState(RecordControls.READY);
+		//optionsGUI.changeState(PostOptions.OPTIONS,
+		//		"What would you like to do with your new screen recording?");
 		Applet.handleFreshRecording();
 	}
 
@@ -196,8 +194,9 @@ public abstract class ApplicationController implements ProcessListener {
 		AudioRecorder.deleteOutput();
 		PostProcessor.deleteOutput();
 		PreferenceManager.deleteOutput();
-		recordGUI.changeState(RecordControls.READY);
-		optionsGUI.changeState(PostOptions.DISABLED);
+		Applet.sendViewNotification(ViewNotifications.READY);
+		//recordGUI.changeState(RecordControls.READY);
+		//optionsGUI.changeState(PostOptions.DISABLED);
 		Applet.handleDeletedRecording();
 	}
 
@@ -214,21 +213,24 @@ public abstract class ApplicationController implements ProcessListener {
 	protected void setReadyStateBasedOnPriorRecording() {
 		if (ScreenRecorder.OUTPUT_FILE.exists()) {
 			// recordGUI.changeState(RecordControls.READY_WITH_OPTIONS);
-			recordGUI.changeState(RecordControls.READY);
+			// recordGUI.changeState(RecordControls.READY);
 			SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM d HH:mm");
 			String message = "You have a screen recording for "
 					+ preferences.getScreenCaptureName() + " on "
 					+ sdf.format(preferences.getDate()) + ". ";
 			if (preferences.isUploaded()) {
 				message += "It has already been uploaded.";
-				optionsGUI.changeState(PostOptions.OPTIONS_NO_UPLOAD, message);
+				Applet.sendViewNotification(ViewNotifications.READY_WITH_OPTIONS_NO_UPLOADING,new MessageNotification("", message));
+				//optionsGUI.changeState(PostOptions.OPTIONS_NO_UPLOAD, message);
 			} else {
-				optionsGUI.changeState(PostOptions.OPTIONS, message);
+				Applet.sendViewNotification(ViewNotifications.READY_WITH_OPTIONS,new MessageNotification("", message));
+				//optionsGUI.changeState(PostOptions.OPTIONS, message);
 			}
 			Applet.handleExistingRecording();
 		} else {
-			recordGUI.changeState(RecordControls.READY);
-			optionsGUI.changeState(PostOptions.DISABLED);
+			Applet.sendViewNotification(ViewNotifications.READY);
+			//recordGUI.changeState(RecordControls.READY);
+			//optionsGUI.changeState(PostOptions.DISABLED);
 		}
 	}
 

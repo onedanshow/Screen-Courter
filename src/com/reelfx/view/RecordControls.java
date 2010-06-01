@@ -37,18 +37,14 @@ import javax.swing.border.Border;
 import com.reelfx.Applet;
 import com.reelfx.controller.ApplicationController;
 import com.reelfx.model.ScreenRecorder;
+import com.reelfx.view.util.MessageNotification;
 import com.reelfx.view.util.MoveableWindow;
 import com.reelfx.view.util.ViewNotifications;
 
+@SuppressWarnings("serial")
 public class RecordControls extends MoveableWindow implements ActionListener {
 
 	public final static String NAME = "RecordControls";
-
-	public final static int READY = 500;
-	public final static int PRE_RECORDING = 501;
-	public final static int RECORDING = 502;
-	public final static int THINKING = 503;
-	public final static int FATAL = 504;
 
 	public JButton recordBtn, closeBtn;
 	public AudioSelector audioSelect;
@@ -62,7 +58,8 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 	private Color backgroundColor = new Color(34, 34, 34); // new Color(230,230,230);
 	private Color statusColor = new Color(255, 102, 102);
 	private Color messageColor = new Color(255, 255, 153);
-	private int currentState = READY, timerCount = 0;
+	private int timerCount = 0;
+	private ViewNotifications currentState; 
 
 	/**
 	 * The small recording GUI that provides recording, microphone, and status
@@ -169,7 +166,7 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 		pack();
 		receiveViewNotification(ViewNotifications.CAPTURE_VIEWPORT_CHANGE);
 	}
-
+/*
 	public void changeState(int state) {
 		changeState(state, null);
 	}
@@ -220,19 +217,6 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 			}
 			break;
 
-		case FATAL:
-		case THINKING:
-			recordBtn.setEnabled(false);
-			audioSelect.setEnabled(false);
-			audioSelect.setVisible(true);
-			if (statusText != null) {
-				status.setText(statusText);
-				// statusPanel.setVisible(true);
-			} else {
-				status.setText("");
-				// statusPanel.setVisible(false);
-			}
-			break;
 		}
 		currentState = state; // needs to be at end
 		if (isVisible())
@@ -240,10 +224,35 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 
 		Applet.handleRecordingUpdate(state, statusText);
 	}
-	
+*/	
 	@Override
 	public void receiveViewNotification(ViewNotifications notification, Object body) {
 		switch(notification) {
+		
+		case READY:
+		case READY_WITH_OPTIONS:
+		case READY_WITH_OPTIONS_NO_UPLOADING:
+			recordBtn.setEnabled(true);
+			recordBtn.setText("Record");
+			audioSelect.setEnabled(true);
+			audioSelect.setVisible(true);
+			break;
+		
+		case PRE_RECORDING:
+			recordBtn.setEnabled(false);
+			audioSelect.setEnabled(false);
+			audioSelect.setVisible(false);
+			status.setEnabled(true);
+			status.setVisible(true);
+			break;
+		
+		case RECORDING:
+			recordBtn.setEnabled(true);
+			recordBtn.setText("Stop");
+			audioSelect.setEnabled(false);
+			audioSelect.setVisible(false);
+			break;
+		
 		case CAPTURE_VIEWPORT_CHANGE:
 			Point pt = Applet.CAPTURE_VIEWPORT.getBottomLeftPoint();
 			pt.translate(0, 10);
@@ -259,6 +268,13 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 		case HIDE_RECORD_CONTROLS:
 			setVisible(false);
 			break;
+			
+		case FATAL:
+		case THINKING:
+			recordBtn.setEnabled(false);
+			audioSelect.setEnabled(false);
+			audioSelect.setVisible(true);
+			break;	
 		/*
 		case MOUSE_PRESS_INFO_BOX:
 			super.mousePressed((MouseEvent) body); // call super so we don't send notifications					
@@ -269,6 +285,19 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 			break;
 		*/
 		}
+		
+		if (body instanceof MessageNotification) {
+			status.setText(((MessageNotification) body).getStatusText());
+			// statusPanel.setVisible(true);
+		} else {
+			status.setText("");
+			// statusPanel.setVisible(false);
+		}
+		
+		if (isVisible()) pack();
+		
+		currentState = notification;
+		
 	}
 	
 	@Override
@@ -288,7 +317,8 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 		if (ScreenRecorder.OUTPUT_FILE.exists() && !deleteRecording())
 			return;
 
-		changeState(PRE_RECORDING, "Ready");
+		Applet.sendViewNotification(ViewNotifications.PRE_RECORDING, new MessageNotification("Ready"));
+		//changeState(PRE_RECORDING, "Ready");
 		controller.prepareForRecording();
 
 		if (timer == null) {
@@ -305,9 +335,11 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) { // this method is for the timer
 		if (status.getText().equals("Ready")) {
-			changeState(PRE_RECORDING, "Set");
+			Applet.sendViewNotification(ViewNotifications.PRE_RECORDING, new MessageNotification("Set"));
+			//changeState(PRE_RECORDING, "Set");
 		} else if (status.getText().equals("Set")) {
-			changeState(RECORDING, "Go!");
+			Applet.sendViewNotification(ViewNotifications.RECORDING, new MessageNotification("Go!"));
+			//changeState(RECORDING, "Go!");
 			startRecording();
 		} else {
 			status.setText((timerCount / 60 < 10 ? "0" : "") + timerCount

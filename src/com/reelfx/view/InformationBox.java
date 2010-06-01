@@ -62,11 +62,15 @@ public class InformationBox extends MoveableWindow {
 			setLocation((int)Applet.CAPTURE_VIEWPORT.getCenterX() - getWidth()/2, (int)Applet.CAPTURE_VIEWPORT.getCenterY() - getHeight()/2);
 			break;
 		
+		case READY:
+		case READY_WITH_OPTIONS:
+		case READY_WITH_OPTIONS_NO_UPLOADING:
 		case SHOW_ALL:
 		case SHOW_INFO_BOX:
 			setVisible(true);
 			break;
 			
+		case RECORDING:
 		case HIDE_ALL:
 		case HIDE_INFO_BOX:
 			setVisible(false);

@@ -53,6 +53,8 @@ public class CropHandle extends MoveableWindow implements ViewListener {
 			setVisible(true);
 			break;
 			
+		case PRE_RECORDING:
+		case RECORDING:
 		case HIDE_ALL:
 		case HIDE_CROP_HANDLES:
 			setVisible(false);

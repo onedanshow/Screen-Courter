@@ -14,6 +14,8 @@ import com.reelfx.model.AudioRecorder;
 import com.reelfx.model.ScreenRecorder;
 import com.reelfx.view.PostOptions;
 import com.reelfx.view.RecordControls;
+import com.reelfx.view.util.MessageNotification;
+import com.reelfx.view.util.ViewNotifications;
 
 public class MacController extends ApplicationController {
 
@@ -38,22 +40,19 @@ public class MacController extends ApplicationController {
 			}
 			System.out.println("Have access to execution folder: "+Applet.BIN_FOLDER.getAbsolutePath());
 			setReadyStateBasedOnPriorRecording();
-        } catch (MalformedURLException e1) {
-        	recordGUI.changeState(RecordControls.FATAL,"Error with install");
-        	optionsGUI.changeState(PostOptions.FATAL, "Sorry, an error occurred while installing the native extensions. Please contact an Insight admin.");
-			e1.printStackTrace();
-		} catch (InterruptedException e) {
-			recordGUI.changeState(RecordControls.FATAL,"Error with install");
-			optionsGUI.changeState(PostOptions.FATAL, "Sorry, an error occurred while installing the native extensions. Please contact an Insight admin.");
-			e.printStackTrace();
-		} catch (IOException e) {
-			recordGUI.changeState(RecordControls.FATAL,"Error with install");
-			optionsGUI.changeState(PostOptions.FATAL, "Sorry, an error occurred while installing the native extensions. Please contact an Insight admin.");
+        } catch (Exception e) { // possibilities: MalformedURL, InterruptedException, IOException
+        	Applet.sendViewNotification(ViewNotifications.FATAL, new MessageNotification(
+        			"Error with install",
+        			"Sorry, an error occurred while installing the native extensions. Please contact an Insight admin."));
+        	//recordGUI.changeState(RecordControls.FATAL,"Error with install");
+        	//optionsGUI.changeState(PostOptions.FATAL, "Sorry, an error occurred while installing the native extensions. Please contact an Insight admin.");
 			e.printStackTrace();
 		}
-		
+
 		if(Applet.IS_MAC && !System.getProperty("os.version").contains("10.6")) {
-			recordGUI.changeState(RecordControls.FATAL, "Sorry, Snow Leopard required.");
+			Applet.sendViewNotification(ViewNotifications.FATAL, new MessageNotification(
+					"Sorry, Snow Leopard required.", "Sorry, this tool requires that you have Mac OS X 10.6 (Snow Leopard)"));
+			//recordGUI.changeState(RecordControls.FATAL, "Sorry, Snow Leopard required.");
 		}
 	}
 

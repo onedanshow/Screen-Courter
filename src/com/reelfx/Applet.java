@@ -145,6 +145,7 @@ public class Applet extends JApplet {
 	 * @param body
 	 */
 	public static void sendViewNotification(ViewNotifications notification,Object body) {
+		//System.out.println("View Notification: "+notification);
 		// applet is a special case (see ApplicationController constructor)
 		((ViewListener) APPLET.getContentPane().getComponent(0)).receiveViewNotification(notification, body);
 		// another special case where the capture viewport is a pseudo-model
@@ -258,7 +259,7 @@ public class Applet extends JApplet {
 		});
 	}
 	
-	public static void handleRecordingUpdate(int state,String status) {
+	public static void handleRecordingUpdate(ViewNotifications state,String status) {
 		if(status == null) status = "";
 		jsCall("sct_handle_recording_update("+state+",\""+status+"\");");
 	}
