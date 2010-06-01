@@ -151,6 +151,7 @@ public class AudioSelector extends JComboBox implements MouseListener, ItemListe
 			super();
 			setLayout(null);
 			setDoubleBuffered(true);
+			setBackground(new Color(34, 34, 34));
 		}
 
 		public void setVolume(double volume) {

@@ -103,11 +103,10 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 		title.setFont(new java.awt.Font("Arial", 1, 11));
 		title.setForeground(Color.WHITE);
 		title.setText("   Review for " + Applet.SCREEN_CAPTURE_NAME + "   ");
-		title.setOpaque(true);
 		title.setHorizontalAlignment(SwingConstants.CENTER);
 
 		titlePanel = new JPanel();
-		titlePanel.setOpaque(false);
+		titlePanel.setBackground(backgroundColor);
 		titlePanel.setLayout(new BorderLayout());
 		titlePanel.add(title, BorderLayout.CENTER);
 
@@ -127,8 +126,9 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 		// ------- setup recording options -------
 
 		recordingOptionsPanel = new JPanel();
+		recordingOptionsPanel.setBackground(backgroundColor);
 		// recordingOptionsPanel.setMaximumSize(new Dimension(180,1000));
-		recordingOptionsPanel.setOpaque(false);
+		recordingOptionsPanel.setOpaque(true);
 
 		recordBtn = new JButton("Record");
 		recordBtn.addActionListener(new ActionListener() {
@@ -148,7 +148,6 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 		// status.setPreferredSize(new Dimension(50, 40));
 		status.setFont(new java.awt.Font("Arial", 1, 11));
 		status.setForeground(Color.WHITE);
-		status.setOpaque(true);
 		status.setHorizontalAlignment(SwingConstants.CENTER);
 		recordingOptionsPanel.add(status);
 
