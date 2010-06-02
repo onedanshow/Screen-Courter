@@ -39,6 +39,7 @@ public enum ViewNotifications {
 	SHOW_RECORD_CONTROLS,
 	
 	SHOW_ALL,
+	DISABLE_ALL,
 	HIDE_ALL,
 	
 	READY,

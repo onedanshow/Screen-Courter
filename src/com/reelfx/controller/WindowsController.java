@@ -48,9 +48,9 @@ public class WindowsController extends ApplicationController {
 			if(!Applet.BIN_FOLDER.exists()){
 				Applet.copyFolderFromRemoteJar(new URL(Applet.HOST_URL+"/bin-windows.jar?"+Math.random()*10000), "bin-windows");
 				if(!Applet.BIN_FOLDER.exists()) throw new IOException("Did not copy Windows extensions to the execution directory!");
+				setReadyStateBasedOnPriorRecording();
 			}
 			System.out.println("Have access to execution folder: "+Applet.BIN_FOLDER.getAbsolutePath());
-			setReadyStateBasedOnPriorRecording();
         } catch (Exception e) { // possibilities: MalformedURL, IOException, etc.
         	Applet.sendViewNotification(ViewNotifications.FATAL, new MessageNotification(
         			"Error with install", 

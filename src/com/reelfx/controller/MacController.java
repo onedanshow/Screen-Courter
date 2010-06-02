@@ -37,9 +37,9 @@ public class MacController extends ApplicationController {
 				Applet.copyFolderFromRemoteJar(new URL(Applet.HOST_URL+"/bin-mac.jar?"+Math.random()*10000), "bin-mac");
 				Runtime.getRuntime().exec("chmod 755 "+Applet.BIN_FOLDER+File.separator+"mac-screen-recorder").waitFor();
 				if(!Applet.BIN_FOLDER.exists()) throw new IOException("Did not copy Mac extensions to the execution directory!");
+				setReadyStateBasedOnPriorRecording();
 			}
 			System.out.println("Have access to execution folder: "+Applet.BIN_FOLDER.getAbsolutePath());
-			setReadyStateBasedOnPriorRecording();
         } catch (Exception e) { // possibilities: MalformedURL, InterruptedException, IOException
         	Applet.sendViewNotification(ViewNotifications.FATAL, new MessageNotification(
         			"Error with install",

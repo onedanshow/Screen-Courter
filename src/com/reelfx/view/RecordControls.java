@@ -163,7 +163,7 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 				Applet.sendViewNotification(ViewNotifications.SET_CAPTURE_VIEWPORT_RESOLUTION, ((JComboBox)e.getSource()).getSelectedItem());
 			}
 		});
-		if(!Applet.IS_MAC && !Applet.DEV_MODE) // TODO temporary
+		if(!Applet.IS_MAC || Applet.DEV_MODE) // TODO temporary
 			recordingOptionsPanel.add(viewportSelect);
 
 		add(recordingOptionsPanel); // ,BorderLayout.NORTH);
@@ -251,6 +251,12 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 			viewportSelect.setEnabled(true);
 			viewportSelect.setVisible(true);
 			currentState = notification;
+			if (body instanceof MessageNotification) {
+				status.setText(((MessageNotification) body).getStatusText());
+			} else {
+				status.setText("");
+			}
+			Applet.handleRecordingUpdate(currentState, status.getText());
 			break;
 		
 		case PRE_RECORDING:
@@ -262,6 +268,12 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 			status.setEnabled(true);
 			status.setVisible(true);
 			currentState = notification;
+			if (body instanceof MessageNotification) {
+				status.setText(((MessageNotification) body).getStatusText());
+			} else {
+				status.setText("");
+			}
+			Applet.handleRecordingUpdate(currentState, status.getText());
 			break;
 		
 		case RECORDING:
@@ -272,12 +284,18 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 			viewportSelect.setEnabled(false);
 			viewportSelect.setVisible(false);
 			currentState = notification;
+			if (body instanceof MessageNotification) {
+				status.setText(((MessageNotification) body).getStatusText());
+			} else {
+				status.setText("");
+			}
+			Applet.handleRecordingUpdate(currentState, status.getText());
 			break;
 		
 		case CAPTURE_VIEWPORT_CHANGE:
 			Point pt = Applet.CAPTURE_VIEWPORT.getBottomLeftPoint();
 			pt.translate(0, 10);
-			if(pt.y + getHeight() > screen.getHeight()) {
+			if(pt.y + getHeight() > screen.getHeight() || (Applet.IS_MAC && !Applet.DEV_MODE)) { // TODO temporary (second condition)
 				pt = new Point((int) (screen.getWidth() - 10 - getWidth()), 10 + (Applet.IS_MAC ? 20 : 0));
 			}
 			setLocation(pt);
@@ -301,6 +319,12 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 			viewportSelect.setEnabled(false);
 			viewportSelect.setVisible(true);
 			currentState = notification;
+			if (body instanceof MessageNotification) {
+				status.setText(((MessageNotification) body).getStatusText());
+			} else {
+				status.setText("");
+			}
+			Applet.handleRecordingUpdate(currentState, status.getText());
 			break;	
 			
 		case MOUSE_DRAG_CROP_HANDLE:
@@ -308,27 +332,21 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 			break;
 		}
 		
-		if (body instanceof MessageNotification) {
-			status.setText(((MessageNotification) body).getStatusText());
-			// statusPanel.setVisible(true);
-		} else {
-			status.setText("");
-			// statusPanel.setVisible(false);
-		}
-		
 		if (isVisible()) pack();		
 	}
 	
 	@Override
 	public void mousePressed(MouseEvent e) {
-		if(currentState == ViewNotifications.PRE_RECORDING || currentState == ViewNotifications.RECORDING) return;
+		if((!Applet.IS_MAC || Applet.DEV_MODE) && // temporary 
+				(currentState == ViewNotifications.PRE_RECORDING || currentState == ViewNotifications.RECORDING)) return;
 		super.mousePressed(e);
 		Applet.sendViewNotification(ViewNotifications.MOUSE_PRESS_RECORD_CONTROLS, e);
 	}
 	
 	@Override
 	public void mouseDragged(MouseEvent e) {
-		if(currentState == ViewNotifications.PRE_RECORDING || currentState == ViewNotifications.RECORDING) return;
+		if((!Applet.IS_MAC || Applet.DEV_MODE) && // temporary 
+				(currentState == ViewNotifications.PRE_RECORDING || currentState == ViewNotifications.RECORDING)) return;
 		super.mouseDragged(e);
 		Applet.sendViewNotification(ViewNotifications.MOUSE_DRAG_RECORD_CONTROLS, e);
 	}
@@ -402,9 +420,11 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 	 *         this or not
 	 */
 	public boolean deleteRecording() {
-		int n = JOptionPane.showConfirmDialog(this,
+		Applet.sendViewNotification(ViewNotifications.DISABLE_ALL);
+		int n = JOptionPane.showConfirmDialog(null,
 				"Are you sure that you are done with this screen recording?",
 				"Are you sure?", JOptionPane.YES_NO_OPTION);
+		Applet.sendViewNotification(ViewNotifications.SHOW_ALL);
 		if (n == JOptionPane.YES_OPTION) {
 			controller.deleteRecording();
 			return true;

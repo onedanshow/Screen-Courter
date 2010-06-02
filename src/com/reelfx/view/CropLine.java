@@ -25,6 +25,8 @@ public class CropLine extends MoveableWindow {
 	
 	public final static int THICKNESS = 2;
 	
+	private ViewNotifications currentState;
+	
 	public CropLine(String name) {
 		super();
 		setName(name);
@@ -56,23 +58,32 @@ public class CropLine extends MoveableWindow {
 			break;
 			
 		case SHOW_ALL:
+			setAlwaysOnTop(true);
 			setVisible(true);
+			break;
+			
+		case DISABLE_ALL:
+			setAlwaysOnTop(false);
 			break;
 			
 		case HIDE_ALL:
 			setVisible(false);
 			break;
 		}
+		
+		currentState = notification;
 	}
 	
 	@Override
 	public void mousePressed(MouseEvent e) {
+		if(currentState == ViewNotifications.DISABLE_ALL) return;
 		super.mousePressed(e);
 		Applet.sendViewNotification(ViewNotifications.MOUSE_PRESS_CROP_LINE, e);
 	}
 	
 	@Override
 	public void mouseDragged(MouseEvent e) {
+		if(currentState == ViewNotifications.DISABLE_ALL) return;
 		super.mouseDragged(e);
 		Applet.sendViewNotification(ViewNotifications.MOUSE_DRAG_CROP_LINE, e);
 	}

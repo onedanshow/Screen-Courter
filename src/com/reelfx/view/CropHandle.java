@@ -28,6 +28,8 @@ public class CropHandle extends MoveableWindow implements ViewListener {
 	public final static String BOTTOM_LEFT = "BOTTOM_LEFT";
 	public final static String MIDDLE_LEFT = "MIDDLE_LEFT";
 	
+	private ViewNotifications currentState;
+	
 	public CropHandle(String name) {
 		super();
 		setName(name);
@@ -56,7 +58,12 @@ public class CropHandle extends MoveableWindow implements ViewListener {
 			if(Applet.IS_MAC && !Applet.DEV_MODE) break; // TODO temporary
 		case SHOW_ALL:
 		case SHOW_CROP_HANDLES:
+			setAlwaysOnTop(true);
 			setVisible(true);
+			break;
+			
+		case DISABLE_ALL:
+			setAlwaysOnTop(false);
 			break;
 			
 		case PRE_RECORDING:
@@ -70,16 +77,19 @@ public class CropHandle extends MoveableWindow implements ViewListener {
 			toFront();
 			break;
 		}
+		currentState = notification;
 	}
 	
 	@Override
 	public void mousePressed(MouseEvent e) {
+		if(currentState == ViewNotifications.DISABLE_ALL) return;
 		super.mousePressed(e);
 		Applet.sendViewNotification(ViewNotifications.MOUSE_PRESS_CROP_HANDLE, e);
 	}
 	
 	@Override
 	public void mouseDragged(MouseEvent e) {
+		if(currentState == ViewNotifications.DISABLE_ALL) return;
 		super.mouseDragged(e);
 		Applet.sendViewNotification(ViewNotifications.MOUSE_DRAG_CROP_HANDLE, e);
 	}

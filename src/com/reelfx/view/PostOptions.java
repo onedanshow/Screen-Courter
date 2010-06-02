@@ -144,6 +144,11 @@ public class PostOptions extends JPanel implements ViewListener {
     		saveBtn.setEnabled(true);
     		insightBtn.setEnabled(true);
     		deleteBtn.setEnabled(true);
+    		if(body instanceof MessageNotification) {
+    			message.setText("<html><body><table cellpadding='5' width='100%'><tr><td align='center'>"+((MessageNotification)body).getMessageText()+"</td></tr></table></body></html>");
+    		} else {
+    			message.setText("<html><body><table cellpadding='5' width='100%'><tr><td align='center'>ReelFX Screen Recorder</td></tr></table></body></html>");
+    		}
     		break;
     		
 		case READY_WITH_OPTIONS_NO_UPLOADING:
@@ -151,6 +156,11 @@ public class PostOptions extends JPanel implements ViewListener {
     		saveBtn.setEnabled(true);
     		insightBtn.setEnabled(false);
     		deleteBtn.setEnabled(true);
+    		if(body instanceof MessageNotification) {
+    			message.setText("<html><body><table cellpadding='5' width='100%'><tr><td align='center'>"+((MessageNotification)body).getMessageText()+"</td></tr></table></body></html>");
+    		} else {
+    			message.setText("<html><body><table cellpadding='5' width='100%'><tr><td align='center'>ReelFX Screen Recorder</td></tr></table></body></html>");
+    		}
 			break;
 		
 		case FATAL:
@@ -160,13 +170,12 @@ public class PostOptions extends JPanel implements ViewListener {
     		saveBtn.setEnabled(false);
     		insightBtn.setEnabled(false);
     		deleteBtn.setEnabled(false);
+    		if(body instanceof MessageNotification) {
+    			message.setText("<html><body><table cellpadding='5' width='100%'><tr><td align='center'>"+((MessageNotification)body).getMessageText()+"</td></tr></table></body></html>");
+    		} else {
+    			message.setText("<html><body><table cellpadding='5' width='100%'><tr><td align='center'>ReelFX Screen Recorder</td></tr></table></body></html>");
+    		}
     		break;
-		}
-		
-		if(body instanceof MessageNotification) {
-			message.setText("<html><body><table cellpadding='5' width='100%'><tr><td align='center'>"+((MessageNotification)body).getMessageText()+"</td></tr></table></body></html>");
-		} else {
-			message.setText("<html><body><table cellpadding='5' width='100%'><tr><td align='center'>ReelFX Screen Recorder</td></tr></table></body></html>");
 		}
 		
 		currentState = notification; // needs to be at end

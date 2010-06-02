@@ -261,7 +261,7 @@ public class Applet extends JApplet {
 	
 	public static void handleRecordingUpdate(ViewNotifications state,String status) {
 		if(status == null) status = "";
-		jsCall("sct_handle_recording_update("+state+",\""+status+"\");");
+		jsCall("sct_handle_recording_update(\""+state+"\",\""+status+"\");");
 	}
 	
 	public static void handleRecordingUIHide() {
@@ -305,6 +305,7 @@ public class Applet extends JApplet {
 		if(JS_BRIDGE == null) {
 			System.err.println("Call to "+method+" but no JS Bridge exists. Probably in development mode...");
 		} else {
+			//System.out.println("Sending javascript call: "+method);
 			//JSObject doc = (JSObject) JS_BRIDGE.getMember("document");
 			//doc.eval(method);
 			JS_BRIDGE.eval(method);

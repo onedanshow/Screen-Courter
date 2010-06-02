@@ -28,6 +28,8 @@ import com.reelfx.view.util.ViewNotifications;
 public class InformationBox extends MoveableWindow {
 
 	public final static String NAME = "InformationBox";
+	
+	private ViewNotifications currentState;
 
 	public InformationBox() {
 		super();
@@ -57,12 +59,14 @@ public class InformationBox extends MoveableWindow {
 	
 	@Override
 	public void mousePressed(MouseEvent e) {
+		if(currentState == ViewNotifications.DISABLE_ALL) return;
 		super.mousePressed(e);
 		Applet.sendViewNotification(ViewNotifications.MOUSE_PRESS_INFO_BOX, e);
 	}
 	
 	@Override
 	public void mouseDragged(MouseEvent e) {
+		if(currentState == ViewNotifications.DISABLE_ALL) return;
 		super.mouseDragged(e);
 		Applet.sendViewNotification(ViewNotifications.MOUSE_DRAG_INFO_BOX, e);
 	}
@@ -81,7 +85,12 @@ public class InformationBox extends MoveableWindow {
 			if(Applet.IS_MAC && !Applet.DEV_MODE) break; // TODO temporary
 		case SHOW_ALL:
 		case SHOW_INFO_BOX:
+			setAlwaysOnTop(true);
 			setVisible(true);
+			break;
+			
+		case DISABLE_ALL:
+			setAlwaysOnTop(false);
 			break;
 			
 		case PRE_RECORDING:
@@ -90,17 +99,9 @@ public class InformationBox extends MoveableWindow {
 		case HIDE_INFO_BOX:
 			setVisible(false);
 			break;
-		/*
-		case MOUSE_PRESS_RECORD_CONTROLS:
-			super.mousePressed((MouseEvent) body);				
-			break;
-		
-		case MOUSE_DRAG_RECORD_CONTROLS:
-			super.mouseDragged((MouseEvent) body);				
-			break;
-			*/
 		}
 		
 		pack();
+		currentState = notification;
 	}
 }
