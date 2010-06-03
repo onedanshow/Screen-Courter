@@ -178,65 +178,7 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 		pack();
 		receiveViewNotification(ViewNotifications.CAPTURE_VIEWPORT_CHANGE);
 	}
-/*
-	public void changeState(int state) {
-		changeState(state, null);
-	}
-
-	public void changeState(int state, String statusText) {
-		switch (state) {
-
-		case READY:
-			recordBtn.setEnabled(true);
-			recordBtn.setText("Record");
-			audioSelect.setEnabled(true);
-			audioSelect.setVisible(true);
-			if (statusText != null) {
-				status.setText(statusText);
-				// statusPanel.setVisible(true);
-			} else {
-				status.setText("");
-				// statusPanel.setVisible(false);
-			}
-			break;
-
-		case PRE_RECORDING:
-			recordBtn.setEnabled(false);
-			audioSelect.setEnabled(false);
-			audioSelect.setVisible(false);
-			status.setEnabled(true);
-			status.setVisible(true);
-			if (statusText != null) {
-				status.setText(statusText);
-				// statusPanel.setVisible(true);
-			} else {
-				status.setText("");
-				// statusPanel.setVisible(false);
-			}
-			break;
-
-		case RECORDING:
-			recordBtn.setEnabled(true);
-			recordBtn.setText("Stop");
-			audioSelect.setEnabled(false);
-			audioSelect.setVisible(false);
-			if (statusText != null) {
-				status.setText(statusText);
-				// statusPanel.setVisible(true);
-			} else {
-				status.setText("");
-				// statusPanel.setVisible(false);
-			}
-			break;
-
-		}
-		currentState = state; // needs to be at end
-		if (isVisible())
-			pack();
-
-		Applet.handleRecordingUpdate(state, statusText);
-	}
-*/	
+	
 	@Override
 	public void receiveViewNotification(ViewNotifications notification, Object body) {
 		switch(notification) {
@@ -303,7 +245,12 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 		
 		case SHOW_ALL:
 		case SHOW_RECORD_CONTROLS:
+			setAlwaysOnTop(true);
 			setVisible(true);
+			break;
+			
+		case DISABLE_ALL:
+			setAlwaysOnTop(false);
 			break;
 			
 		case HIDE_ALL:
