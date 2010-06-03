@@ -97,6 +97,8 @@ public class Applet extends JApplet {
 			APPLET = this; // breaking OOP so I can have a "root"
 			POST_URL = getParameter("post_url");
 			API_KEY = getParameter("api_key");
+			if(!DEV_MODE && !getParameter("dev_mode").isEmpty())
+				DEV_MODE = getParameter("dev_mode").equals("true");
 			SCREEN_CAPTURE_NAME = getParameter("screen_capture_name");
 			HOST_URL = DOCUMENT_BASE.getProtocol() + "://" + DOCUMENT_BASE.getHost();
 			if(getParameter("headless") != null)
