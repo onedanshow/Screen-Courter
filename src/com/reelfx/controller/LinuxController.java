@@ -40,9 +40,9 @@ public class LinuxController extends ApplicationController {
 				Runtime.getRuntime().exec("chmod 755 "+Applet.BIN_FOLDER+File.separator+"ffmpeg").waitFor();
 				Runtime.getRuntime().exec("chmod 755 "+Applet.BIN_FOLDER+File.separator+"ffplay").waitFor();
 				if(!Applet.BIN_FOLDER.exists()) throw new IOException("Did not copy Linux extensions to the execution directory!");
-				setReadyStateBasedOnPriorRecording();
 			}
 			System.out.println("Have access to execution folder: "+Applet.BIN_FOLDER.getAbsolutePath());
+			setReadyStateBasedOnPriorRecording();
         } catch (Exception e) { // possibilities: MalformedURL, InterriptedException, IOException
         	Applet.sendViewNotification(ViewNotifications.FATAL, new MessageNotification(
         			"Error with install",

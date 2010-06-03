@@ -78,6 +78,7 @@ public class CropHandle extends MoveableWindow implements ViewListener {
 			break;
 		}
 		currentState = notification;
+		pack();
 	}
 	
 	@Override
