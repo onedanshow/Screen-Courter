@@ -51,7 +51,7 @@ public class PreviewPlayer extends ProcessWrapper {
 				        List<String> ffplayArgs = new ArrayList<String>();
 				        ffplayArgs.add(Applet.BIN_FOLDER.getAbsolutePath()+File.separator+ffplay);
 				        if(Applet.IS_WINDOWS || Applet.IS_LINUX) {
-				        	ffplayArgs.addAll(parseParameters("-x 800 -y 600"));
+				        	ffplayArgs.addAll(parseParameters("-s "+Applet.CAPTURE_VIEWPORT.width+"x"+Applet.CAPTURE_VIEWPORT.height));
 				        }
 				        if(Applet.IS_WINDOWS)
 				        	ffplayArgs.add(WindowsController.MERGED_OUTPUT_FILE.getAbsolutePath());

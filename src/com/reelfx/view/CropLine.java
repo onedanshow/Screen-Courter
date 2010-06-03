@@ -41,14 +41,14 @@ public class CropLine extends MoveableWindow {
 		switch(notification) {
 		case CAPTURE_VIEWPORT_CHANGE:
 			Point pt = determineFirstViewportPoint();
-			/*if(getName().equals(TOP)) {
-				pt.translate(0, -1);
-			} else if(getName().equals(RIGHT)) {
+			if(getName().equals(TOP)) {
+				pt.translate(0, -2);
+			/*} else if(getName().equals(RIGHT)) {
 				pt.translate(1,0);
 			} else if(getName().equals(BOTTOM)) {
 				pt.translate(0,1);
 				*/
-			if(getName().equals(LEFT)) {
+			} else if(getName().equals(LEFT)) {
 				pt.translate(-2,0);
 			}
 			setLocation(pt);

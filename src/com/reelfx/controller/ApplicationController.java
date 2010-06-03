@@ -217,9 +217,7 @@ public abstract class ApplicationController implements ProcessListener {
 	/**
 	 * Installs ffmpeg, ffplay, and other extensions if needed.
 	 */
-	public void setupExtensions() {
-		// recordGUI.setStatus("Hello");
-	}
+	public abstract void setupExtensions();
 
 	/**
 	 * Check if we need to deal with a prior screen recording or not

@@ -25,7 +25,7 @@ public class MacController extends ApplicationController {
 	
 	@Override
 	public void setupExtensions() {
-		super.setupExtensions();
+		//super.setupExtensions();
 		try {
         	/* might revisit copying the jar locally later
     		if(!MAC_EXEC.exists() && Applet.DEV_MODE) {

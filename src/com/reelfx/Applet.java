@@ -506,7 +506,7 @@ public class Applet extends JApplet {
 		else if(IS_LINUX)
 			return RFX_FOLDER.getAbsolutePath()+File.separator+"bin-linux";
 		else if(IS_WINDOWS)
-			return RFX_FOLDER.getAbsolutePath()+File.separator+"bin-windows";
+			return RFX_FOLDER.getAbsolutePath()+File.separator+"bin-windows-v1.0";
 		else
 			throw new IOException("I don't know what bin folder to use!");
 	}

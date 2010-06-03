@@ -33,7 +33,7 @@ public class LinuxController extends ApplicationController {
 	
 	@Override
 	public void setupExtensions() {
-		super.setupExtensions();
+		//super.setupExtensions();
 		try {
 			if(!Applet.BIN_FOLDER.exists()){
 				Applet.copyFolderFromRemoteJar(new URL(Applet.HOST_URL+"/bin-linux.jar?"+Math.random()*10000), "bin-linux");

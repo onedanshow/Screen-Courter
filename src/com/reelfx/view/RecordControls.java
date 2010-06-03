@@ -252,7 +252,12 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 		
 		case SHOW_ALL:
 		case SHOW_RECORD_CONTROLS:
+			setAlwaysOnTop(true);
 			setVisible(true);
+			break;
+			
+		case DISABLE_ALL:
+			setAlwaysOnTop(false);
 			break;
 			
 		case HIDE_ALL:

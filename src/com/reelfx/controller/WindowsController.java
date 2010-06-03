@@ -16,6 +16,8 @@ import java.util.Map;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Mixer;
 
+import org.apache.commons.io.FileUtils;
+
 import com.reelfx.Applet;
 import com.reelfx.model.AudioRecorder;
 import com.reelfx.model.PostProcessor;
@@ -43,10 +45,21 @@ public class WindowsController extends ApplicationController {
 
 	@Override
 	public void setupExtensions() {
-		super.setupExtensions();
+		//super.setupExtensions();
 		try {
 			if(!Applet.BIN_FOLDER.exists()){
+				// delete any old versions
+				for(File file : Applet.RFX_FOLDER.listFiles()) {
+					if(file.getName().startsWith("bin") && file.isDirectory()) {
+						FileUtils.deleteDirectory(file);
+						if(file.exists())
+							throw new Exception("Could not delete the old native extentions!");
+					}
+				}
+				// download an install the new one
 				Applet.copyFolderFromRemoteJar(new URL(Applet.HOST_URL+"/bin-windows.jar?"+Math.random()*10000), "bin-windows");
+				File tempInstall = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"bin-windows");
+				tempInstall.renameTo(Applet.BIN_FOLDER);
 				if(!Applet.BIN_FOLDER.exists()) throw new IOException("Did not copy Windows extensions to the execution directory!");
 			}
 			System.out.println("Have access to execution folder: "+Applet.BIN_FOLDER.getAbsolutePath());
