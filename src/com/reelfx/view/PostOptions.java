@@ -104,37 +104,7 @@ public class PostOptions extends JPanel implements ViewListener {
         });
         add(deleteBtn);
 	}
-/*	
-    public void changeState(int state) {
-    	changeState(state, null);
-    }
-    
-    public void changeState(int state, String messageText) {
-    	
-		if(messageText == null) {
-			message.setText("<html><body><table cellpadding='5' width='100%'><tr><td align='center'>ReelFX Screen Recorder</td></tr></table></body></html>");
-		} else {
-			message.setText("<html><body><table cellpadding='5' width='100%'><tr><td align='center'>"+messageText+"</td></tr></table></body></html>");
-		}
-		
-    	switch(state) {	    		
-		case OPTIONS:
-    		previewBtn.setEnabled(true);
-    		saveBtn.setEnabled(true);
-    		insightBtn.setEnabled(true);
-    		deleteBtn.setEnabled(true);
-    		break;
-		case OPTIONS_NO_UPLOAD:
-			previewBtn.setEnabled(true);
-    		saveBtn.setEnabled(true);
-    		insightBtn.setEnabled(false);
-    		deleteBtn.setEnabled(true);
-			break;
-    	}
-    	
-    	//currentState = state; // needs to be at end
-    }
-*/
+
 	@Override
 	public void receiveViewNotification(ViewNotifications notification, Object body) {
 		switch(notification) {

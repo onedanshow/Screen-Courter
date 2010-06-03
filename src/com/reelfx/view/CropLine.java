@@ -72,6 +72,7 @@ public class CropLine extends MoveableWindow {
 		}
 		
 		currentState = notification;
+		//pack(); // don't call
 	}
 	
 	@Override

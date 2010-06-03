@@ -61,9 +61,9 @@ public class WindowsController extends ApplicationController {
 				File tempInstall = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"bin-windows");
 				tempInstall.renameTo(Applet.BIN_FOLDER);
 				if(!Applet.BIN_FOLDER.exists()) throw new IOException("Did not copy Windows extensions to the execution directory!");
-				setReadyStateBasedOnPriorRecording();
 			}
 			System.out.println("Have access to execution folder: "+Applet.BIN_FOLDER.getAbsolutePath());
+			setReadyStateBasedOnPriorRecording();
         } catch (Exception e) { // possibilities: MalformedURL, IOException, etc.
         	Applet.sendViewNotification(ViewNotifications.FATAL, new MessageNotification(
         			"Error with install", 

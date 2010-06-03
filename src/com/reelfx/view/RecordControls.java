@@ -34,6 +34,7 @@ import javax.swing.JWindow;
 import javax.swing.SwingConstants;
 import javax.swing.Timer;
 import javax.swing.border.Border;
+import javax.swing.border.LineBorder;
 
 import com.reelfx.Applet;
 import com.reelfx.controller.ApplicationController;
@@ -87,7 +88,7 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 		// setPreferredSize(dim); // full screen
 		// setPreferredSize(new Dimension(500, 50)); // will auto fit to the size needed, but if you want to specify a size
 		// setLayout(new BorderLayout(0, 3));
-		setLayout(new BoxLayout(getContentPane(), BoxLayout.PAGE_AXIS));
+		// setLayout(new BoxLayout(getContentPane(), BoxLayout.PAGE_AXIS));
 		setAlwaysOnTop(true);
 		//addComponentListener(this);
 
@@ -96,6 +97,12 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 		 * PERPIXEL_TRANSPARENT)) {
 		 * System.out.println("Transparency supported!"); }
 		 */
+		
+		JPanel border = new JPanel();
+		border.setBackground(backgroundColor);
+		border.setBorder(new LineBorder(new Color(62,64,65), 3));
+		border.setLayout(new BoxLayout(border, BoxLayout.PAGE_AXIS));
+		add(border);
 
 		// ------- setup title bar -------
 
@@ -121,7 +128,7 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 		// closeBtn.setFont(new Font("Arial", 0, 11));
 		titlePanel.add(closeBtn, BorderLayout.EAST);
 
-		add(titlePanel); // ,BorderLayout.CENTER);
+		border.add(titlePanel); // ,BorderLayout.CENTER);
 
 		// ------- setup recording options -------
 
@@ -166,7 +173,7 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 		if(!Applet.IS_MAC || Applet.DEV_MODE) // TODO temporary
 			recordingOptionsPanel.add(viewportSelect);
 
-		add(recordingOptionsPanel); // ,BorderLayout.NORTH);
+		border.add(recordingOptionsPanel); // ,BorderLayout.NORTH);
 
 		/*
 		 * statusPanel = new JPanel(); statusPanel.setOpaque(false);
@@ -279,7 +286,7 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 			break;
 		}
 		
-		if (isVisible()) pack();		
+		pack();		
 	}
 	
 	@Override
@@ -371,7 +378,10 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 		int n = JOptionPane.showConfirmDialog(null,
 				"Are you sure that you are done with this screen recording?",
 				"Are you sure?", JOptionPane.YES_NO_OPTION);
-		Applet.sendViewNotification(ViewNotifications.SHOW_ALL);
+		if(Applet.IS_MAC && !Applet.DEV_MODE) // temporary
+			Applet.sendViewNotification(ViewNotifications.SHOW_RECORD_CONTROLS);
+		else
+			Applet.sendViewNotification(ViewNotifications.SHOW_ALL);
 		if (n == JOptionPane.YES_OPTION) {
 			controller.deleteRecording();
 			return true;
