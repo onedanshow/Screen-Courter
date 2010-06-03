@@ -7,6 +7,8 @@ import java.net.URL;
 
 import javax.sound.sampled.Mixer;
 
+import org.apache.commons.io.FileUtils;
+
 import netscape.javascript.JSException;
 
 import com.reelfx.Applet;
@@ -33,8 +35,17 @@ public class MacController extends ApplicationController {
     			Runtime.getRuntime().exec("chmod 755 "+MAC_EXEC.getAbsolutePath()).waitFor();
     			if(!MAC_EXEC.exists()) throw new IOException("Did not copy VLC to its execution directory!");
     		} else */
-			if(!Applet.BIN_FOLDER.exists()){
-				Applet.copyFolderFromRemoteJar(new URL(Applet.HOST_URL+"/bin-mac.jar?"+Math.random()*10000), "bin-mac");
+			if(!Applet.BIN_FOLDER.exists()) {
+				// delete any old versions
+				for(File file : Applet.RFX_FOLDER.listFiles()) {
+					if(file.getName().startsWith("bin") && file.isDirectory()) {
+						FileUtils.deleteDirectory(file);
+						if(file.exists())
+							throw new Exception("Could not delete the old native extentions!");
+					}
+				}
+				// download an install the new one
+				Applet.copyFolderFromRemoteJar(new URL(Applet.HOST_URL+"/"+Applet.getBinFolderName()+".jar?"+Math.random()*10000), Applet.getBinFolderName());
 				Runtime.getRuntime().exec("chmod 755 "+Applet.BIN_FOLDER+File.separator+"mac-screen-recorder").waitFor();
 				if(!Applet.BIN_FOLDER.exists()) throw new IOException("Did not copy Mac extensions to the execution directory!");
 			}

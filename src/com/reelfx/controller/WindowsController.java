@@ -57,9 +57,7 @@ public class WindowsController extends ApplicationController {
 					}
 				}
 				// download an install the new one
-				Applet.copyFolderFromRemoteJar(new URL(Applet.HOST_URL+"/bin-windows.jar?"+Math.random()*10000), "bin-windows");
-				File tempInstall = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"bin-windows");
-				tempInstall.renameTo(Applet.BIN_FOLDER);
+				Applet.copyFolderFromRemoteJar(new URL(Applet.HOST_URL+"/"+Applet.getBinFolderName()+".jar?"+Math.random()*10000), Applet.getBinFolderName());
 				if(!Applet.BIN_FOLDER.exists()) throw new IOException("Did not copy Windows extensions to the execution directory!");
 			}
 			System.out.println("Have access to execution folder: "+Applet.BIN_FOLDER.getAbsolutePath());

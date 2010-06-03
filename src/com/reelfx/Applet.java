@@ -498,15 +498,25 @@ public class Applet extends JApplet {
 		//System.out.println("Total space: \n"+TEMP_FOLDER.getTotalSpace()+" GBs");
 	}
 	
-	public static String getBinFolderPath() throws IOException {
+	/**
+	 * These must start with "bin".
+	 * 
+	 * @return Name of folder and JAR with folder of same name for holding native extensions.
+	 * @throws IOException
+	 */
+	public static String getBinFolderName() throws IOException {
 		if(IS_MAC)
-			return RFX_FOLDER.getAbsolutePath()+File.separator+"bin-mac";
+			return "bin-mac";
 		else if(IS_LINUX)
-			return RFX_FOLDER.getAbsolutePath()+File.separator+"bin-linux";
+			return "bin-linux";
 		else if(IS_WINDOWS)
-			return RFX_FOLDER.getAbsolutePath()+File.separator+"bin-windows-v1.0";
+			return "bin-windows-v1.0";
 		else
 			throw new IOException("I don't know what bin folder to use!");
+	}
+	
+	public static String getBinFolderPath() throws IOException {
+		return RFX_FOLDER.getAbsolutePath()+File.separator+getBinFolderName();
 	}
 	
 	public static String getRfxFolderPath() throws IOException {

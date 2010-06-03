@@ -10,6 +10,8 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.io.FileUtils;
+
 import com.reelfx.Applet;
 import com.reelfx.model.AudioRecorder;
 import com.reelfx.model.PostProcessor;
@@ -35,8 +37,17 @@ public class LinuxController extends ApplicationController {
 	public void setupExtensions() {
 		//super.setupExtensions();
 		try {
-			if(!Applet.BIN_FOLDER.exists()){
-				Applet.copyFolderFromRemoteJar(new URL(Applet.HOST_URL+"/bin-linux.jar?"+Math.random()*10000), "bin-linux");
+			if(!Applet.BIN_FOLDER.exists()) {
+				// delete any old versions
+				for(File file : Applet.RFX_FOLDER.listFiles()) {
+					if(file.getName().startsWith("bin") && file.isDirectory()) {
+						FileUtils.deleteDirectory(file);
+						if(file.exists())
+							throw new Exception("Could not delete the old native extentions!");
+					}
+				}
+				// download an install the new one
+				Applet.copyFolderFromRemoteJar(new URL(Applet.HOST_URL+"/"+Applet.getBinFolderName()+".jar?"+Math.random()*10000),Applet.getBinFolderName());
 				Runtime.getRuntime().exec("chmod 755 "+Applet.BIN_FOLDER+File.separator+"ffmpeg").waitFor();
 				Runtime.getRuntime().exec("chmod 755 "+Applet.BIN_FOLDER+File.separator+"ffplay").waitFor();
 				if(!Applet.BIN_FOLDER.exists()) throw new IOException("Did not copy Linux extensions to the execution directory!");
