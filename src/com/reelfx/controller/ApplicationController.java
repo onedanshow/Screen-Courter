@@ -239,10 +239,14 @@ public abstract class ApplicationController implements ProcessListener {
 				//optionsGUI.changeState(PostOptions.OPTIONS, message);
 			}
 			Applet.handleExistingRecording();
+		} else if (Applet.HEADLESS) {
+			// don't show interface initially
 		} else {
-			Applet.sendViewNotification(ViewNotifications.READY);
-			//recordGUI.changeState(RecordControls.READY);
-			//optionsGUI.changeState(PostOptions.DISABLED);
+			if(Applet.IS_MAC && !Applet.DEV_MODE) { // TODO temporary
+				Applet.sendViewNotification(ViewNotifications.SHOW_RECORD_CONTROLS);
+			} else {
+				Applet.sendViewNotification(ViewNotifications.SHOW_ALL);
+			}
 		}
 	}
 
