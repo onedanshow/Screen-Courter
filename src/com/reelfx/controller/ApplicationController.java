@@ -223,7 +223,7 @@ public abstract class ApplicationController implements ProcessListener {
 	 * Check if we need to deal with a prior screen recording or not
 	 */
 	protected void setReadyStateBasedOnPriorRecording() {
-		if (ScreenRecorder.OUTPUT_FILE.exists()) {
+		if (PreferenceManager.OUTPUT_FILE.exists()) {
 			// recordGUI.changeState(RecordControls.READY_WITH_OPTIONS);
 			// recordGUI.changeState(RecordControls.READY);
 			SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM d HH:mm");
