@@ -107,7 +107,7 @@ public abstract class ApplicationController implements ProcessListener {
 			//optionsGUI.changeState(PostOptions.THINKING, "Encoding...");
 			break;
 		case PostProcessor.ENCODING_COMPLETE:
-			Applet.sendViewNotification(ViewNotifications.READY_WITH_OPTIONS, 
+			Applet.sendViewNotification(ViewNotifications.POST_OPTIONS, 
 					new MessageNotification("Finished encoding.","Your recording has finished encoding."));
 			//recordGUI.changeState(RecordControls.READY, "Finished encoding.");
 			//optionsGUI.changeState(PostOptions.OPTIONS, "Finished encoding.");
@@ -125,7 +125,7 @@ public abstract class ApplicationController implements ProcessListener {
 			//optionsGUI.changeState(PostOptions.FATAL,"An error occurred while uploading the screen recording. It is stored locally, so you can try again later.");
 			break;
 		case PostProcessor.POST_COMPLETE:
-			Applet.sendViewNotification(ViewNotifications.READY_WITH_OPTIONS_NO_UPLOADING, 
+			Applet.sendViewNotification(ViewNotifications.POST_OPTIONS_NO_UPLOADING, 
 					new MessageNotification("Finished uploading.", "Would you like to do anything else with your screen recording?"));			
 			//recordGUI.changeState(RecordControls.READY, "Finished uploading.");
 			//optionsGUI.changeState(PostOptions.OPTIONS_NO_UPLOAD,"Would you like to do anything else with your screen recording?");
@@ -149,7 +149,7 @@ public abstract class ApplicationController implements ProcessListener {
 	}
 
 	public void stopRecording() {
-		Applet.sendViewNotification(ViewNotifications.READY_WITH_OPTIONS, 
+		Applet.sendViewNotification(ViewNotifications.POST_OPTIONS, 
 				new MessageNotification("", "What would you like to do with your new screen recording?"));
 		//recordGUI.changeState(RecordControls.READY);
 		//optionsGUI.changeState(PostOptions.OPTIONS,
@@ -232,10 +232,10 @@ public abstract class ApplicationController implements ProcessListener {
 					+ sdf.format(preferences.getDate()) + ". ";
 			if (preferences.isUploaded()) {
 				message += "It has already been uploaded.";
-				Applet.sendViewNotification(ViewNotifications.READY_WITH_OPTIONS_NO_UPLOADING,new MessageNotification("", message));
+				Applet.sendViewNotification(ViewNotifications.POST_OPTIONS_NO_UPLOADING,new MessageNotification("", message));
 				//optionsGUI.changeState(PostOptions.OPTIONS_NO_UPLOAD, message);
 			} else {
-				Applet.sendViewNotification(ViewNotifications.READY_WITH_OPTIONS,new MessageNotification("", message));
+				Applet.sendViewNotification(ViewNotifications.POST_OPTIONS,new MessageNotification("", message));
 				//optionsGUI.changeState(PostOptions.OPTIONS, message);
 			}
 			Applet.handleExistingRecording();

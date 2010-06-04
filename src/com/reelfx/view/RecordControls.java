@@ -62,7 +62,8 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 	private Color messageColor = new Color(255, 255, 153);
 	private int timerCount = 0;
 	private JComboBox viewportSelect;
-	private ViewNotifications currentState; 
+	private ViewNotifications currentState;
+	private boolean lockedToCorner = false; // is the viewport big enough to lock us to the top corner?
 
 	/**
 	 * The small recording GUI that provides recording, microphone, and status
@@ -191,14 +192,13 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 		switch(notification) {
 		
 		case READY:
-		case READY_WITH_OPTIONS:
-		case READY_WITH_OPTIONS_NO_UPLOADING:
 			recordBtn.setEnabled(true);
 			recordBtn.setText("Record");
 			audioSelect.setEnabled(true);
 			audioSelect.setVisible(true);
 			viewportSelect.setEnabled(true);
 			viewportSelect.setVisible(true);
+			closeBtn.setVisible(true);
 			currentState = notification;
 			if (body instanceof MessageNotification) {
 				status.setText(((MessageNotification) body).getStatusText());
@@ -206,6 +206,11 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 				status.setText("");
 			}
 			Applet.handleRecordingUpdate(currentState, status.getText());
+			// no break
+		case SHOW_ALL:
+		case SHOW_RECORD_CONTROLS:
+			setAlwaysOnTop(true);
+			setVisible(true);
 			break;
 		
 		case PRE_RECORDING:
@@ -216,6 +221,7 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 			viewportSelect.setVisible(false);
 			status.setEnabled(true);
 			status.setVisible(true);
+			closeBtn.setVisible(false);
 			currentState = notification;
 			if (body instanceof MessageNotification) {
 				status.setText(((MessageNotification) body).getStatusText());
@@ -232,6 +238,7 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 			audioSelect.setVisible(false);
 			viewportSelect.setEnabled(false);
 			viewportSelect.setVisible(false);
+			closeBtn.setVisible(false);
 			currentState = notification;
 			if (body instanceof MessageNotification) {
 				status.setText(((MessageNotification) body).getStatusText());
@@ -246,14 +253,11 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 			pt.translate(0, 10);
 			if(pt.y + getHeight() > screen.getHeight() || (Applet.IS_MAC && !Applet.DEV_MODE)) { // TODO temporary (second condition)
 				pt = new Point((int) (screen.getWidth() - 10 - getWidth()), 10 + (Applet.IS_MAC ? 20 : 0));
+				lockedToCorner = true;
+			} else {
+				lockedToCorner = false;
 			}
 			setLocation(pt);
-			break;
-		
-		case SHOW_ALL:
-		case SHOW_RECORD_CONTROLS:
-			setAlwaysOnTop(true);
-			setVisible(true);
 			break;
 			
 		case DISABLE_ALL:
@@ -262,6 +266,8 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 			
 		case HIDE_ALL:
 		case HIDE_RECORD_CONTROLS:
+		case POST_OPTIONS:
+		case POST_OPTIONS_NO_UPLOADING:	
 			setVisible(false);
 			break;
 			
@@ -293,6 +299,7 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 	public void mousePressed(MouseEvent e) {
 		if((!Applet.IS_MAC || Applet.DEV_MODE) && // temporary 
 				(currentState == ViewNotifications.PRE_RECORDING || currentState == ViewNotifications.RECORDING)) return;
+		if(lockedToCorner) return;
 		super.mousePressed(e);
 		Applet.sendViewNotification(ViewNotifications.MOUSE_PRESS_RECORD_CONTROLS, e);
 	}
@@ -301,6 +308,7 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 	public void mouseDragged(MouseEvent e) {
 		if((!Applet.IS_MAC || Applet.DEV_MODE) && // temporary 
 				(currentState == ViewNotifications.PRE_RECORDING || currentState == ViewNotifications.RECORDING)) return;
+		if(lockedToCorner) return;
 		super.mouseDragged(e);
 		Applet.sendViewNotification(ViewNotifications.MOUSE_DRAG_RECORD_CONTROLS, e);
 	}
