@@ -53,8 +53,6 @@ public class CropHandle extends MoveableWindow implements ViewListener {
 			break;
 			
 		case READY:
-		case READY_WITH_OPTIONS:
-		case READY_WITH_OPTIONS_NO_UPLOADING:
 			if(Applet.IS_MAC && !Applet.DEV_MODE) break; // TODO temporary
 		case SHOW_ALL:
 		case SHOW_CROP_HANDLES:
@@ -66,6 +64,8 @@ public class CropHandle extends MoveableWindow implements ViewListener {
 			setAlwaysOnTop(false);
 			break;
 			
+		case POST_OPTIONS:
+		case POST_OPTIONS_NO_UPLOADING:	
 		case PRE_RECORDING:
 		case RECORDING:
 		case HIDE_ALL:

@@ -109,7 +109,7 @@ public class PostOptions extends JPanel implements ViewListener {
 	public void receiveViewNotification(ViewNotifications notification, Object body) {
 		switch(notification) {
 		
-		case READY_WITH_OPTIONS:
+		case POST_OPTIONS:
     		previewBtn.setEnabled(true);
     		saveBtn.setEnabled(true);
     		insightBtn.setEnabled(true);
@@ -121,7 +121,7 @@ public class PostOptions extends JPanel implements ViewListener {
     		}
     		break;
     		
-		case READY_WITH_OPTIONS_NO_UPLOADING:
+		case POST_OPTIONS_NO_UPLOADING:
 			previewBtn.setEnabled(true);
     		saveBtn.setEnabled(true);
     		insightBtn.setEnabled(false);

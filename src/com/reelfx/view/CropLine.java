@@ -26,12 +26,13 @@ public class CropLine extends MoveableWindow {
 	public final static int THICKNESS = 2;
 	
 	private ViewNotifications currentState;
+	private LinePaint linePaint = new LinePaint();
 	
 	public CropLine(String name) {
 		super();
 		setName(name);
 		setAlwaysOnTop(true);
-		add(new LinePaint());
+		add(linePaint);
 		pack();
 		receiveViewNotification(ViewNotifications.CAPTURE_VIEWPORT_CHANGE);
 	}
@@ -56,16 +57,24 @@ public class CropLine extends MoveableWindow {
 			int height = isHorizontal() ? THICKNESS : (int)pt.distance(determineSecondViewportPoint());
 			setSize(width,height);
 			break;
-			
+		
+		case READY:
 		case SHOW_ALL:
+			linePaint.setDashed(true);
 			setAlwaysOnTop(true);
 			setVisible(true);
+			break;
+			
+		case RECORDING:
+			linePaint.setDashed(false);
 			break;
 			
 		case DISABLE_ALL:
 			setAlwaysOnTop(false);
 			break;
-			
+		
+		case POST_OPTIONS:
+		case POST_OPTIONS_NO_UPLOADING:
 		case HIDE_ALL:
 			setVisible(false);
 			break;
@@ -119,15 +128,32 @@ public class CropLine extends MoveableWindow {
 	
 	class LinePaint extends JPanel {
 		Stroke drawingStroke = new BasicStroke(3, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{6}, 0);
+		private boolean isDashed = true;
 		
 		public LinePaint() {
 			super();
 			setBackground(Color.WHITE);
 		}
+		
+		public boolean isDashed() {
+			return isDashed;
+		}
+
+		public void setDashed(boolean isDashed) {
+			this.isDashed = isDashed;
+			if(isDashed) {
+				setBackground(Color.WHITE);
+			} else {
+				setBackground(new Color(255,71,71));
+			}
+		}
 
 		@Override
 		protected void paintComponent(Graphics g) {
 			super.paintComponent(g);
+			
+			if(!isDashed) return;
+			
 			Graphics2D g2d = (Graphics2D) g;
 			g2d.setStroke(drawingStroke);
 			g2d.setColor(Color.black);
@@ -136,5 +162,7 @@ public class CropLine extends MoveableWindow {
 			else
 				g2d.draw(new Line2D.Double(getX(),getY(),getX(),getHeight()));
 		}
+		
+		
 	}
 }
