@@ -261,10 +261,14 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 			@Override
 			public Object run() {
 				try {
-					if(OUTPUT_FILE.exists() && !OUTPUT_FILE.delete())
-						throw new Exception("Can't delete the old audio file!");
 					if(TEMP_FILE.exists() && !TEMP_FILE.delete())
 						throw new Exception("Can't delete temporary audio file!");
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				try {
+					if(OUTPUT_FILE.exists() && !OUTPUT_FILE.delete())
+						throw new Exception("Can't delete the old audio file!");
 				} catch (Exception e) {
 					e.printStackTrace();
 				}

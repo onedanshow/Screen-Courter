@@ -131,7 +131,6 @@ public class WindowsController extends ApplicationController {
 
 	@Override
 	public void stopRecording() {
-		super.stopRecording();
 		stopped = true;
 		
 		if(mic != null)
@@ -143,6 +142,8 @@ public class WindowsController extends ApplicationController {
 			systemAudio.stopRecording();
 		
 		screen.stopRecording();
+		
+		super.stopRecording();
 	}
 
 	public void processUpdate(int event, Object body) {
