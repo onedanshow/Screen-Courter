@@ -60,12 +60,14 @@ public class CropLine extends MoveableWindow {
 		
 		case READY:
 		case SHOW_ALL:
+			if(Applet.IS_MAC && !Applet.DEV_MODE) break; // temporary
 			linePaint.setDashed(true);
 			setAlwaysOnTop(true);
 			setVisible(true);
 			break;
 			
 		case RECORDING:
+			if(Applet.IS_MAC && !Applet.DEV_MODE) break; // temporary
 			linePaint.setDashed(false);
 			break;
 			

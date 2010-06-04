@@ -299,7 +299,7 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 	public void mousePressed(MouseEvent e) {
 		if((!Applet.IS_MAC || Applet.DEV_MODE) && // temporary 
 				(currentState == ViewNotifications.PRE_RECORDING || currentState == ViewNotifications.RECORDING)) return;
-		if(lockedToCorner) return;
+		if(lockedToCorner && (!Applet.IS_MAC || Applet.DEV_MODE)) return; // temporary
 		super.mousePressed(e);
 		Applet.sendViewNotification(ViewNotifications.MOUSE_PRESS_RECORD_CONTROLS, e);
 	}
@@ -308,7 +308,7 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 	public void mouseDragged(MouseEvent e) {
 		if((!Applet.IS_MAC || Applet.DEV_MODE) && // temporary 
 				(currentState == ViewNotifications.PRE_RECORDING || currentState == ViewNotifications.RECORDING)) return;
-		if(lockedToCorner) return;
+		if(lockedToCorner && (!Applet.IS_MAC || Applet.DEV_MODE)) return; // temporary
 		super.mouseDragged(e);
 		Applet.sendViewNotification(ViewNotifications.MOUSE_DRAG_RECORD_CONTROLS, e);
 	}
