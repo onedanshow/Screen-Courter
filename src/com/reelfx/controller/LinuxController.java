@@ -10,12 +10,16 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.io.FileUtils;
+
 import com.reelfx.Applet;
 import com.reelfx.model.AudioRecorder;
 import com.reelfx.model.PostProcessor;
 import com.reelfx.model.ScreenRecorder;
-import com.reelfx.view.OptionsInterface;
-import com.reelfx.view.RecordInterface;
+import com.reelfx.view.PostOptions;
+import com.reelfx.view.RecordControls;
+import com.reelfx.view.util.MessageNotification;
+import com.reelfx.view.util.ViewNotifications;
 
 public class LinuxController extends ApplicationController {
 	
@@ -31,27 +35,31 @@ public class LinuxController extends ApplicationController {
 	
 	@Override
 	public void setupExtensions() {
-		super.setupExtensions();
+		//super.setupExtensions();
 		try {
-			if(!Applet.BIN_FOLDER.exists()){
-				Applet.copyFolderFromRemoteJar(new URL(Applet.HOST_URL+"/bin-linux.jar?"+Math.random()*10000), "bin-linux");
+			if(!Applet.BIN_FOLDER.exists()) {
+				// delete any old versions
+				for(File file : Applet.RFX_FOLDER.listFiles()) {
+					if(file.getName().startsWith("bin") && file.isDirectory()) {
+						FileUtils.deleteDirectory(file);
+						if(file.exists())
+							throw new Exception("Could not delete the old native extentions!");
+					}
+				}
+				// download an install the new one
+				Applet.copyFolderFromRemoteJar(new URL(Applet.HOST_URL+"/"+Applet.getBinFolderName()+".jar?"+Math.random()*10000),Applet.getBinFolderName());
 				Runtime.getRuntime().exec("chmod 755 "+Applet.BIN_FOLDER+File.separator+"ffmpeg").waitFor();
 				Runtime.getRuntime().exec("chmod 755 "+Applet.BIN_FOLDER+File.separator+"ffplay").waitFor();
 				if(!Applet.BIN_FOLDER.exists()) throw new IOException("Did not copy Linux extensions to the execution directory!");
 			}
 			System.out.println("Have access to execution folder: "+Applet.BIN_FOLDER.getAbsolutePath());
 			setReadyStateBasedOnPriorRecording();
-        } catch (MalformedURLException e1) {
-        	recordGUI.changeState(RecordInterface.FATAL,"Error with install");
-        	optionsGUI.changeState(OptionsInterface.FATAL, "Sorry, an error occurred while installing the native extensions. Please contact an Insight admin.");
-			e1.printStackTrace();
-		} catch (InterruptedException e) {
-			recordGUI.changeState(RecordInterface.FATAL,"Error with install");
-			optionsGUI.changeState(OptionsInterface.FATAL, "Sorry, an error occurred while installing the native extensions. Please contact an Insight admin.");
-			e.printStackTrace();
-		} catch (IOException e) {
-			recordGUI.changeState(RecordInterface.FATAL,"Error with install");
-			optionsGUI.changeState(OptionsInterface.FATAL, "Sorry, an error occurred while installing the native extensions. Please contact an Insight admin.");
+        } catch (Exception e) { // possibilities: MalformedURL, InterriptedException, IOException
+        	Applet.sendViewNotification(ViewNotifications.FATAL, new MessageNotification(
+        			"Error with install",
+        			"Sorry, an error occurred while installing the native extensions. Please contact an Insight admin."));
+        	//recordGUI.changeState(RecordControls.FATAL,"Error with install");
+        	//optionsGUI.changeState(PostOptions.FATAL, "Sorry, an error occurred while installing the native extensions. Please contact an Insight admin.");
 			e.printStackTrace();
 		}
 	}

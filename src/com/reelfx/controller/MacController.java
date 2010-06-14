@@ -7,13 +7,17 @@ import java.net.URL;
 
 import javax.sound.sampled.Mixer;
 
+import org.apache.commons.io.FileUtils;
+
 import netscape.javascript.JSException;
 
 import com.reelfx.Applet;
 import com.reelfx.model.AudioRecorder;
 import com.reelfx.model.ScreenRecorder;
-import com.reelfx.view.OptionsInterface;
-import com.reelfx.view.RecordInterface;
+import com.reelfx.view.PostOptions;
+import com.reelfx.view.RecordControls;
+import com.reelfx.view.util.MessageNotification;
+import com.reelfx.view.util.ViewNotifications;
 
 public class MacController extends ApplicationController {
 
@@ -23,7 +27,7 @@ public class MacController extends ApplicationController {
 	
 	@Override
 	public void setupExtensions() {
-		super.setupExtensions();
+		//super.setupExtensions();
 		try {
         	/* might revisit copying the jar locally later
     		if(!MAC_EXEC.exists() && Applet.DEV_MODE) {
@@ -31,29 +35,35 @@ public class MacController extends ApplicationController {
     			Runtime.getRuntime().exec("chmod 755 "+MAC_EXEC.getAbsolutePath()).waitFor();
     			if(!MAC_EXEC.exists()) throw new IOException("Did not copy VLC to its execution directory!");
     		} else */
-			if(!Applet.BIN_FOLDER.exists()){
-				Applet.copyFolderFromRemoteJar(new URL(Applet.HOST_URL+"/bin-mac.jar?"+Math.random()*10000), "bin-mac");
-				Runtime.getRuntime().exec("chmod 755 "+Applet.BIN_FOLDER+File.separator+"mac-screen-recorder").waitFor();
+			if(!Applet.BIN_FOLDER.exists()) {
+				// delete any old versions
+				for(File file : Applet.RFX_FOLDER.listFiles()) {
+					if(file.getName().startsWith("bin") && file.isDirectory()) {
+						FileUtils.deleteDirectory(file);
+						if(file.exists())
+							throw new Exception("Could not delete the old native extentions!");
+					}
+				}
+				// download an install the new one
+				Applet.copyFolderFromRemoteJar(new URL(Applet.HOST_URL+"/"+Applet.getBinFolderName()+".jar?"+Math.random()*10000), Applet.getBinFolderName());
 				if(!Applet.BIN_FOLDER.exists()) throw new IOException("Did not copy Mac extensions to the execution directory!");
+				Runtime.getRuntime().exec("chmod 755 "+Applet.BIN_FOLDER+File.separator+"mac-screen-recorder").waitFor();
 			}
 			System.out.println("Have access to execution folder: "+Applet.BIN_FOLDER.getAbsolutePath());
 			setReadyStateBasedOnPriorRecording();
-        } catch (MalformedURLException e1) {
-        	recordGUI.changeState(RecordInterface.FATAL,"Error with install");
-        	optionsGUI.changeState(OptionsInterface.FATAL, "Sorry, an error occurred while installing the native extensions. Please contact an Insight admin.");
-			e1.printStackTrace();
-		} catch (InterruptedException e) {
-			recordGUI.changeState(RecordInterface.FATAL,"Error with install");
-			optionsGUI.changeState(OptionsInterface.FATAL, "Sorry, an error occurred while installing the native extensions. Please contact an Insight admin.");
-			e.printStackTrace();
-		} catch (IOException e) {
-			recordGUI.changeState(RecordInterface.FATAL,"Error with install");
-			optionsGUI.changeState(OptionsInterface.FATAL, "Sorry, an error occurred while installing the native extensions. Please contact an Insight admin.");
+        } catch (Exception e) { // possibilities: MalformedURL, InterruptedException, IOException
+        	Applet.sendViewNotification(ViewNotifications.FATAL, new MessageNotification(
+        			"Error with install",
+        			"Sorry, an error occurred while installing the native extensions. Please contact an Insight admin."));
+        	//recordGUI.changeState(RecordControls.FATAL,"Error with install");
+        	//optionsGUI.changeState(PostOptions.FATAL, "Sorry, an error occurred while installing the native extensions. Please contact an Insight admin.");
 			e.printStackTrace();
 		}
-		
+
 		if(Applet.IS_MAC && !System.getProperty("os.version").contains("10.6")) {
-			recordGUI.changeState(RecordInterface.FATAL, "Sorry, Snow Leopard required.");
+			Applet.sendViewNotification(ViewNotifications.FATAL, new MessageNotification(
+					"Sorry, Snow Leopard required.", "Sorry, this tool requires that you have Mac OS X 10.6 (Snow Leopard)"));
+			//recordGUI.changeState(RecordControls.FATAL, "Sorry, Snow Leopard required.");
 		}
 	}
 
@@ -82,5 +92,10 @@ public class MacController extends ApplicationController {
 		super.stopRecording();
 		if(screen != null)
 			screen.stopRecording();
+	}
+	
+	@Override
+	public void showRecordingInterface() {
+		Applet.sendViewNotification(ViewNotifications.SHOW_RECORD_CONTROLS);
 	}
 }

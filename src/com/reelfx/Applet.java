@@ -5,6 +5,7 @@ import java.applet.AppletContext;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
+import java.awt.Window;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -13,7 +14,10 @@ import java.io.OutputStream;
 import java.net.JarURLConnection;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Enumeration;
+import java.util.EventObject;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
@@ -29,8 +33,13 @@ import com.reelfx.controller.ApplicationController;
 import com.reelfx.controller.LinuxController;
 import com.reelfx.controller.MacController;
 import com.reelfx.controller.WindowsController;
-import com.reelfx.view.AudioSelectBox;
+import com.reelfx.model.CaptureViewport;
+import com.reelfx.view.AudioSelector;
+import com.reelfx.view.InformationBox;
 import com.reelfx.view.VolumeVisualizer;
+import com.reelfx.view.util.MoveableWindow;
+import com.reelfx.view.util.ViewListener;
+import com.reelfx.view.util.ViewNotifications;
 import com.sun.JarClassLoader;
 
 /**
@@ -64,7 +73,9 @@ public class Applet extends JApplet {
 	public static boolean IS_LINUX = System.getProperty("os.name").toLowerCase().contains("linux");
 	public static boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("windows");
 	public static boolean DEV_MODE = System.getProperty("user.dir").contains(System.getProperty("user.home")); // assume dev files are in developer's home
+	@Deprecated
 	public static GraphicsConfiguration GRAPHICS_CONFIG = null;
+	public final static CaptureViewport CAPTURE_VIEWPORT = new CaptureViewport();
 	
 	private ApplicationController controller = null;
 	
@@ -86,6 +97,8 @@ public class Applet extends JApplet {
 			APPLET = this; // breaking OOP so I can have a "root"
 			POST_URL = getParameter("post_url");
 			API_KEY = getParameter("api_key");
+			if(!DEV_MODE && getParameter("dev_mode") != null)
+				DEV_MODE = getParameter("dev_mode").equals("true");
 			SCREEN_CAPTURE_NAME = getParameter("screen_capture_name");
 			HOST_URL = DOCUMENT_BASE.getProtocol() + "://" + DOCUMENT_BASE.getHost();
 			if(getParameter("headless") != null)
@@ -97,9 +110,6 @@ public class Applet extends JApplet {
 			
 			// print information to console
 			System.out.println(getAppletInfo());
-			
-			//VolumeVisualizer vv = new VolumeVisualizer();
-			//vv.start();
 			
 			// execute a job on the event-dispatching thread; creating this applet's GUI
             SwingUtilities.invokeAndWait(new Runnable() {
@@ -130,35 +140,134 @@ public class Applet extends JApplet {
         }
     }
 	
-	// ---------- API ----------
+	/**
+	 * Sends a notification to all the views and each can update itself accordingly.
+	 * 
+	 * @param notification
+	 * @param body
+	 */
+	public static void sendViewNotification(ViewNotifications notification,Object body) {
+		//System.out.println("View Notification: "+notification);
+		// applet is a special case (see ApplicationController constructor)
+		((ViewListener) APPLET.getContentPane().getComponent(0)).receiveViewNotification(notification, body);
+		// another special case where the capture viewport is a pseudo-model
+		Applet.CAPTURE_VIEWPORT.receiveViewNotification(notification, body);
+		// notify all the open windows
+		Window[] windows = Window.getWindows();
+		for(Window win : windows) {
+			if(win instanceof ViewListener) {
+				((ViewListener) win).receiveViewNotification(notification, body);
+			}
+		}
+	}
+	public static void sendViewNotification(ViewNotifications notification) {
+		sendViewNotification(notification, null);
+	}
+	
+	// ---------- BEGIN JAVASCRIPT API ----------
+	/*
 	public void prepareForRecording() {
 		controller.prepareForRecording();
 	}
 	
 	public void startRecording() {
 		// TODO grabs default mixer right now, need a way to select microphones...
-		//controller.startRecording(AudioSelectBox.get); // TODO fix when needed
+		//controller.startRecording(AudioSelector.get); // TODO fix when needed
+	}
+	*/
+	
+	/**
+	 *  This method piggy backs on record GUI to drive any external (i.e. Flash) GUI.
+	 */
+	public void prepareAndRecord() { 
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
+			@Override
+			public Object run() {
+				try {
+					controller.recordGUI.prepareForRecording();
+				} catch (Exception e) {
+					System.err.println("Can't prepare and start the recording!");
+					e.printStackTrace();
+				}
+				return null;
+			}
+		});
 	}
 	
 	public void stopRecording() {
-		controller.stopRecording();
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
+			@Override
+			public Object run() {
+				try {
+					controller.recordGUI.stopRecording();
+				} catch (Exception e) {
+					System.err.println("Can't stop the recording!");
+					e.printStackTrace();
+				}
+				return null;
+			}
+		});
 	}
-	
+	/*
 	public void previewRecording() {
 		controller.previewRecording();
 	}
-	
+
 	public void postRecording() {
 		// TODO TEMPORARY until I get the Insight posting process down
 		controller.askForAndSaveRecording();
 	}
-	
+	*/
 	public void showRecordingInterface() {
-		controller.showRecordingInterface();
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
+
+			@Override
+			public Object run() {
+				try {
+					SwingUtilities.invokeLater(new Runnable() {
+		                public void run() {
+		                	if(controller != null)
+		                		controller.showRecordingInterface();
+		                }
+		            });
+				} catch (Exception e) {
+					System.err.println("Can't show the recording interface!");
+					e.printStackTrace();
+				}
+				return null;
+			}
+		});
 	}
 	
 	public void hideRecordingInterface() {
-		controller.hideRecordingInterface();
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
+
+			@Override
+			public Object run() {
+				try {
+					
+					SwingUtilities.invokeLater(new Runnable() {
+		                public void run() {
+		                	if(controller != null)
+		                		controller.hideRecordingInterface();
+		                }
+		            });
+				} catch (Exception e) {
+					System.err.println("Can't hide the recording interface!");
+					e.printStackTrace();
+				}
+				return null;
+			}
+		});
+	}
+	
+	public static void handleRecordingUpdate(ViewNotifications state,String status) {
+		if(status == null) status = "";
+		jsCall("sct_handle_recording_update(\""+state+"\",\""+status+"\");");
+	}
+	
+	public static void handleRecordingUIHide() {
+		jsCall("sct_handle_recording_ui_hide();");
 	}
 	
 	public static void handleExistingRecording() {
@@ -192,12 +301,13 @@ public class Applet extends JApplet {
 	public static void sendError(String message) {
 		jsCall("sct_error(\""+message+"\");");
 	}
-	// ---------- API ----------
+	// ---------- END JAVASCRIPT API ----------
 	
 	private static void jsCall(String method) {
 		if(JS_BRIDGE == null) {
 			System.err.println("Call to "+method+" but no JS Bridge exists. Probably in development mode...");
 		} else {
+			//System.out.println("Sending javascript call: "+method);
 			//JSObject doc = (JSObject) JS_BRIDGE.getMember("document");
 			//doc.eval(method);
 			JS_BRIDGE.eval(method);
@@ -390,15 +500,25 @@ public class Applet extends JApplet {
 		//System.out.println("Total space: \n"+TEMP_FOLDER.getTotalSpace()+" GBs");
 	}
 	
-	public static String getBinFolderPath() throws IOException {
+	/**
+	 * These must start with "bin".
+	 * 
+	 * @return Name of folder and JAR with folder of same name for holding native extensions.
+	 * @throws IOException
+	 */
+	public static String getBinFolderName() throws IOException {
 		if(IS_MAC)
-			return RFX_FOLDER.getAbsolutePath()+File.separator+"bin-mac";
+			return "bin-mac";
 		else if(IS_LINUX)
-			return RFX_FOLDER.getAbsolutePath()+File.separator+"bin-linux";
+			return "bin-linux";
 		else if(IS_WINDOWS)
-			return RFX_FOLDER.getAbsolutePath()+File.separator+"bin-windows";
+			return "bin-windows-v1.0";
 		else
 			throw new IOException("I don't know what bin folder to use!");
+	}
+	
+	public static String getBinFolderPath() throws IOException {
+		return RFX_FOLDER.getAbsolutePath()+File.separator+getBinFolderName();
 	}
 	
 	public static String getRfxFolderPath() throws IOException {
@@ -419,7 +539,7 @@ public class Applet extends JApplet {
 		else
 			throw new IOException("I don't know where to find the user's desktop!");
 	}
-    
+	
     /**
      * Called when the browser closes the web page.
      * 

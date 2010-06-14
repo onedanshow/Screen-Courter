@@ -16,6 +16,8 @@ import java.util.Map;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Mixer;
 
+import org.apache.commons.io.FileUtils;
+
 import com.reelfx.Applet;
 import com.reelfx.model.AudioRecorder;
 import com.reelfx.model.PostProcessor;
@@ -23,8 +25,10 @@ import com.reelfx.model.PreferenceManager;
 import com.reelfx.model.ScreenRecorder;
 import com.reelfx.model.util.ProcessListener;
 import com.reelfx.model.util.StreamGobbler;
-import com.reelfx.view.OptionsInterface;
-import com.reelfx.view.RecordInterface;
+import com.reelfx.view.PostOptions;
+import com.reelfx.view.RecordControls;
+import com.reelfx.view.util.MessageNotification;
+import com.reelfx.view.util.ViewNotifications;
 
 public class WindowsController extends ApplicationController {
 
@@ -41,21 +45,29 @@ public class WindowsController extends ApplicationController {
 
 	@Override
 	public void setupExtensions() {
-		super.setupExtensions();
+		//super.setupExtensions();
 		try {
 			if(!Applet.BIN_FOLDER.exists()){
-				Applet.copyFolderFromRemoteJar(new URL(Applet.HOST_URL+"/bin-windows.jar?"+Math.random()*10000), "bin-windows");
+				// delete any old versions
+				for(File file : Applet.RFX_FOLDER.listFiles()) {
+					if(file.getName().startsWith("bin") && file.isDirectory()) {
+						FileUtils.deleteDirectory(file);
+						if(file.exists())
+							throw new Exception("Could not delete the old native extentions!");
+					}
+				}
+				// download an install the new one
+				Applet.copyFolderFromRemoteJar(new URL(Applet.HOST_URL+"/"+Applet.getBinFolderName()+".jar?"+Math.random()*10000), Applet.getBinFolderName());
 				if(!Applet.BIN_FOLDER.exists()) throw new IOException("Did not copy Windows extensions to the execution directory!");
 			}
 			System.out.println("Have access to execution folder: "+Applet.BIN_FOLDER.getAbsolutePath());
 			setReadyStateBasedOnPriorRecording();
-        } catch (MalformedURLException e1) {
-        	recordGUI.changeState(RecordInterface.FATAL,"Error with install");
-        	optionsGUI.changeState(OptionsInterface.FATAL, "Sorry, an error occurred while installing the native extensions. Please contact an Insight admin.");
-			e1.printStackTrace();
-		} catch (IOException e) {
-			recordGUI.changeState(RecordInterface.FATAL,"Error with install");
-			optionsGUI.changeState(OptionsInterface.FATAL, "Sorry, an error occurred while installing the native extensions. Please contact an Insight admin.");
+        } catch (Exception e) { // possibilities: MalformedURL, IOException, etc.
+        	Applet.sendViewNotification(ViewNotifications.FATAL, new MessageNotification(
+        			"Error with install", 
+        			"Sorry, an error occurred while installing the native extensions. Please contact an Insight admin."));
+        	//recordGUI.changeState(RecordControls.FATAL,);
+        	//optionsGUI.changeState(PostOptions.FATAL, );
 			e.printStackTrace();
 		}
 	}
@@ -119,7 +131,6 @@ public class WindowsController extends ApplicationController {
 
 	@Override
 	public void stopRecording() {
-		super.stopRecording();
 		stopped = true;
 		
 		if(mic != null)
@@ -131,6 +142,8 @@ public class WindowsController extends ApplicationController {
 			systemAudio.stopRecording();
 		
 		screen.stopRecording();
+		
+		super.stopRecording();
 	}
 
 	public void processUpdate(int event, Object body) {

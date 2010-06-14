@@ -51,7 +51,9 @@ public class PreviewPlayer extends ProcessWrapper {
 				        List<String> ffplayArgs = new ArrayList<String>();
 				        ffplayArgs.add(Applet.BIN_FOLDER.getAbsolutePath()+File.separator+ffplay);
 				        if(Applet.IS_WINDOWS || Applet.IS_LINUX) {
-				        	ffplayArgs.addAll(parseParameters("-x 800 -y 600"));
+				        	// (06/04/10) turned off because it doesn't size the video properly if you give it dimensions anyway,
+				        	// and if the dimensions are not a multiple of 2, it fails silently
+				        	//ffplayArgs.addAll(parseParameters("-s "+Applet.CAPTURE_VIEWPORT.width+"x"+Applet.CAPTURE_VIEWPORT.height));
 				        }
 				        if(Applet.IS_WINDOWS)
 				        	ffplayArgs.add(WindowsController.MERGED_OUTPUT_FILE.getAbsolutePath());
@@ -62,11 +64,13 @@ public class PreviewPlayer extends ProcessWrapper {
 				        	
 				        ProcessBuilder pb = new ProcessBuilder(ffplayArgs);
 				        ffplayProcess = pb.start();
-				
+				        
+				        System.out.println("Executing this command: "+prettyCommand(ffplayArgs));
+				        
 				        errorGobbler = new StreamGobbler(ffplayProcess.getErrorStream(), true, "ffplay E");
 				        inputGobbler = new StreamGobbler(ffplayProcess.getInputStream(), true, "ffplay O");
-				
-				        System.out.println("Starting listener threads...");
+				        
+				        System.out.println("Starting listener threads for PreviewPlayer...");
 				        errorGobbler.start();
 				        inputGobbler.start();
 				
@@ -74,6 +78,7 @@ public class PreviewPlayer extends ProcessWrapper {
 				        ffplayProcess.waitFor();
 				        //stopAudio();
 				        ffplayProcess = null;
+				        System.out.println("PreviewPlayer has finished.");
 		        	}
 		      } catch (IOException ioe) {
 		    	  ioe.printStackTrace();

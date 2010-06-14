@@ -9,7 +9,7 @@
 		<!-- this is temporary -->
 		<copy todir="build/classes/org/apache">
 			<fileset dir="lib/org/apache"/>
-		</copy>		
+		</copy>
 		<echo message="Building build/applet.jar ..." />
 		<jar destfile="build/applet.jar" filesetmanifest="mergewithoutmain" basedir="build/classes" includes="com/**,org/**">
 			<manifest>
@@ -33,13 +33,13 @@
 	     <arg value="duke" />
 	   </exec>
 	</target>
-		
+			
 	<target name="create_local_test_page" depends="sign_jar">
 		<!-- CHANGE THIS TO THE FOLDER OF YOUR LOCAL HOST -->
 		<property name="server" value="/Users/daniel/Sites/review_tool/"/>
 		<copy file="build/applet.jar" todir="${server}"/>
 		<copy file="bin-mac.jar" todir="${server}"/>
-		<copy file="bin-windows.jar" todir="${server}"/>
+		<copy file="bin-windows-v1.0.jar" todir="${server}"/>
 		<copy file="bin-linux.jar" todir="${server}"/>
 		<copy file="src/template.html" tofile="${server}index.html" overwrite="true" />
 		<random max="100000000" property="randomValue"></random>
@@ -51,7 +51,7 @@
 		<property name="server" value="/Users/daniel/Sites/classic/public/"/>
 		<copy file="build/applet.jar" todir="${server}"/>
 		<copy file="bin-mac.jar" todir="${server}"/>
-		<copy file="bin-windows.jar" todir="${server}"/>
+		<copy file="bin-windows-v1.0.jar" todir="${server}"/>
 		<copy file="bin-linux.jar" todir="${server}"/>
 	</target>
 	

@@ -104,16 +104,16 @@ public class ScreenRecorder extends ProcessWrapper implements ActionListener {
 					public Object run() {
 						
 						try {
+							int width = Applet.CAPTURE_VIEWPORT.width;
+							if(width % 2 != 0) width--;
+							int height = Applet.CAPTURE_VIEWPORT.height;
+							if(height % 2 != 0) height--;
 							
-			    			// only get it for the screen we're on
-			    			int height = Applet.GRAPHICS_CONFIG.getDevice().getDisplayMode().getHeight();
-			    			int width = Applet.GRAPHICS_CONFIG.getDevice().getDisplayMode().getWidth();
-			    	        
 			    			List<String> ffmpegArgs = new ArrayList<String>();
 			    			//ffmpegArgs.add("/usr/bin/ffmpeg");
 			    	    	ffmpegArgs.add(Applet.BIN_FOLDER.getAbsoluteFile()+File.separator+"ffmpeg");
 			    	    	// screen capture settings
-			    	    	ffmpegArgs.addAll(parseParameters("-y -f x11grab -s "+width+"x"+height+" -r 20 -i :0.0+0,0"));
+			    	    	ffmpegArgs.addAll(parseParameters("-y -f x11grab -s "+width+"x"+height+" -r 20 -i :0.0+"+Applet.CAPTURE_VIEWPORT.x+","+Applet.CAPTURE_VIEWPORT.y));
 			    	    	// microphone settings (good resource: http://www.oreilly.de/catalog/multilinux/excerpt/ch14-05.htm)
 			    	    	/* 04/29/2010 - ffmpeg gets much better framerate when not recording microphone (let Java do this)
 			    	    	 * if(audioSource != null) { 
@@ -165,7 +165,10 @@ public class ScreenRecorder extends ProcessWrapper implements ActionListener {
 						try {
 							List<String> ffmpegArgs = new ArrayList<String>();
 				            ffmpegArgs.add(FFMPEG_EXEC.getAbsolutePath());
-				            ffmpegArgs.addAll(parseParameters("-y -f gdigrab -r 20 -i cursor:desktop -vcodec mpeg4 -b 5000k "+OUTPUT_FILE));
+				            // for full screen, use simply "cursor:desktop"
+				            String viewport = ":offset="+Applet.CAPTURE_VIEWPORT.x+","+Applet.CAPTURE_VIEWPORT.y;
+				            viewport += ":size="+Applet.CAPTURE_VIEWPORT.width+","+Applet.CAPTURE_VIEWPORT.height;
+				            ffmpegArgs.addAll(parseParameters("-y -f gdigrab -r 20 -i cursor:desktop"+viewport+" -vcodec mpeg4 -b 5000k "+OUTPUT_FILE));
 				            
 				        	System.out.println("Executing this command: "+prettyCommand(ffmpegArgs));
 				            ProcessBuilder pb = new ProcessBuilder(ffmpegArgs);
