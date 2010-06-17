@@ -512,7 +512,7 @@ public class Applet extends JApplet {
 		else if(IS_LINUX)
 			return "bin-linux";
 		else if(IS_WINDOWS)
-			return "bin-windows-v1.0";
+			return "bin-windows-v1.1";
 		else
 			throw new IOException("I don't know what bin folder to use!");
 	}
