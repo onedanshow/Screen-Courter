@@ -30,7 +30,7 @@ public class CaptureViewport extends Rectangle implements ViewListener {
 		MouseEvent me;
 		CropHandle handle;
 		switch(notification) {
-		case SET_CAPTURE_VIEWPORT_RESOLUTION:
+		case SET_CAPTURE_VIEWPORT_RESOLUTION: // TODO used?
 			String resolution = ((String) body).toLowerCase();
 			if(resolution.equals("fullscreen")) {
 				setFrameFromDiagonal(0,0,SCREEN.getWidth(),SCREEN.getHeight());
@@ -53,34 +53,34 @@ public class CaptureViewport extends Rectangle implements ViewListener {
 			me = (MouseEvent) body;
 			handle = (CropHandle) me.getSource();
 			if(handle.getName().equals(CropHandle.TOP_LEFT)) {
-				setFrameFromDiagonal(me.getLocationOnScreen(),getBottomRightPoint());
+				setFrameFromDiagonal(cleanPoint(me.getLocationOnScreen()),getBottomRightPoint());
 			} 
 			else if(handle.getName().equals(CropHandle.TOP_MIDDLE)) {
-				setFrameFromDiagonal(new Point((int)getMinX(),me.getLocationOnScreen().y),getBottomRightPoint());
+				setFrameFromDiagonal(cleanPoint((int)getMinX(),me.getLocationOnScreen().y),getBottomRightPoint());
 			} 
 			else if(handle.getName().equals(CropHandle.TOP_RIGHT)) {
 				setFrameFromDiagonal(
-						new Point((int)getMinX(),me.getLocationOnScreen().y),
-						new Point(me.getLocationOnScreen().x,(int)getMaxY()));
+						cleanPoint((int)getMinX(),me.getLocationOnScreen().y),
+						cleanPoint(me.getLocationOnScreen().x,(int)getMaxY()));
 			}
 			else if(handle.getName().equals(CropHandle.MIDDLE_RIGHT)) {
 				setFrameFromDiagonal(getTopLeftPoint(),
-						new Point(me.getLocationOnScreen().x,(int)getMaxY()));
+						cleanPoint(me.getLocationOnScreen().x,(int)getMaxY()));
 			}
 			else if(handle.getName().equals(CropHandle.BOTTOM_RIGHT)) {
-				setFrameFromDiagonal(getTopLeftPoint(), me.getLocationOnScreen());
+				setFrameFromDiagonal(getTopLeftPoint(), cleanPoint(me.getLocationOnScreen()));
 			}
 			else if(handle.getName().equals(CropHandle.BOTTOM_MIDDLE)) {
 				setFrameFromDiagonal(getTopLeftPoint(), 
-						new Point((int)getMaxX(),me.getLocationOnScreen().y));
+						cleanPoint((int)getMaxX(),me.getLocationOnScreen().y));
 			}
 			else if(handle.getName().equals(CropHandle.BOTTOM_LEFT)) {
 				setFrameFromDiagonal(
-						new Point(me.getLocationOnScreen().x,(int)getMinY()),
-						new Point((int)getMaxX(),me.getLocationOnScreen().y));
+						cleanPoint(me.getLocationOnScreen().x,(int)getMinY()),
+						cleanPoint((int)getMaxX(),me.getLocationOnScreen().y));
 			}
 			else if(handle.getName().equals(CropHandle.MIDDLE_LEFT)) {
-				setFrameFromDiagonal(new Point(me.getLocationOnScreen().x,(int)getMinY()), getBottomRightPoint());
+				setFrameFromDiagonal(cleanPoint(me.getLocationOnScreen().x,(int)getMinY()), getBottomRightPoint());
 			}
 			break;
 			
@@ -115,6 +115,23 @@ public class CaptureViewport extends Rectangle implements ViewListener {
 	public void setFrame(double x, double y, double w, double h) {
 		super.setFrame(x, y, w, h);
 		Applet.sendViewNotification(ViewNotifications.CAPTURE_VIEWPORT_CHANGE);
+	}
+	
+	// Windows ffmpeg has problem when clip window size is not factor of 2
+	private Point cleanPoint(Point pt) {
+		if(Applet.IS_WINDOWS)
+			return cleanPoint(pt.x, pt.y);
+		else
+			return pt;
+	}
+	
+	// Windows ffmpeg has problem when clip window size is not factor of 2
+	private Point cleanPoint(int x, int y) {	
+		if(Applet.IS_WINDOWS) {
+			return new Point(x % 2 == 0 ? x : --x, y % 2 == 0 ? y : --y);
+		} else {
+			return new Point(x,y);
+		}
 	}
 	
 	public Point getTopLeftPoint() {

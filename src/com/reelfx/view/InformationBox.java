@@ -29,8 +29,9 @@ public class InformationBox extends MoveableWindow {
 
 	public final static String NAME = "InformationBox";
 	
+	private final String defaultMessage = "ReelFX Screen Recorder    ";
 	private ViewNotifications currentState;
-
+	private JLabel title;
 	public InformationBox() {
 		super();
 	}
@@ -42,7 +43,7 @@ public class InformationBox extends MoveableWindow {
 		setAlwaysOnTop(true);
 		setName(NAME);
 		
-		JLabel title = new JLabel("ReelFX Screen Recorder    ");
+		title = new JLabel(defaultMessage);
 		title.setFont(new Font("Arial", Font.BOLD, 15));
 		JLabel icon = new JLabel(new ImageIcon(this.getClass().getClassLoader().getResource("com/reelfx/view/images/move.png")));
 		
@@ -98,6 +99,14 @@ public class InformationBox extends MoveableWindow {
 		case HIDE_ALL:
 		case HIDE_INFO_BOX:
 			setVisible(false);
+			break;
+		
+		case MOUSE_DRAG_CROP_HANDLE:
+			title.setText(Applet.CAPTURE_VIEWPORT.width+"x"+Applet.CAPTURE_VIEWPORT.height);
+			break;
+		
+		case MOUSE_RELEASE_CROP_HANDLE:
+			title.setText(defaultMessage);
 			break;
 		}
 		

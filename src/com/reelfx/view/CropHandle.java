@@ -95,6 +95,13 @@ public class CropHandle extends MoveableWindow implements ViewListener {
 		Applet.sendViewNotification(ViewNotifications.MOUSE_DRAG_CROP_HANDLE, e);
 	}
 	
+	@Override
+	public void mouseReleased(MouseEvent e) {
+		if(currentState == ViewNotifications.DISABLE_ALL) return;
+		super.mouseReleased(e);
+		Applet.sendViewNotification(ViewNotifications.MOUSE_RELEASE_CROP_HANDLE,e);
+	}	
+	
 	/**
 	 * The point actually represented by this handle at the moment.
 	 * 
