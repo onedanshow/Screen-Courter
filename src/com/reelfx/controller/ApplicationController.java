@@ -46,8 +46,6 @@ public abstract class ApplicationController implements ProcessListener {
 	public PostOptions optionsGUI;
 
 	protected InformationBox infoBox;
-	// protected CropHandle TLhandle, TMhandle, TRhandle, MRhandle, BRhandle,
-	// BMhandle, BLhandle, MLhandle;
 
 	protected ScreenRecorder screen;
 	protected PostProcessor postProcess;

@@ -14,15 +14,12 @@ import com.reelfx.view.util.ViewNotifications;
 
 @SuppressWarnings("serial")
 public class CaptureViewport extends Rectangle implements ViewListener {
-
-	public static Dimension SCREEN;
 	
 	protected Point mouseOffset = null;
 	
 	public CaptureViewport() {
-		super(new Dimension(800,600));
-		SCREEN = Toolkit.getDefaultToolkit().getScreenSize();	
-		setLocation(SCREEN.width/2-width/2, SCREEN.height/2-height/2);
+		super(new Dimension(800,600));	
+		setLocation(Applet.SCREEN.width/2-width/2, Applet.SCREEN.height/2-height/2);
 	}
 	
 	@Override
@@ -33,17 +30,17 @@ public class CaptureViewport extends Rectangle implements ViewListener {
 		case SET_CAPTURE_VIEWPORT_RESOLUTION:
 			String resolution = ((String) body).toLowerCase();
 			if(resolution.equals("fullscreen")) {
-				setFrameFromDiagonal(0,0,SCREEN.getWidth(),SCREEN.getHeight());
+				setFrameFromDiagonal(0,0,Applet.SCREEN.getWidth(),Applet.SCREEN.getHeight());
 			} else if(resolution.contains("x")) {
 				String[] dim = resolution.split("x");
 				int width = Integer.parseInt(dim[0]);
 				int height = Integer.parseInt(dim[1]);
 				Point pt = getTopLeftPoint();
-				if(pt.x + width > SCREEN.width) {
-					pt.x -= Math.max(0,pt.x + width - SCREEN.width);
+				if(pt.x + width > Applet.SCREEN.width) {
+					pt.x -= Math.max(0,pt.x + width - Applet.SCREEN.width);
 				}
-				if(pt.y + height > SCREEN.height) {
-					pt.y -= Math.max(0,pt.y + height - SCREEN.height);
+				if(pt.y + height > Applet.SCREEN.height) {
+					pt.y -= Math.max(0,pt.y + height - Applet.SCREEN.height);
 				}
 				setFrameFromDiagonal(pt.x,pt.y,pt.x+width,pt.y+height);
 			}
@@ -100,8 +97,8 @@ public class CaptureViewport extends Rectangle implements ViewListener {
 			Point p = me.getLocationOnScreen();
 			p.x -= mouseOffset.x;
 			p.y -= mouseOffset.y;			
-			p.x = (int) Math.min(Math.max(p.x, 0), SCREEN.width - getWidth());
-			p.y = (int) Math.min(Math.max(p.y, 0), SCREEN.height - getHeight());
+			p.x = (int) Math.min(Math.max(p.x, 0), Applet.SCREEN.width - getWidth());
+			p.y = (int) Math.min(Math.max(p.y, 0), Applet.SCREEN.height - getHeight());
 			setLocation(p);
 			Applet.sendViewNotification(ViewNotifications.CAPTURE_VIEWPORT_CHANGE);
 			break;

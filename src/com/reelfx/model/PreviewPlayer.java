@@ -55,9 +55,9 @@ public class PreviewPlayer extends ProcessWrapper {
 				        	// and if the dimensions are not a multiple of 2, it fails silently
 				        	//ffplayArgs.addAll(parseParameters("-s "+Applet.CAPTURE_VIEWPORT.width+"x"+Applet.CAPTURE_VIEWPORT.height));
 				        }
-				        if(Applet.IS_WINDOWS)
+				        if(Applet.IS_WINDOWS && AudioRecorder.OUTPUT_FILE.exists())
 				        	ffplayArgs.add(WindowsController.MERGED_OUTPUT_FILE.getAbsolutePath());
-				        else if(Applet.IS_LINUX)
+				        else if(Applet.IS_LINUX && AudioRecorder.OUTPUT_FILE.exists())
 				        	ffplayArgs.add(LinuxController.MERGED_OUTPUT_FILE.getAbsolutePath());
 				        else
 				        	ffplayArgs.add(ScreenRecorder.OUTPUT_FILE.getAbsolutePath());

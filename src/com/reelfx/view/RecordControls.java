@@ -252,8 +252,8 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 		case CAPTURE_VIEWPORT_CHANGE:
 			Point pt = Applet.CAPTURE_VIEWPORT.getBottomLeftPoint();
 			pt.translate(0, 10);
-			if(pt.y + getHeight() > screen.getHeight() || (Applet.IS_MAC && !Applet.DEV_MODE)) { // TODO temporary (second condition)
-				pt = new Point((int) (screen.getWidth() - 10 - getWidth()), 10 + (Applet.IS_MAC ? 20 : 0));
+			if(pt.y + getHeight() > Applet.SCREEN.getHeight() || (Applet.IS_MAC && !Applet.DEV_MODE)) { // TODO temporary (second condition)
+				pt = new Point((int) (Applet.SCREEN.getWidth() - 10 - getWidth()), 10 + (Applet.IS_MAC ? 20 : 0));
 				lockedToCorner = true;
 			} else {
 				lockedToCorner = false;

@@ -139,8 +139,7 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 			    	// export settings
 			    	ffmpegArgs.addAll(getFfmpegCopyParams());
 			    	// resize screen
-			    	Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-			    	ffmpegArgs.addAll(parseParameters("-s 1024x"+Math.round(1024.0/(double)dim.width*(double)dim.height)));
+			    	ffmpegArgs.addAll(parseParameters("-s 1024x"+Math.round(1024.0/(double)Applet.SCREEN.width*(double)Applet.SCREEN.height)));
 			    	//ffmpegArgs.addAll(getFfmpegX264FastFirstPastBaselineParams());
 			    	ffmpegArgs.add(outputFile.getAbsolutePath());
 			    	System.out.println("Executing this command: "+prettyCommand(ffmpegArgs));

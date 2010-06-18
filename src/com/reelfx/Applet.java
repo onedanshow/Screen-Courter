@@ -2,6 +2,7 @@ package com.reelfx;
 
 
 import java.applet.AppletContext;
+import java.awt.Dimension;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
@@ -73,8 +74,9 @@ public class Applet extends JApplet {
 	public static boolean IS_LINUX = System.getProperty("os.name").toLowerCase().contains("linux");
 	public static boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("windows");
 	public static boolean DEV_MODE = System.getProperty("user.dir").contains(System.getProperty("user.home")); // assume dev files are in developer's home
-	@Deprecated
-	public static GraphicsConfiguration GRAPHICS_CONFIG = null;
+	public final static Dimension SCREEN = new Dimension( // for the primary monitor only
+			GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDisplayMode().getWidth(), 
+			GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDisplayMode().getHeight());
 	public final static CaptureViewport CAPTURE_VIEWPORT = new CaptureViewport();
 	
 	private ApplicationController controller = null;
@@ -151,7 +153,7 @@ public class Applet extends JApplet {
 		// applet is a special case (see ApplicationController constructor)
 		((ViewListener) APPLET.getContentPane().getComponent(0)).receiveViewNotification(notification, body);
 		// another special case where the capture viewport is a pseudo-model
-		Applet.CAPTURE_VIEWPORT.receiveViewNotification(notification, body);
+		CAPTURE_VIEWPORT.receiveViewNotification(notification, body);
 		// notify all the open windows
 		Window[] windows = Window.getWindows();
 		for(Window win : windows) {
@@ -452,19 +454,24 @@ public class Applet extends JApplet {
 	public String getAppletInfo() {
 		
 		// base code: http://stackoverflow.com/questions/2234476/how-to-detect-the-current-display-with-java
-		GRAPHICS_CONFIG = getGraphicsConfiguration();
-		GraphicsDevice myScreen = GRAPHICS_CONFIG.getDevice();
-		GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
-		GraphicsDevice[] allScreens = env.getScreenDevices();
-		int myScreenIndex = -1;
+		
+		// screen the Applet is on
+		GraphicsDevice myScreen = getGraphicsConfiguration().getDevice();
+		// screen the start bar, OS bar, whatever is on
+		GraphicsDevice primaryScreen = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+		// all screens
+		GraphicsDevice[] allScreens = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices();
+		int myScreenIndex = -1, primaryScreenIndex = -1;
 		for (int i = 0; i < allScreens.length; i++) {
 		    if (allScreens[i].equals(myScreen))
 		    {
 		        myScreenIndex = i;
-		        break;
+		    }
+		    if (allScreens[i].equals(primaryScreen))
+		    {
+		    	primaryScreenIndex = i;
 		    }
 		}
-		
 		try {
 			return 
 				"APPLET PROPERLY INITIALIZED WITH THIS VARIABLES:\n"+
@@ -481,7 +488,9 @@ public class Applet extends JApplet {
 				"Document Base: \t"+getDocumentBase()+"\n"+
 				"Execution URL: \t"+Applet.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()+"\n"+
 				"Multiple Monitors: \t"+(allScreens.length > 1)+"\n"+
-				"Applet window is on screen" + myScreenIndex+"\n"+
+				"Applet window is on screen " + myScreenIndex+"\n"+
+				"Primary screen is index " + primaryScreenIndex+"\n"+
+				"Primary screen resolution: "+SCREEN+"\n"+
 				"Headless: \t"+HEADLESS+"\n";
 		} catch (URISyntaxException e) {
 			e.printStackTrace();

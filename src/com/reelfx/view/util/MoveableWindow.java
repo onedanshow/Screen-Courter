@@ -1,20 +1,16 @@
 package com.reelfx.view.util;
 
-import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Event;
 import java.awt.Frame;
 import java.awt.GraphicsConfiguration;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.util.EventObject;
 
 import javax.swing.JWindow;
 
@@ -26,7 +22,6 @@ public abstract class MoveableWindow extends JWindow implements MouseListener,
 		MouseMotionListener, WindowListener, ViewListener {
 	
 	protected Point mouseOffset = null;
-	public static Dimension screen;
 	public static Rectangle captureViewport;
 
 	public MoveableWindow() {
@@ -59,14 +54,8 @@ public abstract class MoveableWindow extends JWindow implements MouseListener,
 		addMouseListener(this);
 		addMouseMotionListener(this);
 		
-		if(screen == null)
-			screen = Toolkit.getDefaultToolkit().getScreenSize();
-		// From Docs: Gets the size of the screen. On systems with multiple
-		// displays, the primary display is used. Multi-screen aware display
-		// dimensions are available from GraphicsConfiguration and GraphicsDevice
-		
 		if(captureViewport == null)
-			captureViewport = new Rectangle(new Point(screen.width/2-400,screen.height/2-300),new Dimension(800,600));
+			captureViewport = new Rectangle(new Point(Applet.SCREEN.width/2-400,Applet.SCREEN.height/2-300),new Dimension(800,600));
 	}
 	
 	public void receiveViewNotification(ViewNotifications notification) {
@@ -113,8 +102,8 @@ public abstract class MoveableWindow extends JWindow implements MouseListener,
 		Point p = e.getLocationOnScreen();
 		p.x -= mouseOffset.x;
 		p.y -= mouseOffset.y;
-		p.x = Math.min(Math.max(p.x, 0), screen.width - this.getWidth());
-		p.y = Math.min(Math.max(p.y, 0), screen.height - this.getHeight());
+		p.x = Math.min(Math.max(p.x, 0), Applet.SCREEN.width - this.getWidth());
+		p.y = Math.min(Math.max(p.y, 0), Applet.SCREEN.height - this.getHeight());
 		setLocation(p);
 		//*/
 	}
