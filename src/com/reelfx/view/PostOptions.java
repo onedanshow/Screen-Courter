@@ -1,5 +1,6 @@
 package com.reelfx.view;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -11,6 +12,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JSeparator;
 
 import com.reelfx.controller.ApplicationController;
@@ -27,6 +29,7 @@ public class PostOptions extends JPanel implements ViewListener {
 	private JLabel message;
 	private ViewNotifications currentState;
 	private JPanel self;
+	private JProgressBar progressBar;
 	
 	public PostOptions(final ApplicationController controller) {
 		super();
@@ -47,6 +50,7 @@ public class PostOptions extends JPanel implements ViewListener {
         message.setText("You have a review for \"Shot 2000-0300\" from 04/03/2010");
         message.setAlignmentX(0.5F);
         /* */
+		
         message = new JLabel();
         message.setFont(new java.awt.Font("Arial", 0, 11));
         message.setOpaque(false);
@@ -54,7 +58,14 @@ public class PostOptions extends JPanel implements ViewListener {
         message.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         message.setAlignmentX(0.5F);
         
-        add(message);
+        progressBar = new JProgressBar();
+        progressBar.setIndeterminate(true);
+        
+        JPanel messageBoard = new JPanel();
+        messageBoard.setLayout(new BorderLayout());
+        messageBoard.add(message,BorderLayout.CENTER);
+        messageBoard.add(progressBar,BorderLayout.SOUTH);
+        add(messageBoard);
         
         add(new JSeparator(JSeparator.VERTICAL));
         
@@ -114,6 +125,7 @@ public class PostOptions extends JPanel implements ViewListener {
     		saveBtn.setEnabled(true);
     		insightBtn.setEnabled(true);
     		deleteBtn.setEnabled(true);
+    		progressBar.setVisible(false);
     		if(body instanceof MessageNotification) {
     			message.setText("<html><body><table cellpadding='5' width='100%'><tr><td align='center'>"+((MessageNotification)body).getMessageText()+"</td></tr></table></body></html>");
     		} else {
@@ -126,6 +138,7 @@ public class PostOptions extends JPanel implements ViewListener {
     		saveBtn.setEnabled(true);
     		insightBtn.setEnabled(false);
     		deleteBtn.setEnabled(true);
+    		progressBar.setVisible(false);
     		if(body instanceof MessageNotification) {
     			message.setText("<html><body><table cellpadding='5' width='100%'><tr><td align='center'>"+((MessageNotification)body).getMessageText()+"</td></tr></table></body></html>");
     		} else {
@@ -133,9 +146,11 @@ public class PostOptions extends JPanel implements ViewListener {
     		}
 			break;
 		
+		case SHOW_ALL:
 		case FATAL:
 		case THINKING:
 		case READY:
+			progressBar.setVisible(false);
     		previewBtn.setEnabled(false);
     		saveBtn.setEnabled(false);
     		insightBtn.setEnabled(false);
@@ -146,6 +161,12 @@ public class PostOptions extends JPanel implements ViewListener {
     			message.setText("<html><body><table cellpadding='5' width='100%'><tr><td align='center'>ReelFX Screen Recorder</td></tr></table></body></html>");
     		}
     		break;
+		}
+		
+		// any secondary changes
+		switch(notification) {
+		case THINKING:
+			progressBar.setVisible(true);
 		}
 		
 		currentState = notification; // needs to be at end

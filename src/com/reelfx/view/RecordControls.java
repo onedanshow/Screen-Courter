@@ -65,7 +65,8 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 	private JComboBox viewportSelect;
 	private ViewNotifications currentState;
 	private boolean lockedToCorner = false; // is the viewport big enough to lock us to the top corner?
-
+	private String[] resolutions = {"Custom","320x240","640x480","800x600","1024x768","1280x720","Fullscreen"};
+	
 	/**
 	 * The small recording GUI that provides recording, microphone, and status
 	 * controls. Might be visible, or its logic might just drive an external GUI
@@ -163,7 +164,7 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 		audioSelect = new AudioSelector();
 		recordingOptionsPanel.add(audioSelect);
 		
-		String[] resolutions = {"Custom","320x240","640x480","800x600","1024x768","1280x720","Fullscreen"};
+		
 		viewportSelect = new JComboBox(resolutions);
 		viewportSelect.setSelectedIndex(3); // select the 800x600
 		viewportSelect.addActionListener(new ActionListener() {
