@@ -125,7 +125,7 @@ public class CaptureViewport extends Rectangle implements ViewListener {
 	// Windows ffmpeg has problem when clip window size is not factor of 2
 	private Point cleanPoint(int x, int y) {	
 		if(Applet.IS_WINDOWS) {
-			return new Point(x % 2 == 0 ? x : --x, y % 2 == 0 ? y : --y);
+			return new Point(x % 2 == 0 ? x : x - 1, y % 2 == 0 ? y : y - 1);
 		} else {
 			return new Point(x,y);
 		}
