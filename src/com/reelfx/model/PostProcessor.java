@@ -155,7 +155,7 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 			        inputGobbler.start();  
 			        
 			        ffmpegProcess.waitFor();
-			        
+			        System.out.println("Done encoding...");
 			        fireProcessUpdate(ENCODING_COMPLETE);
 				}
 				else if(Applet.IS_MAC) {
@@ -215,7 +215,6 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 		    	client.getParams().setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
 		    	
 		    	HttpPost post = new HttpPost(postUrl+"?api_key="+Applet.API_KEY); // TODO make this url construction more robust
-		    	//post.setEntity(new StringEntity("I'm an entity that needs to be saved..."));
 		    	
 		    	System.out.println("Sending data to Insight... "+post.getRequestLine());
 		    	

@@ -101,14 +101,10 @@ public abstract class ApplicationController implements ProcessListener {
 		switch (event) {
 		case PostProcessor.ENCODING_STARTED:
 			Applet.sendViewNotification(ViewNotifications.THINKING, new MessageNotification("Encoding...", "Encoding..."));
-			//recordGUI.changeState(RecordControls.THINKING, "Encoding...");
-			//optionsGUI.changeState(PostOptions.THINKING, "Encoding...");
 			break;
 		case PostProcessor.ENCODING_COMPLETE:
 			Applet.sendViewNotification(ViewNotifications.POST_OPTIONS, 
 					new MessageNotification("Finished encoding.","Your recording has finished encoding."));
-			//recordGUI.changeState(RecordControls.READY, "Finished encoding.");
-			//optionsGUI.changeState(PostOptions.OPTIONS, "Finished encoding.");
 			break;
 		case PostProcessor.POST_STARTED:
 			Applet.sendViewNotification(ViewNotifications.THINKING, 
@@ -147,11 +143,9 @@ public abstract class ApplicationController implements ProcessListener {
 	}
 
 	public void stopRecording() {
-		Applet.sendViewNotification(ViewNotifications.POST_OPTIONS, 
-				new MessageNotification("", "What would you like to do with your new screen recording?"));
-		//recordGUI.changeState(RecordControls.READY);
-		//optionsGUI.changeState(PostOptions.OPTIONS,
-		//		"What would you like to do with your new screen recording?");
+		/* moved to OS specific controllers themselves
+		 Applet.sendViewNotification(ViewNotifications.POST_OPTIONS, 
+				new MessageNotification("", "What would you like to do with your new screen recording?"));*/
 		Applet.handleFreshRecording();
 	}
 

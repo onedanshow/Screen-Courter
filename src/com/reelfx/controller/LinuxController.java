@@ -130,12 +130,18 @@ public class LinuxController extends ApplicationController {
 						System.out.println("Audio delay: "+ms+" ms "+s+" s");
 						opts.put(PostProcessor.OFFSET_AUDIO, s+"");
 					}
-			    	postProcess.setSilent(true); // no need to notify UI for this encoding
+			    	//postProcess.setSilent(true); // no need to notify UI for this encoding
 			    	postProcess.encodingOptions(opts);
+			    	postProcess.addProcessListener(this);
 					postProcess.saveToComputer(MERGED_OUTPUT_FILE);
 				} else {
 					recordingDone = true;
 				}
+				break;
+				
+			case PostProcessor.ENCODING_COMPLETE:
+				Applet.sendViewNotification(ViewNotifications.POST_OPTIONS, 
+						new MessageNotification("", "What would you like to do with your new screen recording?"));
 				break;
 			}
 	}

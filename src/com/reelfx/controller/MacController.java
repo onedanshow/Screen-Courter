@@ -92,6 +92,8 @@ public class MacController extends ApplicationController {
 		super.stopRecording();
 		if(screen != null)
 			screen.stopRecording();
+		Applet.sendViewNotification(ViewNotifications.POST_OPTIONS, 
+				new MessageNotification("", "What would you like to do with your new screen recording?"));
 	}
 	
 	@Override
