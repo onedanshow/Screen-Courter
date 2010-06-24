@@ -166,8 +166,10 @@ public class ScreenRecorder extends ProcessWrapper implements ActionListener {
 							List<String> ffmpegArgs = new ArrayList<String>();
 				            ffmpegArgs.add(FFMPEG_EXEC.getAbsolutePath());
 				            // for full screen, use simply "cursor:desktop"
+				            int width = Applet.CAPTURE_VIEWPORT.width % 2 == 0 ? Applet.CAPTURE_VIEWPORT.width : Applet.CAPTURE_VIEWPORT.width - 1;
+				            int height = Applet.CAPTURE_VIEWPORT.height % 2 == 0 ? Applet.CAPTURE_VIEWPORT.height : Applet.CAPTURE_VIEWPORT.height - 1;
 				            String viewport = ":offset="+Applet.CAPTURE_VIEWPORT.x+","+Applet.CAPTURE_VIEWPORT.y;
-				            viewport += ":size="+Applet.CAPTURE_VIEWPORT.width+","+Applet.CAPTURE_VIEWPORT.height;
+				            viewport += ":size="+width+","+height;
 				            ffmpegArgs.addAll(parseParameters("-y -f gdigrab -r 20 -i cursor:desktop"+viewport+" -vcodec mpeg4 -b 5000k "+OUTPUT_FILE));
 				            
 				        	System.out.println("Executing this command: "+prettyCommand(ffmpegArgs));
