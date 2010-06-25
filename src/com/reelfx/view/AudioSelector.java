@@ -17,11 +17,14 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Mixer;
 import javax.swing.ComboBoxEditor;
 import javax.swing.JComboBox;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import com.reelfx.Applet;
 import com.reelfx.model.AudioRecorder;
+import com.reelfx.model.util.ProcessListener;
 
-public class AudioSelector extends JComboBox implements MouseListener, ItemListener {
+public class AudioSelector extends JComboBox implements MouseListener, ItemListener, ProcessListener {
 	
 	private static final long serialVersionUID = -1739456139353607514L;
 	private VolumeMonitor monitor = new VolumeMonitor();
@@ -70,6 +73,7 @@ public class AudioSelector extends JComboBox implements MouseListener, ItemListe
 	public AudioRecorder getSelectedAudioRecorder() {
 		if(selectedAudioRecorder == null && getSelectedMixer() != null) {
 			selectedAudioRecorder = new AudioRecorder(getSelectedMixer());
+			selectedAudioRecorder.addProcessListener(this);
 		}
 		return selectedAudioRecorder;
 	}
@@ -102,6 +106,17 @@ public class AudioSelector extends JComboBox implements MouseListener, ItemListe
 			if(selectedAudioRecorder != null)
 				selectedAudioRecorder.destroy();
 			selectedAudioRecorder = null;
+		}
+	}
+	
+	@Override
+	public void processUpdate(int event, Object body) {
+		switch(event) {
+		case AudioRecorder.RECORDING_ERROR:
+			setSelectedIndex(getItemCount()-1);
+			JOptionPane.showMessageDialog(Applet.APPLET, 
+					"The selected audio source could not be initialized. Please choose another.",
+					"Error",JOptionPane.ERROR_MESSAGE);
 		}
 	}
 

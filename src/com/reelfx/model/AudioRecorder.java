@@ -78,6 +78,7 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
     // STATES
     public final static int RECORDING_STARTED = 200;
     public final static int RECORDING_COMPLETE = 201;
+    public final static int RECORDING_ERROR = 202;
     
 	private TargetDataLine m_line = null;
 	private AudioFileFormat.Type m_targetType;
@@ -201,8 +202,8 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 						}
 					}
 				}
-				catch (IOException e)
-				{
+				catch (Exception e) {
+					fireProcessUpdate(RECORDING_ERROR);
 					e.printStackTrace();
 				}
 				return null;
