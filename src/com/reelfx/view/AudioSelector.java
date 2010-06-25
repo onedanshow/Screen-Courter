@@ -166,7 +166,8 @@ public class AudioSelector extends JComboBox implements MouseListener, ItemListe
 			super();
 			setLayout(null);
 			setDoubleBuffered(true);
-			setBackground(new Color(34, 34, 34));
+			setBackground(new Color(200,200,200));
+			//setBackground(new Color(34, 34, 34));
 		}
 
 		public void setVolume(double volume) {
@@ -184,7 +185,7 @@ public class AudioSelector extends JComboBox implements MouseListener, ItemListe
 			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			g2.setColor(Color.GRAY);
 			g2.fillRoundRect(15, dim.height/4, dim.width-30, dim.height/2, 8, 8);
-			g2.setColor(Color.ORANGE);
+			g2.setColor(Color.YELLOW);
 			g2.fillRoundRect(15, dim.height/4, (int)Math.min(dim.width-30, dim.width*volume/50), dim.height/2, 8, 8);
 		}
 		

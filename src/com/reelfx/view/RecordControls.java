@@ -53,14 +53,13 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 	public AudioSelector audioSelect;
 	public JPanel titlePanel, recordingOptionsPanel, statusPanel;
 
-	private JLabel title, status, message;
+	private JLabel title, status;
 	// private JTextArea message;
 	private Timer timer;
 	private ApplicationController controller;
 	private JFileChooser fileSelect = new JFileChooser();
-	private Color backgroundColor = new Color(34, 34, 34); // new Color(230,230,230);
-	private Color statusColor = new Color(255, 102, 102);
-	private Color messageColor = new Color(255, 255, 153);
+	private Color backgroundColor = new Color(200,200,200); // new Color(34, 34, 34); // 
+	private Color textColor = Color.BLACK;
 	private int timerCount = 0;
 	private JComboBox viewportSelect;
 	private ViewNotifications currentState;
@@ -111,7 +110,7 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 
 		title = new JLabel();
 		title.setFont(new java.awt.Font("Arial", 1, 11));
-		title.setForeground(Color.WHITE);
+		title.setForeground(textColor);
 		title.setText("   Review for " + Applet.SCREEN_CAPTURE_NAME + "   ");
 		title.setHorizontalAlignment(SwingConstants.CENTER);
 
@@ -157,7 +156,7 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 		// status.setBackground(statusColor);
 		// status.setPreferredSize(new Dimension(50, 40));
 		status.setFont(new java.awt.Font("Arial", 1, 11));
-		status.setForeground(Color.WHITE);
+		status.setForeground(textColor);
 		status.setHorizontalAlignment(SwingConstants.CENTER);
 		recordingOptionsPanel.add(status);
 
@@ -251,11 +250,16 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 			break;
 		
 		case CAPTURE_VIEWPORT_CHANGE:
-			Point pt = Applet.CAPTURE_VIEWPORT.getBottomLeftPoint();
-			pt.translate(0, 10);
-			if(pt.y + getHeight() > Applet.SCREEN.getHeight() || (Applet.IS_MAC && !Applet.DEV_MODE)) { // TODO temporary (second condition)
-				pt = new Point((int) (Applet.SCREEN.getWidth() - 10 - getWidth()), 10 + (Applet.IS_MAC ? 20 : 0));
-				lockedToCorner = true;
+			Point pt = Applet.CAPTURE_VIEWPORT.getTopRightPoint();
+			pt.translate(-getWidth(), -getHeight()-10);
+			if(pt.y < 0 || (Applet.IS_MAC && !Applet.DEV_MODE)) { // TODO temporary (second condition)
+				pt = Applet.CAPTURE_VIEWPORT.getBottomRightPoint();
+				pt.translate(-getWidth(), 10);
+				
+				if(pt.y + getHeight() > Applet.SCREEN.getHeight() || (Applet.IS_MAC && !Applet.DEV_MODE)) { // TODO temporary (second condition)
+					pt = new Point((int) (Applet.SCREEN.getWidth() - 10 - getWidth()), 10 + (Applet.IS_MAC ? 20 : 0));
+					lockedToCorner = true;
+				}
 			} else {
 				lockedToCorner = false;
 			}
