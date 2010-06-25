@@ -99,6 +99,13 @@ public class AudioSelector extends JComboBox implements MouseListener, ItemListe
 		return result;
 	}
 	
+	public void closeDown() {
+		if(selectedAudioRecorder != null) {
+			selectedAudioRecorder.destroy();
+		}
+		monitor.gogo = false;
+	}
+	
 	@Override
 	public void itemStateChanged(ItemEvent e) {
 		if(e.getStateChange() == ItemEvent.SELECTED) {

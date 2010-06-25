@@ -201,8 +201,6 @@ public abstract class ApplicationController implements ProcessListener {
 		PostProcessor.deleteOutput();
 		PreferenceManager.deleteOutput();
 		Applet.sendViewNotification(ViewNotifications.READY);
-		//recordGUI.changeState(RecordControls.READY);
-		//optionsGUI.changeState(PostOptions.DISABLED);
 		Applet.handleDeletedRecording();
 	}
 
@@ -216,8 +214,6 @@ public abstract class ApplicationController implements ProcessListener {
 	 */
 	protected void setReadyStateBasedOnPriorRecording() {
 		if (PreferenceManager.OUTPUT_FILE.exists()) {
-			// recordGUI.changeState(RecordControls.READY_WITH_OPTIONS);
-			// recordGUI.changeState(RecordControls.READY);
 			SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM d HH:mm");
 			String message = "You have a screen recording for "
 					+ preferences.getScreenCaptureName() + " on "
@@ -225,10 +221,8 @@ public abstract class ApplicationController implements ProcessListener {
 			if (preferences.isUploaded()) {
 				message += "It has already been uploaded.";
 				Applet.sendViewNotification(ViewNotifications.POST_OPTIONS_NO_UPLOADING,new MessageNotification("", message));
-				//optionsGUI.changeState(PostOptions.OPTIONS_NO_UPLOAD, message);
 			} else {
 				Applet.sendViewNotification(ViewNotifications.POST_OPTIONS,new MessageNotification("", message));
-				//optionsGUI.changeState(PostOptions.OPTIONS, message);
 			}
 			Applet.handleExistingRecording();
 		} else if (Applet.HEADLESS) {
@@ -255,6 +249,7 @@ public abstract class ApplicationController implements ProcessListener {
 	 */
 	public void closeDown() {
 		recordGUI.setVisible(false);
+		recordGUI.audioSelect.closeDown();
 		recordGUI = null;
 		if (postProcess != null) {
 			postProcess.removeAllProcessListeners();

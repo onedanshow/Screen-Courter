@@ -556,17 +556,10 @@ public class Applet extends JApplet {
      */
     @Override
     public void destroy() {
-        /*try {
-            SwingUtilities.invokeAndWait(new Runnable() {
-                public void run() {*/
-                	System.out.println("Closing down...");
-                	if(controller != null)
-                		controller.closeDown();
-                	controller = null;
-      /*          }
-            });
-        } catch (Exception e) { }*/
-
+    	System.out.println("Closing down...");
+    	if(controller != null)
+    		controller.closeDown();
+    	controller = null;
     }
 
 }
