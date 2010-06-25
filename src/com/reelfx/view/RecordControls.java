@@ -3,6 +3,7 @@ package com.reelfx.view;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Insets;
@@ -49,7 +50,7 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 
 	public final static String NAME = "RecordControls";
 
-	public JButton recordBtn, closeBtn;
+	public JButton recordBtn, positionBtn, closeBtn;
 	public AudioSelector audioSelect;
 	public JPanel titlePanel, recordingOptionsPanel, statusPanel;
 
@@ -64,6 +65,7 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 	private JComboBox viewportSelect;
 	private ViewNotifications currentState;
 	private boolean lockedToCorner = false; // is the viewport big enough to lock us to the top corner?
+	private boolean forceLockToCorner = false; // has user selected to force into the top corner?
 	private String[] resolutions = {"Custom","320x240","640x480","800x600","1024x768","1280x720","Fullscreen"};
 	
 	/**
@@ -88,7 +90,7 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 
 		setBackground(backgroundColor);
 		// setPreferredSize(dim); // full screen
-		// setPreferredSize(new Dimension(500, 50)); // will auto fit to the size needed, but if you want to specify a size
+		//setPreferredSize(new Dimension(350, 70)); // will auto fit to the size needed, but if you want to specify a size
 		// setLayout(new BorderLayout(0, 3));
 		// setLayout(new BoxLayout(getContentPane(), BoxLayout.PAGE_AXIS));
 		setAlwaysOnTop(true);
@@ -119,16 +121,34 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 		titlePanel.setLayout(new BorderLayout());
 		titlePanel.add(title, BorderLayout.CENTER);
 
+		positionBtn = new JButton("", new ImageIcon(this.getClass().getClassLoader().getResource("com/reelfx/view/images/position.png")));
+		positionBtn.setBorderPainted(false);
+		positionBtn.setToolTipText("Toggle snap of recording tools to top right corner");
+		positionBtn.setContentAreaFilled(false);
+		positionBtn.setPreferredSize(new Dimension(15,15));
+		positionBtn.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				forceLockToCorner = !forceLockToCorner;
+				receiveViewNotification(ViewNotifications.CAPTURE_VIEWPORT_CHANGE);
+			}
+		});
+		
 		closeBtn = new JButton("", new ImageIcon(this.getClass().getClassLoader().getResource("com/reelfx/view/images/close.png")));
 		closeBtn.setBorderPainted(false);
+		closeBtn.setToolTipText("Hide the recording tools");
 		closeBtn.setContentAreaFilled(false);
+		closeBtn.setPreferredSize(new Dimension(15,15));	
 		closeBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				hideInterface();
 			}
 		});
-		// closeBtn.setFont(new Font("Arial", 0, 11));
-		titlePanel.add(closeBtn, BorderLayout.EAST);
+		
+		JPanel buttons = new JPanel();
+		buttons.setLayout(new FlowLayout(FlowLayout.RIGHT));
+		buttons.add(positionBtn);
+		buttons.add(closeBtn);
+		titlePanel.add(buttons, BorderLayout.EAST);
 
 		border.add(titlePanel); // ,BorderLayout.CENTER);
 
@@ -248,23 +268,6 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 			}
 			Applet.handleRecordingUpdate(currentState, status.getText());
 			break;
-		
-		case CAPTURE_VIEWPORT_CHANGE:
-			Point pt = Applet.CAPTURE_VIEWPORT.getTopRightPoint();
-			pt.translate(-getWidth(), -getHeight()-10);
-			if(pt.y < 0 || (Applet.IS_MAC && !Applet.DEV_MODE)) { // TODO temporary (second condition)
-				pt = Applet.CAPTURE_VIEWPORT.getBottomRightPoint();
-				pt.translate(-getWidth(), 10);
-				
-				if(pt.y + getHeight() > Applet.SCREEN.getHeight() || (Applet.IS_MAC && !Applet.DEV_MODE)) { // TODO temporary (second condition)
-					pt = new Point((int) (Applet.SCREEN.getWidth() - 10 - getWidth()), 10 + (Applet.IS_MAC ? 20 : 0));
-					lockedToCorner = true;
-				}
-			} else {
-				lockedToCorner = false;
-			}
-			setLocation(pt);
-			break;
 			
 		case DISABLE_ALL:
 			setAlwaysOnTop(false);
@@ -298,7 +301,34 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 			break;
 		}
 		
-		pack();		
+		pack();	
+		
+		// update position after GUI changes
+		switch(notification) {
+		case FATAL:
+		case THINKING:
+		case SHOW_ALL:
+		case SHOW_RECORD_CONTROLS:
+		case READY:
+		case PRE_RECORDING:
+		case RECORDING:
+		case CAPTURE_VIEWPORT_CHANGE:
+			Point pt = Applet.CAPTURE_VIEWPORT.getTopRightPoint();
+			pt.translate(-getWidth(), -getHeight()-10);
+			if(pt.y < 0 || forceLockToCorner || (Applet.IS_MAC && !Applet.DEV_MODE)) { // TODO temporary (second condition)
+				pt = Applet.CAPTURE_VIEWPORT.getBottomRightPoint();
+				pt.translate(-getWidth(), 10);
+				
+				if(pt.y + getHeight() > Applet.SCREEN.getHeight() || forceLockToCorner || (Applet.IS_MAC && !Applet.DEV_MODE)) { // TODO temporary (second condition)
+					pt = new Point((int) (Applet.SCREEN.getWidth() - 10 - getWidth()), 10 + (Applet.IS_MAC ? 20 : 0));
+					lockedToCorner = true;
+				}
+			} else {
+				lockedToCorner = false;
+			}
+			setLocation(pt);
+			break;
+		}
 	}
 	
 	@Override

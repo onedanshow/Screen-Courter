@@ -6,6 +6,8 @@ import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 
+import javax.swing.SwingUtilities;
+
 import com.reelfx.Applet;
 import com.reelfx.view.CropHandle;
 import com.reelfx.view.util.MoveableWindow;
@@ -100,7 +102,11 @@ public class CaptureViewport extends Rectangle implements ViewListener {
 			p.x = (int) Math.min(Math.max(p.x, 0), Applet.SCREEN.width - getWidth());
 			p.y = (int) Math.min(Math.max(p.y, 0), Applet.SCREEN.height - getHeight());
 			setLocation(p);
-			Applet.sendViewNotification(ViewNotifications.CAPTURE_VIEWPORT_CHANGE);
+			SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                	Applet.sendViewNotification(ViewNotifications.CAPTURE_VIEWPORT_CHANGE);
+                }
+            });
 			break;
 		}
 	}
@@ -111,7 +117,11 @@ public class CaptureViewport extends Rectangle implements ViewListener {
 	@Override
 	public void setFrame(double x, double y, double w, double h) {
 		super.setFrame(x, y, w, h);
-		Applet.sendViewNotification(ViewNotifications.CAPTURE_VIEWPORT_CHANGE);
+		SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+            	Applet.sendViewNotification(ViewNotifications.CAPTURE_VIEWPORT_CHANGE);
+            }
+        });
 	}
 	
 	public Point getTopLeftPoint() {
