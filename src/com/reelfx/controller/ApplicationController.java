@@ -28,7 +28,7 @@ import com.reelfx.Applet;
 import com.reelfx.model.AudioRecorder;
 import com.reelfx.model.CaptureViewport;
 import com.reelfx.model.PostProcessor;
-import com.reelfx.model.PreferenceManager;
+import com.reelfx.model.AttributesManager;
 import com.reelfx.model.PreviewPlayer;
 import com.reelfx.model.ScreenRecorder;
 import com.reelfx.model.util.ProcessListener;
@@ -50,7 +50,7 @@ public abstract class ApplicationController implements ProcessListener {
 	protected ScreenRecorder screen;
 	protected PostProcessor postProcess;
 	protected PreviewPlayer previewPlayer = null;
-	protected PreferenceManager preferences = new PreferenceManager();
+	protected AttributesManager recordingAttributes = new AttributesManager();
 	protected CaptureViewport captureViewport = new CaptureViewport();
 
 	public ApplicationController() {
@@ -123,17 +123,17 @@ public abstract class ApplicationController implements ProcessListener {
 					new MessageNotification("Finished uploading.", "Would you like to do anything else with your screen recording?"));			
 			//recordGUI.changeState(RecordControls.READY, "Finished uploading.");
 			//optionsGUI.changeState(PostOptions.OPTIONS_NO_UPLOAD,"Would you like to do anything else with your screen recording?");
-			preferences.setUploaded(true);
-			preferences.writePreferences();
+			recordingAttributes.setUploaded(true);
+			recordingAttributes.writeAttributes();
 		}
 	}
 
 	public void prepareForRecording() {
-		preferences.setPostUrl(Applet.POST_URL);
-		preferences.setScreenCaptureName(Applet.SCREEN_CAPTURE_NAME);
-		preferences.setDate(new Date());
-		preferences.setUploaded(false);
-		preferences.writePreferences();
+		recordingAttributes.setPostUrl(Applet.POST_URL);
+		recordingAttributes.setScreenCaptureName(Applet.SCREEN_CAPTURE_NAME);
+		recordingAttributes.setDate(new Date());
+		recordingAttributes.setUploaded(false);
+		recordingAttributes.writeAttributes();
 	}
 
 	public abstract void startRecording(AudioRecorder audio);
@@ -181,7 +181,7 @@ public abstract class ApplicationController implements ProcessListener {
 			postProcess.removeAllProcessListeners();
 		postProcess = new PostProcessor();
 		postProcess.addProcessListener(this);
-		postProcess.postDataToInsight(preferences.getPostUrl());
+		postProcess.postDataToInsight(recordingAttributes.getPostUrl());
 	}
 
 	// called on the upload page
@@ -192,14 +192,14 @@ public abstract class ApplicationController implements ProcessListener {
 			postProcess.removeAllProcessListeners();
 		postProcess = new PostProcessor();
 		postProcess.addProcessListener(this);
-		postProcess.postRecordingToInsight(preferences.getPostUrl());
+		postProcess.postRecordingToInsight(recordingAttributes.getPostUrl());
 	}
 
 	public void deleteRecording() {
 		ScreenRecorder.deleteOutput();
 		AudioRecorder.deleteOutput();
 		PostProcessor.deleteOutput();
-		PreferenceManager.deleteOutput();
+		AttributesManager.deleteOutput();
 		Applet.sendViewNotification(ViewNotifications.READY);
 		Applet.handleDeletedRecording();
 	}
@@ -213,12 +213,12 @@ public abstract class ApplicationController implements ProcessListener {
 	 * Check if we need to deal with a prior screen recording or not
 	 */
 	protected void setReadyStateBasedOnPriorRecording() {
-		if (PreferenceManager.OUTPUT_FILE.exists()) {
+		if (AttributesManager.OUTPUT_FILE.exists()) {
 			SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM d HH:mm");
 			String message = "You have a screen recording for "
-					+ preferences.getScreenCaptureName() + " on "
-					+ sdf.format(preferences.getDate()) + ". ";
-			if (preferences.isUploaded()) {
+					+ recordingAttributes.getScreenCaptureName() + " on "
+					+ sdf.format(recordingAttributes.getDate()) + ". ";
+			if (recordingAttributes.isUploaded()) {
 				message += "It has already been uploaded.";
 				Applet.sendViewNotification(ViewNotifications.POST_OPTIONS_NO_UPLOADING,new MessageNotification("", message));
 			} else {

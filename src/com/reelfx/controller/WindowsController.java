@@ -21,7 +21,7 @@ import org.apache.commons.io.FileUtils;
 import com.reelfx.Applet;
 import com.reelfx.model.AudioRecorder;
 import com.reelfx.model.PostProcessor;
-import com.reelfx.model.PreferenceManager;
+import com.reelfx.model.AttributesManager;
 import com.reelfx.model.ScreenRecorder;
 import com.reelfx.model.util.ProcessListener;
 import com.reelfx.model.util.StreamGobbler;

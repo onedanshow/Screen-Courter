@@ -14,21 +14,21 @@ import java.util.Date;
 
 import com.reelfx.Applet;
 
-public class PreferenceManager {
+public class AttributesManager {
 
-	public static File OUTPUT_FILE = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"prefs");
+	public static File OUTPUT_FILE = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"attributes");
 	
 	private String postUrl, screenCaptureName, userID;
 	private Date date;
 	private boolean uploaded = false;
 
-	public PreferenceManager() {
+	public AttributesManager() {
 		super();
 		
-		readPreferences();
+		readAttributes();
 	}
 
-	public void readPreferences() {
+	public void readAttributes() {
 		if(!OUTPUT_FILE.exists()) return;
 		
 		try {
@@ -52,7 +52,7 @@ public class PreferenceManager {
 	    }
 	}
 	
-	public void writePreferences() {
+	public void writeAttributes() {
 		try {
 			BufferedWriter output = new BufferedWriter(new FileWriter(OUTPUT_FILE));
 			try {

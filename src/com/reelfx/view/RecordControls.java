@@ -39,7 +39,7 @@ import javax.swing.border.LineBorder;
 
 import com.reelfx.Applet;
 import com.reelfx.controller.ApplicationController;
-import com.reelfx.model.PreferenceManager;
+import com.reelfx.model.AttributesManager;
 import com.reelfx.model.ScreenRecorder;
 import com.reelfx.view.util.MessageNotification;
 import com.reelfx.view.util.MoveableWindow;
@@ -352,7 +352,7 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 
 	public void prepareForRecording() {
 		// do I need permission to delete a file first?
-		if (PreferenceManager.OUTPUT_FILE.exists() && !deleteRecording())
+		if (AttributesManager.OUTPUT_FILE.exists() && !deleteRecording())
 			return;
 
 		Applet.sendViewNotification(ViewNotifications.PRE_RECORDING, new MessageNotification("Ready"));
