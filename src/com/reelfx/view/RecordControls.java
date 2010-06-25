@@ -148,6 +148,7 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 		buttons.setLayout(new FlowLayout(FlowLayout.RIGHT));
 		buttons.add(positionBtn);
 		buttons.add(closeBtn);
+		buttons.setBackground(backgroundColor);
 		titlePanel.add(buttons, BorderLayout.EAST);
 
 		border.add(titlePanel); // ,BorderLayout.CENTER);
