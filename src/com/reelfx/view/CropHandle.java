@@ -50,6 +50,7 @@ public class CropHandle extends MoveableWindow implements ViewListener {
 			Point pt = determineViewportPoint();
 			pt.translate(-getWidth()/2, -getHeight()/2);
 			setLocation(pt);
+			pack();
 			break;
 			
 		case READY:
@@ -58,10 +59,12 @@ public class CropHandle extends MoveableWindow implements ViewListener {
 		case SHOW_CROP_HANDLES:
 			setAlwaysOnTop(true);
 			setVisible(true);
+			pack();
 			break;
 			
 		case DISABLE_ALL:
 			setAlwaysOnTop(false);
+			pack();
 			break;
 			
 		case POST_OPTIONS:
@@ -71,14 +74,15 @@ public class CropHandle extends MoveableWindow implements ViewListener {
 		case HIDE_ALL:
 		case HIDE_CROP_HANDLES:
 			setVisible(false);
+			pack();
 			break;
 		
 		case MOUSE_PRESS_CROP_LINE:
 			toFront();
+			pack();
 			break;
 		}
 		currentState = notification;
-		pack();
 	}
 	
 	@Override

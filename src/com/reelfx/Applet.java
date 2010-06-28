@@ -35,6 +35,7 @@ import com.reelfx.controller.LinuxController;
 import com.reelfx.controller.MacController;
 import com.reelfx.controller.WindowsController;
 import com.reelfx.model.CaptureViewport;
+import com.reelfx.model.PreferencesManager;
 import com.reelfx.view.AudioSelector;
 import com.reelfx.view.InformationBox;
 import com.reelfx.view.VolumeVisualizer;
@@ -151,7 +152,8 @@ public class Applet extends JApplet {
 	public static void sendViewNotification(ViewNotifications notification,Object body) {
 		//System.out.println("View Notification: "+notification);
 		// applet is a special case (see ApplicationController constructor)
-		((ViewListener) APPLET.getContentPane().getComponent(0)).receiveViewNotification(notification, body);
+		if(APPLET.getContentPane().getComponents().length > 0)
+			((ViewListener) APPLET.getContentPane().getComponent(0)).receiveViewNotification(notification, body);
 		// another special case where the capture viewport is a pseudo-model
 		CAPTURE_VIEWPORT.receiveViewNotification(notification, body);
 		// notify all the open windows

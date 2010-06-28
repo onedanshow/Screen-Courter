@@ -40,6 +40,7 @@ import javax.swing.border.LineBorder;
 import com.reelfx.Applet;
 import com.reelfx.controller.ApplicationController;
 import com.reelfx.model.AttributesManager;
+import com.reelfx.model.PreferencesManager;
 import com.reelfx.model.ScreenRecorder;
 import com.reelfx.view.util.MessageNotification;
 import com.reelfx.view.util.MoveableWindow;
@@ -65,7 +66,7 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 	private JComboBox viewportSelect;
 	private ViewNotifications currentState;
 	private boolean lockedToCorner = false; // is the viewport big enough to lock us to the top corner?
-	private boolean forceLockToCorner = false; // has user selected to force into the top corner?
+	private boolean forceLockToCorner = PreferencesManager.isForceRecordingToolsToCorner(); // has user selected to force into the top corner?
 	private String[] resolutions = {"Custom","320x240","640x480","800x600","1024x768","1280x720","Fullscreen"};
 	
 	/**
@@ -129,6 +130,8 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 		positionBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				forceLockToCorner = !forceLockToCorner;
+				PreferencesManager.setForceRecordingToolsToCorner(forceLockToCorner);
+				PreferencesManager.write();
 				receiveViewNotification(ViewNotifications.CAPTURE_VIEWPORT_CHANGE);
 			}
 		});
@@ -184,24 +187,34 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 		audioSelect = new AudioSelector();
 		recordingOptionsPanel.add(audioSelect);
 		
-		
 		viewportSelect = new JComboBox(resolutions);
-		viewportSelect.setSelectedIndex(3); // select the 800x600
+		if(PreferencesManager.hasPreferences()) {
+			// set the dropdown to the size if we have it
+			String size = PreferencesManager.getWidth()+"x"+PreferencesManager.getHeight();
+			boolean hasItem = false;
+			for(int i = 0; i < viewportSelect.getModel().getSize(); i++) {
+				if(size.equals(viewportSelect.getModel().getElementAt(i))) {
+					hasItem = true;
+					viewportSelect.setSelectedIndex(i);
+					break;
+				}
+			}
+			if(!hasItem) {
+				viewportSelect.setSelectedIndex(0); // show "Custom"
+			}
+		} else {
+			viewportSelect.setSelectedIndex(3); // select the 800x600
+		}
 		viewportSelect.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Applet.sendViewNotification(ViewNotifications.SET_CAPTURE_VIEWPORT_RESOLUTION, ((JComboBox)e.getSource()).getSelectedItem());
+				Applet.sendViewNotification(ViewNotifications.SET_CAPTURE_VIEWPORT, ((JComboBox)e.getSource()).getSelectedItem());
 			}
 		});
 		if(!Applet.IS_MAC || Applet.DEV_MODE) // TODO temporary
 			recordingOptionsPanel.add(viewportSelect);
 
-		border.add(recordingOptionsPanel); // ,BorderLayout.NORTH);
-
-		/*
-		 * statusPanel = new JPanel(); statusPanel.setOpaque(false);
-		 * statusPanel.add(status); add(statusPanel); //,BorderLayout.CENTER);
-		 */
+		border.add(recordingOptionsPanel);
 
 		System.out.println("RecordControls initialized...");
 		

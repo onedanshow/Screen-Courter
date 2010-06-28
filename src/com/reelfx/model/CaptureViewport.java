@@ -20,8 +20,8 @@ public class CaptureViewport extends Rectangle implements ViewListener {
 	protected Point mouseOffset = null;
 	
 	public CaptureViewport() {
-		super(new Dimension(800,600));	
-		setLocation(Applet.SCREEN.width/2-width/2, Applet.SCREEN.height/2-height/2);
+		super(new Dimension(800,600));
+		setLocation(Applet.SCREEN.width/2-width/2, Applet.SCREEN.height/2-height/2); // default position
 	}
 	
 	@Override
@@ -29,11 +29,20 @@ public class CaptureViewport extends Rectangle implements ViewListener {
 		MouseEvent me;
 		CropHandle handle;
 		switch(notification) {
-		case SET_CAPTURE_VIEWPORT_RESOLUTION: // TODO used?
+		case SET_CAPTURE_VIEWPORT:
 			String resolution = ((String) body).toLowerCase();
-			if(resolution.equals("fullscreen")) {
+			if(resolution.equals(PreferencesManager.FROM_PREFERENCES)) {
+				setFrame(
+						PreferencesManager.getX(), 
+						PreferencesManager.getY(),
+						PreferencesManager.getWidth(),
+						PreferencesManager.getHeight());
+			}
+			else if(resolution.equals("fullscreen")) {
 				setFrameFromDiagonal(0,0,Applet.SCREEN.getWidth(),Applet.SCREEN.getHeight());
-			} else if(resolution.contains("x")) {
+				PreferencesManager.write();
+			} 
+			else if(resolution.contains("x")) {
 				String[] dim = resolution.split("x");
 				int width = Integer.parseInt(dim[0]);
 				int height = Integer.parseInt(dim[1]);
@@ -45,6 +54,7 @@ public class CaptureViewport extends Rectangle implements ViewListener {
 					pt.y -= Math.max(0,pt.y + height - Applet.SCREEN.height);
 				}
 				setFrameFromDiagonal(pt.x,pt.y,pt.x+width,pt.y+height);
+				PreferencesManager.write();
 			}
 			break;
 		
@@ -81,6 +91,7 @@ public class CaptureViewport extends Rectangle implements ViewListener {
 			else if(handle.getName().equals(CropHandle.MIDDLE_LEFT)) {
 				setFrameFromDiagonal(new Point(me.getLocationOnScreen().x,(int)getMinY()), getBottomRightPoint());
 			}
+			PreferencesManager.write();
 			break;
 			
 		//case MOUSE_PRESS_CROP_LINE:
@@ -107,6 +118,7 @@ public class CaptureViewport extends Rectangle implements ViewListener {
                 	Applet.sendViewNotification(ViewNotifications.CAPTURE_VIEWPORT_CHANGE);
                 }
             });
+			PreferencesManager.write();
 			break;
 		}
 	}

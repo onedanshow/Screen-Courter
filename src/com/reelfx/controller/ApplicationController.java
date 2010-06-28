@@ -29,6 +29,7 @@ import com.reelfx.model.AudioRecorder;
 import com.reelfx.model.CaptureViewport;
 import com.reelfx.model.PostProcessor;
 import com.reelfx.model.AttributesManager;
+import com.reelfx.model.PreferencesManager;
 import com.reelfx.model.PreviewPlayer;
 import com.reelfx.model.ScreenRecorder;
 import com.reelfx.model.util.ProcessListener;
@@ -55,6 +56,10 @@ public abstract class ApplicationController implements ProcessListener {
 
 	public ApplicationController() {
 		super();
+		
+		if (PreferencesManager.hasPreferences()) {
+			Applet.sendViewNotification(ViewNotifications.SET_CAPTURE_VIEWPORT,PreferencesManager.FROM_PREFERENCES);
+		}
 
 		// generate the common GUI
 		recordGUI = new RecordControls(this);
@@ -78,7 +83,7 @@ public abstract class ApplicationController implements ProcessListener {
 		Applet.APPLET.getContentPane().add(optionsGUI); // note, if this line
 														// changes, also change
 														// Applet.sendViewNotification
-
+		
 		if (Applet.HEADLESS) {
 			// don't show interface initially
 		} else {
@@ -109,20 +114,14 @@ public abstract class ApplicationController implements ProcessListener {
 		case PostProcessor.POST_STARTED:
 			Applet.sendViewNotification(ViewNotifications.THINKING, 
 					new MessageNotification("Uploading to Insight...", "Uploading your screen recording to Insight. Do NOT close the browser window."));
-			//recordGUI.changeState(RecordControls.THINKING,"Uploading to Insight...");
-			//optionsGUI.changeState(PostOptions.THINKING,"Uploading your screen recording to Insight. Do NOT close the browser window.");
 			break;
 		case PostProcessor.POST_FAILED:
 			Applet.sendViewNotification(ViewNotifications.FATAL, 
 					new MessageNotification("Upload failed!", "An error occurred while uploading the screen recording. It is stored locally, so you can try again later."));
-			//recordGUI.changeState(RecordControls.FATAL, "Uploading failed!");
-			//optionsGUI.changeState(PostOptions.FATAL,"An error occurred while uploading the screen recording. It is stored locally, so you can try again later.");
 			break;
 		case PostProcessor.POST_COMPLETE:
 			Applet.sendViewNotification(ViewNotifications.POST_OPTIONS_NO_UPLOADING, 
 					new MessageNotification("Finished uploading.", "Would you like to do anything else with your screen recording?"));			
-			//recordGUI.changeState(RecordControls.READY, "Finished uploading.");
-			//optionsGUI.changeState(PostOptions.OPTIONS_NO_UPLOAD,"Would you like to do anything else with your screen recording?");
 			recordingAttributes.setUploaded(true);
 			recordingAttributes.writeAttributes();
 		}
@@ -212,7 +211,7 @@ public abstract class ApplicationController implements ProcessListener {
 	/**
 	 * Check if we need to deal with a prior screen recording or not
 	 */
-	protected void setReadyStateBasedOnPriorRecording() {
+	protected void setReadyStateBasedOnPriorRecording() {		
 		if (AttributesManager.OUTPUT_FILE.exists()) {
 			SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM d HH:mm");
 			String message = "You have a screen recording for "

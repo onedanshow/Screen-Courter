@@ -22,6 +22,9 @@ public class AttributesManager {
 	private Date date;
 	private boolean uploaded = false;
 
+	/**
+	 * Reads/writes the data file that stores information about a recording.
+	 */
 	public AttributesManager() {
 		super();
 		
@@ -32,7 +35,7 @@ public class AttributesManager {
 		if(!OUTPUT_FILE.exists()) return;
 		
 		try {
-	      BufferedReader input =  new BufferedReader(new FileReader(OUTPUT_FILE));
+	      BufferedReader input = new BufferedReader(new FileReader(OUTPUT_FILE));
 	      try {
 	        postUrl = input.readLine();
 	        screenCaptureName = input.readLine();
