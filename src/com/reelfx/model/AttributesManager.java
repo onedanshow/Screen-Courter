@@ -14,6 +14,7 @@ import java.util.Date;
 
 import com.reelfx.Applet;
 
+// TODO: Rewrite this class as static
 public class AttributesManager {
 
 	public static File OUTPUT_FILE = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"attributes");

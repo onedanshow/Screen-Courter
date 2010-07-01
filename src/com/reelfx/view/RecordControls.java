@@ -149,7 +149,9 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 		
 		JPanel buttons = new JPanel();
 		buttons.setLayout(new FlowLayout(FlowLayout.RIGHT));
-		buttons.add(positionBtn);
+		if(!Applet.IS_MAC || Applet.DEV_MODE) {
+			buttons.add(positionBtn);
+		}
 		buttons.add(closeBtn);
 		buttons.setBackground(backgroundColor);
 		titlePanel.add(buttons, BorderLayout.EAST);
@@ -343,6 +345,8 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 			setLocation(pt);
 			break;
 		}
+		
+		System.out.println("RecordControls: View Notification: "+notification);
 	}
 	
 	@Override

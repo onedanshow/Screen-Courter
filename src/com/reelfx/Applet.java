@@ -19,12 +19,14 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Enumeration;
 import java.util.EventObject;
+import java.util.Vector;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import javax.swing.JApplet;
+import javax.swing.JWindow;
 import javax.swing.SwingUtilities;
 
 import netscape.javascript.JSException;
@@ -79,6 +81,7 @@ public class Applet extends JApplet {
 			GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDisplayMode().getWidth(), 
 			GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDisplayMode().getHeight());
 	public final static CaptureViewport CAPTURE_VIEWPORT = new CaptureViewport();
+	public static Vector<Window> WINDOWS = new Vector<Window>(); // didn't want to manually manage windows, but Safari would only return a Frame through Window.getWindows() on commands called via JS
 	
 	private ApplicationController controller = null;
 	
@@ -150,15 +153,16 @@ public class Applet extends JApplet {
 	 * @param body
 	 */
 	public static void sendViewNotification(ViewNotifications notification,Object body) {
-		//System.out.println("View Notification: "+notification);
+		// System.out.println("View Notification: "+notification);
 		// applet is a special case (see ApplicationController constructor)
 		if(APPLET.getContentPane().getComponents().length > 0)
 			((ViewListener) APPLET.getContentPane().getComponent(0)).receiveViewNotification(notification, body);
 		// another special case where the capture viewport is a pseudo-model
 		CAPTURE_VIEWPORT.receiveViewNotification(notification, body);
 		// notify all the open windows
-		Window[] windows = Window.getWindows();
-		for(Window win : windows) {
+		//Window[] windows = Window.getWindows();
+		for(Window win : Applet.WINDOWS) {
+			//System.out.println("Window: "+win);
 			if(win instanceof ViewListener) {
 				((ViewListener) win).receiveViewNotification(notification, body);
 			}
@@ -224,14 +228,19 @@ public class Applet extends JApplet {
 	*/
 	public void showRecordingInterface() {
 		AccessController.doPrivileged(new PrivilegedAction<Object>() {
-
 			@Override
 			public Object run() {
 				try {
 					SwingUtilities.invokeLater(new Runnable() {
 		                public void run() {
-		                	if(controller != null)
+		                	if(controller != null) {
 		                		controller.showRecordingInterface();
+		                		System.out.println("Outside call to show recording interface...");
+		                	}
+		                	else {
+		                		System.err.println("No controller exists!");
+		                	}
+		                	
 		                }
 		            });
 				} catch (Exception e) {

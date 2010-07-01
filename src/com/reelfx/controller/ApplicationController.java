@@ -66,19 +66,22 @@ public abstract class ApplicationController implements ProcessListener {
 		optionsGUI = new PostOptions(this);
 		infoBox = new InformationBox();
 		
-		new CropLine(CropLine.TOP);
-		new CropLine(CropLine.RIGHT);
-		new CropLine(CropLine.BOTTOM);
-		new CropLine(CropLine.LEFT);
+		Applet.WINDOWS.add(recordGUI);
+		Applet.WINDOWS.add(infoBox);
 		
-		new CropHandle(CropHandle.TOP_LEFT);
-		new CropHandle(CropHandle.TOP_MIDDLE);
-		new CropHandle(CropHandle.TOP_RIGHT);
-		new CropHandle(CropHandle.MIDDLE_RIGHT);
-		new CropHandle(CropHandle.BOTTOM_LEFT);
-		new CropHandle(CropHandle.BOTTOM_MIDDLE);
-		new CropHandle(CropHandle.BOTTOM_RIGHT);
-		new CropHandle(CropHandle.MIDDLE_LEFT);
+		Applet.WINDOWS.add(new CropLine(CropLine.TOP));
+		Applet.WINDOWS.add(new CropLine(CropLine.RIGHT));
+		Applet.WINDOWS.add(new CropLine(CropLine.BOTTOM));
+		Applet.WINDOWS.add(new CropLine(CropLine.LEFT));
+		
+		Applet.WINDOWS.add(new CropHandle(CropHandle.TOP_LEFT));
+		Applet.WINDOWS.add(new CropHandle(CropHandle.TOP_MIDDLE));
+		Applet.WINDOWS.add(new CropHandle(CropHandle.TOP_RIGHT));
+		Applet.WINDOWS.add(new CropHandle(CropHandle.MIDDLE_RIGHT));
+		Applet.WINDOWS.add(new CropHandle(CropHandle.BOTTOM_LEFT));
+		Applet.WINDOWS.add(new CropHandle(CropHandle.BOTTOM_MIDDLE));
+		Applet.WINDOWS.add(new CropHandle(CropHandle.BOTTOM_RIGHT));
+		Applet.WINDOWS.add(new CropHandle(CropHandle.MIDDLE_LEFT));
 
 		Applet.APPLET.getContentPane().add(optionsGUI); // note, if this line
 														// changes, also change
