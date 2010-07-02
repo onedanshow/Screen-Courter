@@ -102,10 +102,11 @@ public class Applet extends JApplet {
 			// from: http://www.theserverside.com/discussions/thread.tss?thread_id=42709
 			if(Applet.DEV_MODE) {
 				System.setProperty("log.file.path", "../../logs/development.log");
+				PropertyConfigurator.configure("../../logs/config.properties");
 			} else {
 				System.setProperty("log.file.path", RFX_FOLDER.getAbsolutePath()+File.separator+"production.log");
+				PropertyConfigurator.configure("../logs/config.properties");
 			}
-			PropertyConfigurator.configure("../../logs/config.properties");
 			try {
 				JS_BRIDGE = JSObject.getWindow(this);
 			} catch(JSException e) {
