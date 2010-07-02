@@ -23,6 +23,7 @@ import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.CoreProtocolPNames;
 import org.apache.http.util.EntityUtils;
+import org.apache.log4j.Logger;
 
 import com.reelfx.Applet;
 import com.reelfx.model.AudioRecorder;
@@ -45,6 +46,7 @@ public abstract class ApplicationController implements ProcessListener {
 
 	public RecordControls recordGUI;
 	public PostOptions optionsGUI;
+	private static Logger logger = Logger.getLogger(ApplicationController.class);
 
 	protected InformationBox infoBox;
 

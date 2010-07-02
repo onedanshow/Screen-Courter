@@ -29,6 +29,11 @@ import javax.swing.JApplet;
 import javax.swing.JWindow;
 import javax.swing.SwingUtilities;
 
+import org.apache.log4j.FileAppender;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
+import org.apache.log4j.RollingFileAppender;
+
 import netscape.javascript.JSException;
 import netscape.javascript.JSObject;
 
@@ -84,6 +89,7 @@ public class Applet extends JApplet {
 	public static Vector<Window> WINDOWS = new Vector<Window>(); // didn't want to manually manage windows, but Safari would only return a Frame through Window.getWindows() on commands called via JS
 	
 	private ApplicationController controller = null;
+	private static Logger logger = Logger.getLogger(Applet.class);
 	
 	// called when this applet is loaded into the browser.
 	@Override
@@ -93,10 +99,17 @@ public class Applet extends JApplet {
 			RFX_FOLDER = new File(getRfxFolderPath()); // should be first
 			BIN_FOLDER = new File(getBinFolderPath());
 			DESKTOP_FOLDER = new File(getDesktopFolderPath());
+			// from: http://www.theserverside.com/discussions/thread.tss?thread_id=42709
+			if(Applet.DEV_MODE) {
+				System.setProperty("log.file.path", "../../logs/development.log");
+			} else {
+				System.setProperty("log.file.path", RFX_FOLDER.getAbsolutePath()+File.separator+"production.log");
+			}
+			PropertyConfigurator.configure("../../logs/config.properties");
 			try {
 				JS_BRIDGE = JSObject.getWindow(this);
 			} catch(JSException e) {
-				System.err.println("Could not create JSObject.  Probably in development mode.");
+				logger.error("Could not create JSObject.  Probably in development mode.");
 			}
 			DOCUMENT_BASE = getDocumentBase();
 			CODE_BASE = getCodeBase();
@@ -115,7 +128,7 @@ public class Applet extends JApplet {
 		        throw new IOException("Could not create folder: " + RFX_FOLDER.getAbsolutePath());
 			
 			// print information to console
-			System.out.println(getAppletInfo());
+			logger.info(getAppletInfo());
 			
 			// execute a job on the event-dispatching thread; creating this applet's GUI
             SwingUtilities.invokeAndWait(new Runnable() {
@@ -137,12 +150,8 @@ public class Applet extends JApplet {
                 		controller.setupExtensions();
                 }
             });
-        
-		} catch (IOException e) {
-			e.printStackTrace();
-		}	catch (Exception e) {
-            System.err.println("Could not create GUI!");
-            e.printStackTrace();
+		} catch (Exception e) {
+            logger.error("Could not create GUI!",e);
         }
     }
 	
@@ -153,7 +162,7 @@ public class Applet extends JApplet {
 	 * @param body
 	 */
 	public static void sendViewNotification(ViewNotifications notification,Object body) {
-		// System.out.println("View Notification: "+notification);
+		//logger.debug("View Notification: "+notification);
 		// applet is a special case (see ApplicationController constructor)
 		if(APPLET.getContentPane().getComponents().length > 0)
 			((ViewListener) APPLET.getContentPane().getComponent(0)).receiveViewNotification(notification, body);
@@ -194,8 +203,7 @@ public class Applet extends JApplet {
 				try {
 					controller.recordGUI.prepareForRecording();
 				} catch (Exception e) {
-					System.err.println("Can't prepare and start the recording!");
-					e.printStackTrace();
+					logger.error("Can't prepare and start the recording!",e);
 				}
 				return null;
 			}
@@ -209,8 +217,7 @@ public class Applet extends JApplet {
 				try {
 					controller.recordGUI.stopRecording();
 				} catch (Exception e) {
-					System.err.println("Can't stop the recording!");
-					e.printStackTrace();
+					logger.error("Can't stop the recording!",e);
 				}
 				return null;
 			}
@@ -235,17 +242,16 @@ public class Applet extends JApplet {
 		                public void run() {
 		                	if(controller != null) {
 		                		controller.showRecordingInterface();
-		                		System.out.println("Outside call to show recording interface...");
+		                		logger.info("Outside call to show recording interface...");
 		                	}
 		                	else {
-		                		System.err.println("No controller exists!");
+		                		logger.error("No controller exists!");
 		                	}
 		                	
 		                }
 		            });
 				} catch (Exception e) {
-					System.err.println("Can't show the recording interface!");
-					e.printStackTrace();
+					logger.error("Can't show the recording interface!",e);
 				}
 				return null;
 			}
@@ -266,8 +272,7 @@ public class Applet extends JApplet {
 		                }
 		            });
 				} catch (Exception e) {
-					System.err.println("Can't hide the recording interface!");
-					e.printStackTrace();
+					logger.error("Can't hide the recording interface!",e);
 				}
 				return null;
 			}
@@ -318,7 +323,7 @@ public class Applet extends JApplet {
 	
 	private static void jsCall(String method) {
 		if(JS_BRIDGE == null) {
-			System.err.println("Call to "+method+" but no JS Bridge exists. Probably in development mode...");
+			logger.error("Call to "+method+" but no JS Bridge exists. Probably in development mode...");
 		} else {
 			//System.out.println("Sending javascript call: "+method);
 			//JSObject doc = (JSObject) JS_BRIDGE.getMember("document");

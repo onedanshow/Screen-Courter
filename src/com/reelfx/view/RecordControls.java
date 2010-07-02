@@ -37,6 +37,8 @@ import javax.swing.Timer;
 import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 
+import org.apache.log4j.Logger;
+
 import com.reelfx.Applet;
 import com.reelfx.controller.ApplicationController;
 import com.reelfx.model.AttributesManager;
@@ -50,7 +52,8 @@ import com.reelfx.view.util.ViewNotifications;
 public class RecordControls extends MoveableWindow implements ActionListener {
 
 	public final static String NAME = "RecordControls";
-
+	private static Logger logger = Logger.getLogger(RecordControls.class);
+	
 	public JButton recordBtn, positionBtn, closeBtn;
 	public AudioSelector audioSelect;
 	public JPanel titlePanel, recordingOptionsPanel, statusPanel;
@@ -218,7 +221,7 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 
 		border.add(recordingOptionsPanel);
 
-		System.out.println("RecordControls initialized...");
+		logger.info("Initialized...");
 		
 		pack();
 		receiveViewNotification(ViewNotifications.CAPTURE_VIEWPORT_CHANGE);
@@ -345,8 +348,6 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 			setLocation(pt);
 			break;
 		}
-		
-		System.out.println("RecordControls: View Notification: "+notification);
 	}
 	
 	@Override

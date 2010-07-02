@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.log4j.Logger;
 
 import com.reelfx.Applet;
 import com.reelfx.model.AudioRecorder;
@@ -24,6 +25,7 @@ import com.reelfx.view.util.ViewNotifications;
 public class LinuxController extends ApplicationController {
 	
 	public static File MERGED_OUTPUT_FILE = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"screen_capture_temp.mov");
+	private static Logger logger = Logger.getLogger(LinuxController.class);
 	
 	private AudioRecorder audio;
 	private boolean recordingDone = false;
@@ -52,15 +54,13 @@ public class LinuxController extends ApplicationController {
 				Runtime.getRuntime().exec("chmod 755 "+Applet.BIN_FOLDER+File.separator+"ffplay").waitFor();
 				if(!Applet.BIN_FOLDER.exists()) throw new IOException("Did not copy Linux extensions to the execution directory!");
 			}
-			System.out.println("Have access to execution folder: "+Applet.BIN_FOLDER.getAbsolutePath());
+			logger.info("Have access to execution folder: "+Applet.BIN_FOLDER.getAbsolutePath());
 			setReadyStateBasedOnPriorRecording();
         } catch (Exception e) { // possibilities: MalformedURL, InterriptedException, IOException
         	Applet.sendViewNotification(ViewNotifications.FATAL, new MessageNotification(
         			"Error with install",
         			"Sorry, an error occurred while installing the native extensions. Please contact an Insight admin."));
-        	//recordGUI.changeState(RecordControls.FATAL,"Error with install");
-        	//optionsGUI.changeState(PostOptions.FATAL, "Sorry, an error occurred while installing the native extensions. Please contact an Insight admin.");
-			e.printStackTrace();
+        	logger.error("Could not install native extensions",e);
 		}
 	}
 	
@@ -122,12 +122,12 @@ public class LinuxController extends ApplicationController {
 					if(audioStart > videoStart) {
 						long ms = videoStart - audioStart;
 						float s = ((float)ms)/1000f;
-						System.out.println("Video delay: "+ms+" ms "+s+" s");
+						logger.debug("Video delay: "+ms+" ms "+s+" s");
 						opts.put(PostProcessor.OFFSET_VIDEO, s+"");
 					} else if(videoStart > audioStart) {
 						long ms = audioStart - videoStart;
 						float s = ((float)ms)/1000f;
-						System.out.println("Audio delay: "+ms+" ms "+s+" s");
+						logger.debug("Audio delay: "+ms+" ms "+s+" s");
 						opts.put(PostProcessor.OFFSET_AUDIO, s+"");
 					}
 			    	//postProcess.setSilent(true); // no need to notify UI for this encoding

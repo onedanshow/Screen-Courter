@@ -8,6 +8,7 @@ import java.net.URL;
 import javax.sound.sampled.Mixer;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.log4j.Logger;
 
 import netscape.javascript.JSException;
 
@@ -21,6 +22,8 @@ import com.reelfx.view.util.ViewNotifications;
 
 public class MacController extends ApplicationController {
 
+	private static Logger logger = Logger.getLogger(MacController.class);	
+	
 	public MacController() {
 		super();
 	}
@@ -49,21 +52,18 @@ public class MacController extends ApplicationController {
 				if(!Applet.BIN_FOLDER.exists()) throw new IOException("Did not copy Mac extensions to the execution directory!");
 				Runtime.getRuntime().exec("chmod 755 "+Applet.BIN_FOLDER+File.separator+"mac-screen-recorder").waitFor();
 			}
-			System.out.println("Have access to execution folder: "+Applet.BIN_FOLDER.getAbsolutePath());
+			logger.info("Have access to execution folder: "+Applet.BIN_FOLDER.getAbsolutePath());
 			setReadyStateBasedOnPriorRecording();
         } catch (Exception e) { // possibilities: MalformedURL, InterruptedException, IOException
         	Applet.sendViewNotification(ViewNotifications.FATAL, new MessageNotification(
         			"Error with install",
         			"Sorry, an error occurred while installing the native extensions. Please contact an Insight admin."));
-        	//recordGUI.changeState(RecordControls.FATAL,"Error with install");
-        	//optionsGUI.changeState(PostOptions.FATAL, "Sorry, an error occurred while installing the native extensions. Please contact an Insight admin.");
-			e.printStackTrace();
+			logger.error("Could not install the native extensions",e);
 		}
 
 		if(Applet.IS_MAC && !System.getProperty("os.version").contains("10.6")) {
 			Applet.sendViewNotification(ViewNotifications.FATAL, new MessageNotification(
 					"Sorry, Snow Leopard required.", "Sorry, this tool requires that you have Mac OS X 10.6 (Snow Leopard)"));
-			//recordGUI.changeState(RecordControls.FATAL, "Sorry, Snow Leopard required.");
 		}
 	}
 
