@@ -10,11 +10,13 @@
 		<copy todir="build/classes/org/apache">
 			<fileset dir="lib/org/apache"/>
 		</copy>
+		<echo message="Copying log config file..." />
+		<copy file="logs/config.properties" todir="build/classes" />  
 		<echo message="Building build/applet.jar ..." />
-		<jar destfile="build/applet.jar" filesetmanifest="mergewithoutmain" basedir="build/classes" includes="com/**,org/**">
+		<jar destfile="build/applet.jar" filesetmanifest="mergewithoutmain" basedir="build/classes" includes="com/**,org/**,config.*">
 			<manifest>
 				<attribute name="Main-Class" value=".Applet"/>
-				<attribute name="ReelFX-Comment" value="Review Tool V2" />
+				<attribute name="ReelFX-Comment" value="ReelFX Screen Recorder" />
 			</manifest>
 		</jar>
 		<jar destfile="build/applet.jar" filesetmanifest="mergewithoutmain" update="true" includes="lib/*" />

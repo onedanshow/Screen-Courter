@@ -105,7 +105,7 @@ public class Applet extends JApplet {
 				PropertyConfigurator.configure("../../logs/config.properties");
 			} else {
 				System.setProperty("log.file.path", RFX_FOLDER.getAbsolutePath()+File.separator+"production.log");
-				PropertyConfigurator.configure("../logs/config.properties");
+				PropertyConfigurator.configure(this.getClass().getClassLoader().getResource("config.properties"));
 			}
 			try {
 				JS_BRIDGE = JSObject.getWindow(this);
