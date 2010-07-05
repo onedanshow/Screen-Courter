@@ -13,6 +13,8 @@ import java.util.Map.Entry;
 
 import javax.swing.event.EventListenerList;
 
+import org.apache.log4j.Logger;
+
 import com.reelfx.Applet;
 import com.reelfx.model.AudioRecorder;
 import com.reelfx.model.ScreenRecorder;
@@ -20,6 +22,7 @@ import com.reelfx.model.ScreenRecorder;
 public abstract class ProcessWrapper extends Thread {
 	protected List<ProcessListener> listeners = new ArrayList<ProcessListener>();
 	protected boolean silentMode = false;
+	private static Logger logger = Logger.getLogger(ProcessWrapper.class);
 
 	// KEYS
 	public static class Metadata {
@@ -185,7 +188,7 @@ public abstract class ProcessWrapper extends Thread {
 	        StreamGobbler errorGobbler = new StreamGobbler(postProcess.getErrorStream(), false, "ffmpeg E");
 	        StreamGobbler inputGobbler = new StreamGobbler(postProcess.getInputStream(), false, "ffmpeg O");
 	        
-	        System.out.println("Starting listener threads...");
+	        logger.info("Starting listener threads...");
 	        errorGobbler.addActionListener("Input #0", new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					
@@ -219,11 +222,8 @@ public abstract class ProcessWrapper extends Thread {
 	        
 	        postProcess.waitFor();
 			
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-			results = null;
-		} catch (IOException e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			logger.error("Problem while parsing media file!",e);
 			results = null;
 		}
 		

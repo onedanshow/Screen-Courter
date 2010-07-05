@@ -38,18 +38,6 @@ public class PostOptions extends JPanel implements ViewListener {
 		setBorder(BorderFactory.createLineBorder(new Color(102, 102, 102)));
 		self = this;
 		this.controller = controller;
-        
-        /*
-        message = new JTextArea();
-        message.setFont(new java.awt.Font("Arial", 0, 13));
-        message.setMinimumSize(new Dimension(200,20));
-        message.setOpaque(false);
-        message.setLineWrap(true);
-        message.setBorder(javax.swing.BorderFactory.createLineBorder(messageColor, 5));
-        //message.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        message.setText("You have a review for \"Shot 2000-0300\" from 04/03/2010");
-        message.setAlignmentX(0.5F);
-        /* */
 		
         message = new JLabel();
         message.setFont(new java.awt.Font("Arial", 0, 11));

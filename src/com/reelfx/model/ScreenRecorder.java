@@ -36,6 +36,7 @@ import java.security.ProtectionDomain;
 import javax.sound.sampled.Mixer;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.log4j.Logger;
 
 /**
  *
@@ -44,6 +45,7 @@ import org.apache.commons.io.FileUtils;
 public class ScreenRecorder extends ProcessWrapper implements ActionListener {
 	
 	private static String EXT = Applet.IS_WINDOWS ? ".avi" : ".mov";
+	private static Logger logger = Logger.getLogger(ScreenRecorder.class);
 	
 	// FILE LOCATIONS
 	public static File OUTPUT_FILE = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"screen_capture"+EXT);
@@ -87,7 +89,7 @@ public class ScreenRecorder extends ProcessWrapper implements ActionListener {
 	            errorGobbler = new StreamGobbler(recordingProcess.getErrorStream(), false, "mac E");
 	            inputGobbler = new StreamGobbler(recordingProcess.getInputStream(), false, "mac O");
 	            
-	            System.out.println("Starting listener threads...");
+	            logger.info("Starting listener threads...");
 	            errorGobbler.start();
 	            inputGobbler.start();
 	            
@@ -124,7 +126,7 @@ public class ScreenRecorder extends ProcessWrapper implements ActionListener {
 			    	    	ffmpegArgs.addAll(parseParameters("-vcodec mpeg4 -r 20 -b 5000k")); // -s "+Math.round(width*SCALE)+"x"+Math.round(height*SCALE))
 			    	    	ffmpegArgs.add(OUTPUT_FILE.getAbsolutePath());
 			    	    	
-			    	    	System.out.println("Executing this command: "+prettyCommand(ffmpegArgs));
+			    	    	logger.info("Executing this command: "+prettyCommand(ffmpegArgs));
 			    	    	
 			    	        ProcessBuilder pb = new ProcessBuilder(ffmpegArgs);
 			    	        recordingProcess = pb.start();
@@ -133,7 +135,7 @@ public class ScreenRecorder extends ProcessWrapper implements ActionListener {
 			    	        errorGobbler = new StreamGobbler(recordingProcess.getErrorStream(), false, "ffmpeg E");
 				            inputGobbler = new StreamGobbler(recordingProcess.getInputStream(), false, "ffmpeg O");
 				            
-				            System.out.println("Starting listener threads...");
+				            logger.info("Starting listener threads...");
 				            errorGobbler.start();
 				            errorGobbler.addActionListener("Stream mapping:", self);
 				            inputGobbler.start();
@@ -143,11 +145,8 @@ public class ScreenRecorder extends ProcessWrapper implements ActionListener {
 				            fireProcessUpdate(RECORDING_COMPLETE);
 	            
 						}
-			            catch (InterruptedException e) {
-							e.printStackTrace();
-						}
-			            catch (IOException e1) {
-							e1.printStackTrace();
+			            catch (Exception e) {
+							logger.error("Error running Linux screen recorder!",e);
 						}
 						return null;
 					}
@@ -172,7 +171,7 @@ public class ScreenRecorder extends ProcessWrapper implements ActionListener {
 				            viewport += ":size="+width+","+height;
 				            ffmpegArgs.addAll(parseParameters("-y -f gdigrab -r 20 -i cursor:desktop"+viewport+" -vcodec mpeg4 -b 5000k "+OUTPUT_FILE));
 				            
-				        	System.out.println("Executing this command: "+prettyCommand(ffmpegArgs));
+				        	logger.info("Executing this command: "+prettyCommand(ffmpegArgs));
 				            ProcessBuilder pb = new ProcessBuilder(ffmpegArgs);
 							recordingProcess = pb.start();
 				            //fireProcessUpdate(RECORDING_STARTED); // moved to action listener method
@@ -182,7 +181,7 @@ public class ScreenRecorder extends ProcessWrapper implements ActionListener {
 				            errorGobbler = new StreamGobbler(recordingProcess.getErrorStream(), false, "ffmpeg E");
 				            inputGobbler = new StreamGobbler(recordingProcess.getInputStream(), false, "ffmpeg O");
 				            
-				            System.out.println("Starting listener threads...");
+				            logger.info("Starting listener threads...");
 				            errorGobbler.start();
 				            errorGobbler.addActionListener("Stream mapping:", self);
 				            inputGobbler.start();
@@ -192,22 +191,17 @@ public class ScreenRecorder extends ProcessWrapper implements ActionListener {
 				            fireProcessUpdate(RECORDING_COMPLETE);
 			            
 						}
-			            catch (InterruptedException e) {
-							e.printStackTrace();
-						}
-			            catch (IOException e1) {
-							e1.printStackTrace();
+			            catch (Exception e) {
+							logger.error("Error while running Windows screen recorder!",e);
 						}
 						return null;
 					}
 				});
 	            
     		}
-            
-      } catch (IOException ioe) {
-    	  ioe.printStackTrace();
+           
       } catch (Exception ie) {
-    	  ie.printStackTrace();
+    	  logger.error("Exception while running ScreenRecorder!",ie);
       }
 	}
 	
@@ -221,7 +215,7 @@ public class ScreenRecorder extends ProcessWrapper implements ActionListener {
 	}
 	
 	public void stopRecording() {  
-		System.out.println("Screen recording stopped...");
+		logger.info("Screen recording stopped...");
 		if(Applet.IS_LINUX || Applet.IS_WINDOWS) {
 	    	PrintWriter pw = new PrintWriter(recordingProcess.getOutputStream());
 	    	pw.print("q");
@@ -234,7 +228,7 @@ public class ScreenRecorder extends ProcessWrapper implements ActionListener {
 	}
 	
 	public void closeDown() {
-		System.out.println("Closing down ScreenRecorder...");
+		logger.info("Closing down ScreenRecorder...");
 		if(Applet.IS_MAC && recordingProcess != null) {
 	    	PrintWriter pw = new PrintWriter(recordingProcess.getOutputStream());
 	    	pw.println("quit");
@@ -249,7 +243,7 @@ public class ScreenRecorder extends ProcessWrapper implements ActionListener {
 	
 	@Override
     protected void finalize() throws Throwable {
-		System.out.println("Finalizing ScreenRecorder...");
+		logger.info("Finalizing ScreenRecorder...");
     	super.finalize();
     	closeDown();
     	if(recordingProcess != null)
@@ -265,7 +259,7 @@ public class ScreenRecorder extends ProcessWrapper implements ActionListener {
 					if(OUTPUT_FILE.exists() && !OUTPUT_FILE.delete())
 						throw new Exception("Can't delete the old video file!");
 				} catch (Exception e) {
-					e.printStackTrace();
+					logger.error(e.getMessage(),e);
 				}
 				return null;
 			}

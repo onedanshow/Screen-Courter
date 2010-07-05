@@ -29,6 +29,7 @@ import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.CoreProtocolPNames;
 import org.apache.http.util.EntityUtils;
+import org.apache.log4j.Logger;
 
 import com.reelfx.Applet;
 import com.reelfx.controller.LinuxController;
@@ -60,6 +61,7 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 	public final static int POST_FAILED = 5;
 	public final static int POST_COMPLETE = 6;
 	
+	private static Logger logger = Logger.getLogger(PostProcessor.class);
 	protected Process ffmpegProcess;
 	protected StreamGobbler errorGobbler, inputGobbler;
 	
@@ -95,7 +97,7 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 
 	@Override
 	public synchronized void start() {
-		System.err.println("Don't call this directly!");
+		logger.fatal("Don't call this directly!");
 	}
 
 	public void run() {
@@ -142,20 +144,20 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 			    	ffmpegArgs.addAll(parseParameters("-s 1024x"+Math.round(1024.0/(double)Applet.SCREEN.width*(double)Applet.SCREEN.height)));
 			    	//ffmpegArgs.addAll(getFfmpegX264FastFirstPastBaselineParams());
 			    	ffmpegArgs.add(outputFile.getAbsolutePath());
-			    	System.out.println("Executing this command: "+prettyCommand(ffmpegArgs));
+			    	logger.info("Executing this command: "+prettyCommand(ffmpegArgs));
 			        ProcessBuilder pb = new ProcessBuilder(ffmpegArgs);
 			        ffmpegProcess = pb.start();
 			
 			        errorGobbler = new StreamGobbler(ffmpegProcess.getErrorStream(), false, "ffmpeg E");
 			        inputGobbler = new StreamGobbler(ffmpegProcess.getInputStream(), false, "ffmpeg O");
 			        
-			        System.out.println("Starting listener threads...");
+			        logger.info("Starting listener threads...");
 			        errorGobbler.addActionListener("frame", this);
 			        errorGobbler.start();
 			        inputGobbler.start();  
 			        
 			        ffmpegProcess.waitFor();
-			        System.out.println("Done encoding...");
+			        logger.info("Done encoding...");
 			        fireProcessUpdate(ENCODING_COMPLETE);
 				}
 				else if(Applet.IS_MAC) {
@@ -180,20 +182,20 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 	        	HttpPost post = new HttpPost(postUrl+"?api_key="+Applet.API_KEY); // TODO make this url construction more robust
 	        	post.setEntity(entity);
 	        	
-	        	System.out.println("Posting file to Insight... "+post.getRequestLine());
+	        	logger.info("Posting file to Insight... "+post.getRequestLine());
 	        	
 	        	HttpResponse response = client.execute(post);
 	        	HttpEntity responseEntity = response.getEntity();
 	        	
-	        	System.out.println("Response Status Code: "+response.getStatusLine());
+	        	logger.info("Response Status Code: "+response.getStatusLine());
 	            /*if (responseEntity != null) {
-	            	System.out.println(EntityUtils.toString(responseEntity)); // to see the response body
+	            	logger.info(EntityUtils.toString(responseEntity)); // to see the response body
 	            }*/
 	            
 	            // redirection to show page (meaning everything was correct)
 	            if(response.getStatusLine().getStatusCode() == 302) {
 	            	//Header header = response.getFirstHeader("Location");
-	            	//System.out.println("Redirecting to "+header.getValue());
+	            	//logger.info("Redirecting to "+header.getValue());
 	            	//Applet.redirectWebPage(header.getValue());
 	            	//Applet.APPLET.showDocument(new URL(header.getValue()),"_self");
 	            	fireProcessUpdate(POST_COMPLETE);
@@ -216,20 +218,20 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 		    	
 		    	HttpPost post = new HttpPost(postUrl+"?api_key="+Applet.API_KEY); // TODO make this url construction more robust
 		    	
-		    	System.out.println("Sending data to Insight... "+post.getRequestLine());
+		    	logger.info("Sending data to Insight... "+post.getRequestLine());
 		    	
 		    	HttpResponse response = client.execute(post);
 		    	HttpEntity responseEntity = response.getEntity();
 		
-		    	System.out.println("Response Status Code: "+response.getStatusLine());
+		    	logger.info("Response Status Code: "+response.getStatusLine());
 		        if (responseEntity != null) {
-		        	System.out.println(EntityUtils.toString(responseEntity)); // to see the response body
+		        	logger.info(EntityUtils.toString(responseEntity)); // to see the response body
 		        }
 		        
 		        // redirection to show page (meaning everything was correct)
 		        if(response.getStatusLine().getStatusCode() == 302) {
 		        	Header header = response.getFirstHeader("Location");
-		        	System.out.println("Redirecting to "+header.getValue());
+		        	logger.info("Redirecting to "+header.getValue());
 		        	Applet.redirectWebPage(header.getValue());
 		        	fireProcessUpdate(POST_COMPLETE);
 		        } else {
@@ -265,7 +267,7 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 	 */
 	public void actionPerformed(ActionEvent e) {
 		if(e.getActionCommand().contains("frame")) {
-			//System.out.println("Found frame!"); // TODO exact the frame
+			//logger.info("Found frame!"); // TODO exact the frame
 			fireProcessUpdate(ENCODING_PROGRESS, null);
 		}
 	}
