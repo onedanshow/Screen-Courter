@@ -491,7 +491,7 @@ public class Applet extends JApplet {
 		}
 		try {
 			return 
-				"APPLET PROPERLY INITIALIZED WITH THIS VARIABLES:\n"+
+				"\nAPPLET PROPERLY INITIALIZED WITH THIS VARIABLES:\n"+
 				"Java Version: \t"+System.getProperty("java.version")+"\n"+
 				"OS Name: \t"+System.getProperty("os.name")+"\n"+
 				"OS Version: \t"+System.getProperty("os.version")+"\n"+
@@ -508,7 +508,7 @@ public class Applet extends JApplet {
 				"Applet window is on screen " + myScreenIndex+"\n"+
 				"Primary screen is index " + primaryScreenIndex+"\n"+
 				"Primary screen resolution: "+SCREEN+"\n"+
-				"Headless: \t"+HEADLESS+"\n";
+				"Headless: \t"+HEADLESS;
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
 			return "Error";
