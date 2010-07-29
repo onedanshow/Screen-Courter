@@ -55,7 +55,7 @@ public abstract class ProcessWrapper extends Thread {
     	fireProcessUpdate(event, null);
     }
     
-    protected void fireProcessUpdate(int event,Object body) {
+    public void fireProcessUpdate(int event,Object body) {
     	if(isSilent()) return;
     	
     	for (ProcessListener listener : listeners) {

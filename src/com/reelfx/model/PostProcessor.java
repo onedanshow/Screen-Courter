@@ -34,6 +34,7 @@ import org.apache.log4j.Logger;
 import com.reelfx.Applet;
 import com.reelfx.controller.LinuxController;
 import com.reelfx.controller.WindowsController;
+import com.reelfx.model.util.CountingMultipartEntity;
 import com.reelfx.model.util.ProcessWrapper;
 import com.reelfx.model.util.StreamGobbler;
 import com.reelfx.view.PostOptions;
@@ -168,18 +169,18 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 			
 			// ----- post data of screen capture to Insight -----------------------			
 	        if(postRecording) {
-	        	fireProcessUpdate(POST_STARTED);
-	        	
 	        	// base code: http://stackoverflow.com/questions/1067655/how-to-upload-a-file-using-java-httpclient-library-working-with-php-strange-pro
 	        	
 	        	HttpClient client = new DefaultHttpClient();
 	        	client.getParams().setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
 	        	
-	        	MultipartEntity entity = new MultipartEntity();
+	        	CountingMultipartEntity entity = new CountingMultipartEntity();
 	        	ContentBody body = new FileBody(outputFile,"video/quicktime");
 	        	entity.addPart("capture_file",body);
 	        	
-	        	HttpPost post = new HttpPost(postUrl+"?api_key="+Applet.API_KEY); // TODO make this url construction more robust
+	        	fireProcessUpdate(POST_STARTED,entity.getContentLength());
+	        	
+	        	HttpPost post = new HttpPost( postUrl + (Applet.API_KEY==null ? "" : "?api_key="+Applet.API_KEY) );
 	        	post.setEntity(entity);
 	        	
 	        	logger.info("Posting file to Insight... "+post.getRequestLine());
@@ -188,9 +189,9 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 	        	HttpEntity responseEntity = response.getEntity();
 	        	
 	        	logger.info("Response Status Code: "+response.getStatusLine());
-	            /*if (responseEntity != null) {
+	            if (responseEntity != null) {
 	            	logger.info(EntityUtils.toString(responseEntity)); // to see the response body
-	            }*/
+	            }
 	            
 	            // redirection to show page (meaning everything was correct)
 	            if(response.getStatusLine().getStatusCode() == 302) {
@@ -216,7 +217,7 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 	        	HttpClient client = new DefaultHttpClient();
 		    	client.getParams().setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
 		    	
-		    	HttpPost post = new HttpPost(postUrl+"?api_key="+Applet.API_KEY); // TODO make this url construction more robust
+		    	HttpPost post = new HttpPost( postUrl + (Applet.API_KEY==null ? "" : "?api_key="+Applet.API_KEY) );
 		    	
 		    	logger.info("Sending data to Insight... "+post.getRequestLine());
 		    	

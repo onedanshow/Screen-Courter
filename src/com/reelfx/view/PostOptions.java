@@ -15,7 +15,10 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JSeparator;
 
+import org.apache.log4j.Logger;
+
 import com.reelfx.controller.ApplicationController;
+import com.reelfx.model.PostProcessor;
 import com.reelfx.view.util.MessageNotification;
 import com.reelfx.view.util.ViewListener;
 import com.reelfx.view.util.ViewNotifications;
@@ -24,6 +27,7 @@ public class PostOptions extends JPanel implements ViewListener {
 	
 	private static final long serialVersionUID = 4036818007133606840L;
 	
+	private static Logger logger = Logger.getLogger(PostOptions.class);
 	public JButton previewBtn, saveBtn, insightBtn, deleteBtn;
 	private final ApplicationController controller;
 	private JLabel message;
@@ -47,7 +51,9 @@ public class PostOptions extends JPanel implements ViewListener {
         message.setAlignmentX(0.5F);
         
         progressBar = new JProgressBar();
-        progressBar.setIndeterminate(true);
+        //progressBar.setIndeterminate(true);
+        progressBar.setMinimum(0);
+        progressBar.setMaximum(100);
         
         JPanel messageBoard = new JPanel();
         messageBoard.setLayout(new BorderLayout());
@@ -134,6 +140,11 @@ public class PostOptions extends JPanel implements ViewListener {
     		}
 			break;
 		
+		case THINKING_PROGRESS:
+			//logger.info("Progress update: "+body.toString());
+			progressBar.setValue(Integer.parseInt(body.toString()));
+			break;
+			
 		case SHOW_ALL:
 		case FATAL:
 		case THINKING:

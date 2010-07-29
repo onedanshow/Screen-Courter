@@ -101,8 +101,8 @@ public class Applet extends JApplet {
 			DESKTOP_FOLDER = new File(getDesktopFolderPath());
 			// from: http://www.theserverside.com/discussions/thread.tss?thread_id=42709
 			if(Applet.DEV_MODE) {
-				System.setProperty("log.file.path", "../../logs/development.log");
-				PropertyConfigurator.configure("../../logs/config.properties");
+				System.setProperty("log.file.path", "../logs/development.log");
+				PropertyConfigurator.configure("../logs/config.properties");
 			} else {
 				System.setProperty("log.file.path", RFX_FOLDER.getAbsolutePath()+File.separator+"production.log");
 				PropertyConfigurator.configure(this.getClass().getClassLoader().getResource("config.properties"));
@@ -163,7 +163,7 @@ public class Applet extends JApplet {
 	 * @param body
 	 */
 	public static void sendViewNotification(ViewNotifications notification,Object body) {
-		//logger.debug("View Notification: "+notification);
+		//logger.info("View Notification: "+notification);
 		// applet is a special case (see ApplicationController constructor)
 		if(APPLET.getContentPane().getComponents().length > 0)
 			((ViewListener) APPLET.getContentPane().getComponent(0)).receiveViewNotification(notification, body);
@@ -491,7 +491,7 @@ public class Applet extends JApplet {
 		}
 		try {
 			return 
-				"\nAPPLET PROPERLY INITIALIZED WITH THIS VARIABLES:\n"+
+				"\n\n\n\nAPPLET PROPERLY INITIALIZED WITH THIS VARIABLES:\n"+
 				"Java Version: \t"+System.getProperty("java.version")+"\n"+
 				"OS Name: \t"+System.getProperty("os.name")+"\n"+
 				"OS Version: \t"+System.getProperty("os.version")+"\n"+

@@ -122,12 +122,12 @@ public class LinuxController extends ApplicationController {
 					if(audioStart > videoStart) {
 						long ms = videoStart - audioStart;
 						float s = ((float)ms)/1000f;
-						logger.debug("Video delay: "+ms+" ms "+s+" s");
+						logger.info("Video delay: "+ms+" ms "+s+" s");
 						opts.put(PostProcessor.OFFSET_VIDEO, s+"");
 					} else if(videoStart > audioStart) {
 						long ms = audioStart - videoStart;
 						float s = ((float)ms)/1000f;
-						logger.debug("Audio delay: "+ms+" ms "+s+" s");
+						logger.info("Audio delay: "+ms+" ms "+s+" s");
 						opts.put(PostProcessor.OFFSET_AUDIO, s+"");
 					}
 			    	//postProcess.setSilent(true); // no need to notify UI for this encoding
