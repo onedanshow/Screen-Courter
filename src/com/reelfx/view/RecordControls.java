@@ -59,12 +59,14 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 	public JPanel titlePanel, recordingOptionsPanel, statusPanel;
 
 	private JLabel title, status;
+	private JPanel borderPanel;
 	// private JTextArea message;
 	private Timer timer;
 	private ApplicationController controller;
 	private JFileChooser fileSelect = new JFileChooser();
-	private Color backgroundColor = new Color(200,200,200); // new Color(34, 34, 34); // 
-	private Color textColor = Color.BLACK;
+	private static Color backgroundColor = new Color(200,200,200); // new Color(34, 34, 34); //
+	private static Color borderColor = new Color(62,64,65);
+	private static Color textColor = Color.BLACK;
 	private int timerCount = 0;
 	private JComboBox viewportSelect;
 	private ViewNotifications currentState;
@@ -106,11 +108,11 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 		 * System.out.println("Transparency supported!"); }
 		 */
 		
-		JPanel border = new JPanel();
-		border.setBackground(backgroundColor);
-		border.setBorder(new LineBorder(new Color(62,64,65), 3));
-		border.setLayout(new BoxLayout(border, BoxLayout.PAGE_AXIS));
-		add(border);
+		borderPanel = new JPanel();
+		borderPanel.setBackground(backgroundColor);
+		borderPanel.setBorder(new LineBorder(borderColor, 3));
+		borderPanel.setLayout(new BoxLayout(borderPanel, BoxLayout.PAGE_AXIS));
+		add(borderPanel);
 
 		// ------- setup title bar -------
 
@@ -159,7 +161,7 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 		buttons.setBackground(backgroundColor);
 		titlePanel.add(buttons, BorderLayout.EAST);
 
-		border.add(titlePanel); // ,BorderLayout.CENTER);
+		borderPanel.add(titlePanel); // ,BorderLayout.CENTER);
 
 		// ------- setup recording options -------
 
@@ -178,13 +180,12 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 				}
 			}
 		});
-		recordBtn.setFont(new Font("Arial", 0, 11));
+		recordBtn.setFont(new Font("Arial", Font.BOLD, 12));
 		recordingOptionsPanel.add(recordBtn);
 
 		status = new JLabel();
 		// status.setBackground(statusColor);
-		// status.setPreferredSize(new Dimension(50, 40));
-		status.setFont(new java.awt.Font("Arial", 1, 11));
+		status.setFont(new java.awt.Font("Arial", 1, 12));
 		status.setForeground(textColor);
 		status.setHorizontalAlignment(SwingConstants.CENTER);
 		recordingOptionsPanel.add(status);
@@ -219,7 +220,7 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 		if(!Applet.IS_MAC || Applet.DEV_MODE) // TODO temporary
 			recordingOptionsPanel.add(viewportSelect);
 
-		border.add(recordingOptionsPanel);
+		borderPanel.add(recordingOptionsPanel);
 
 		logger.info("Initialized...");
 		
@@ -251,6 +252,7 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 		case SHOW_RECORD_CONTROLS:
 			setAlwaysOnTop(true);
 			setVisible(true);
+			borderPanel.setBorder(new LineBorder(borderColor,3));
 			break;
 		
 		case PRE_RECORDING:
@@ -280,6 +282,7 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 			viewportSelect.setVisible(false);
 			closeBtn.setVisible(false);
 			currentState = notification;
+			borderPanel.setBorder(new LineBorder(new Color(255,71,71),3)); // recording color
 			if (body instanceof MessageNotification) {
 				status.setText(((MessageNotification) body).getStatusText());
 			} else {
@@ -307,6 +310,7 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 			viewportSelect.setEnabled(false);
 			viewportSelect.setVisible(true);
 			currentState = notification;
+			borderPanel.setBorder(new LineBorder(borderColor,3));
 			if (body instanceof MessageNotification) {
 				status.setText(((MessageNotification) body).getStatusText());
 			} else {
@@ -395,10 +399,8 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 	public void actionPerformed(ActionEvent e) { // this method is for the timer
 		if (status.getText().equals("Ready")) {
 			Applet.sendViewNotification(ViewNotifications.PRE_RECORDING, new MessageNotification("Set"));
-			//changeState(PRE_RECORDING, "Set");
 		} else if (status.getText().equals("Set")) {
 			Applet.sendViewNotification(ViewNotifications.RECORDING, new MessageNotification("Go!"));
-			//changeState(RECORDING, "Go!");
 			startRecording();
 		} else {
 			status.setText((timerCount / 60 < 10 ? "0" : "") + timerCount

@@ -4,7 +4,8 @@
 	<!-- To make this project work with NetBeans: <import file="nbproject/build-impl.xml"/> -->  
 	<!-- Assumes the class files are already built (which Eclipse does) -->
 	
-	<!-- To add build numbers: http://www.jguru.com/faq/view.jsp?EID=481664 -->
+	<!-- TODO: To add build numbers: http://www.jguru.com/faq/view.jsp?EID=481664 -->
+	<!-- TODO: Create local build.properties file so other developers can work on this project with git. -->
 	
 	<target name="build_jar">
 		<echo message="Copying apache files..." />
