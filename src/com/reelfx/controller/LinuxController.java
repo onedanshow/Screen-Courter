@@ -119,6 +119,7 @@ public class LinuxController extends ApplicationController {
 						postProcess.removeAllProcessListeners();
 					postProcess = new PostProcessor();
 					Map<Integer,String> opts = new HashMap<Integer, String>();
+					opts.put(PostProcessor.MERGE_AUDIO_VIDEO, null);
 					if(audioStart > videoStart) {
 						long ms = videoStart - audioStart;
 						float s = ((float)ms)/1000f;

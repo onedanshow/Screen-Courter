@@ -421,22 +421,6 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 		controller.stopRecording();
 	}
 
-	public void previewRecording() {
-		controller.previewRecording();
-	}
-
-	public void saveRecording() {
-		int returnVal = fileSelect.showSaveDialog(this);
-		if (returnVal == JFileChooser.APPROVE_OPTION) {
-			File file = fileSelect.getSelectedFile();
-			controller.saveRecording(file);
-		}
-	}
-
-	public void postRecording() {
-		controller.postRecording();
-	}
-
 	/**
 	 * @return boolean that says whether to continue with whatever action called
 	 *         this or not

@@ -6,6 +6,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.sound.sampled.Mixer;
 import javax.swing.JFileChooser;
@@ -100,7 +102,6 @@ public abstract class ApplicationController implements ProcessListener {
 			if (!Applet.BIN_FOLDER.exists()) {
 				Applet.sendViewNotification(ViewNotifications.THINKING, 
 						new MessageNotification("Performing one-time install...","Please wait as the program performs a one-time install / update of its native extensions."));
-				//recordGUI.changeState(RecordControls.THINKING,"Performing one-time install...");
 			} else {
 				setReadyStateBasedOnPriorRecording();
 			}
@@ -114,7 +115,7 @@ public abstract class ApplicationController implements ProcessListener {
 			break;
 		case PostProcessor.ENCODING_COMPLETE:
 			Applet.sendViewNotification(ViewNotifications.POST_OPTIONS, 
-					new MessageNotification("Finished encoding.","Your recording has finished encoding."));
+					new MessageNotification("Finished encoding.","Your screen recording has been encoded and saved."));
 			break;
 		case PostProcessor.POST_STARTED:
 			Applet.sendViewNotification(ViewNotifications.THINKING, 
@@ -174,6 +175,9 @@ public abstract class ApplicationController implements ProcessListener {
 		if (postProcess != null)
 			postProcess.removeAllProcessListeners();
 		postProcess = new PostProcessor();
+		Map<Integer,String> opts = new HashMap<Integer, String>();
+		opts.put(PostProcessor.ENCODE_TO_X264, null);
+		postProcess.encodingOptions(opts);
 		postProcess.addProcessListener(this);
 		postProcess.saveToComputer(file);
 	}
@@ -196,6 +200,9 @@ public abstract class ApplicationController implements ProcessListener {
 		if (postProcess != null)
 			postProcess.removeAllProcessListeners();
 		postProcess = new PostProcessor();
+		Map<Integer,String> opts = new HashMap<Integer, String>();
+		opts.put(PostProcessor.ENCODE_TO_X264, null);
+		postProcess.encodingOptions(opts);
 		postProcess.addProcessListener(this);
 		postProcess.postRecordingToInsight(recordingAttributes.getPostUrl());
 	}

@@ -74,11 +74,10 @@ public class MacController extends ApplicationController {
 		if(screen != null) {
 			screen.closeDown();
 		}
-		// start up CamStudio
 		screen = new ScreenRecorder();
 		screen.addProcessListener(this);
 		screen.start();
-		// TODO check that it starts up correctly
+		// TODO check that it starts up correctly?
 	}
 
 	@Override

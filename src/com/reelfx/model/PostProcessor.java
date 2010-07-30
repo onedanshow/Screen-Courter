@@ -47,16 +47,19 @@ import com.reelfx.view.util.ViewNotifications;
 
 public class PostProcessor extends ProcessWrapper implements ActionListener {
 	
-	// FILE LOCATIONS
+	// FILE LOCATIONS AND FLAGS
 	private static String ext = ".mov"; //Applet.IS_MAC ? ".mov" : ".mp4";
 	public static File DEFAULT_OUTPUT_FILE = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"review"+ext);
 	private File outputFile = null;
 	private URI postUrl = null;
 	private boolean postRecording = false, postData = false;
+	private Map<String,Object> metadata;
 	
 	// ENCODING SETTINGS
 	public final static int OFFSET_VIDEO = 0;
 	public final static int OFFSET_AUDIO = 1;
+	public final static int MERGE_AUDIO_VIDEO = 2;
+	public final static int ENCODE_TO_X264 = 3;
 	private Map<Integer, String> encodingOpts = new HashMap<Integer, String>();
 	
 	// STATES
@@ -109,69 +112,93 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 
 	public void run() {
 		try {
-			// ----- encode a file -----------------------
-			if(outputFile != null) {
-				String ffmpeg = "ffmpeg" + (Applet.IS_WINDOWS ? ".exe" : "");
-				
-				if(Applet.IS_WINDOWS 
-						&& outputFile.getAbsolutePath().equals(WindowsController.MERGED_OUTPUT_FILE.getAbsolutePath())
-						&& WindowsController.MERGED_OUTPUT_FILE.exists()) {
-					// do no encoding
-				}
-				else if(Applet.IS_LINUX 
-						&& outputFile.getAbsolutePath().equals(LinuxController.MERGED_OUTPUT_FILE.getAbsolutePath())
-						&& LinuxController.MERGED_OUTPUT_FILE.exists()) {
-					// do no encoding
-				}
-				else if(Applet.IS_WINDOWS || Applet.IS_LINUX) {
-					fireProcessUpdate(ENCODING_STARTED);
-					// get information about the media file:
-					//Map<String,Object> metadata = parseMediaFile(ScreenRecorder.OUTPUT_FILE.getAbsolutePath());
-					//printMetadata(metadata);
-					
-					if(outputFile.exists() && !outputFile.delete()) // ffmpeg will halt and ask what to do if file exists
-						throw new IOException("Could not delete the old exported file!");
-					
-					List<String> ffmpegArgs = new ArrayList<String>();
-			    	ffmpegArgs.add(Applet.BIN_FOLDER.getAbsoluteFile()+File.separator+ffmpeg);
-			    	// audio and video files
-			    	if(AudioRecorder.OUTPUT_FILE.exists()) { // if opted for microphone
-			    		// delay the audio if needed ( http://howto-pages.org/ffmpeg/#delay )
-			    		if(encodingOpts.containsKey(OFFSET_AUDIO))
-			    			ffmpegArgs.addAll(parseParameters("-itsoffset 00:00:0"+encodingOpts.get(OFFSET_AUDIO))); // assume offset is less than 10 seconds
-			    		ffmpegArgs.addAll(parseParameters("-i "+AudioRecorder.OUTPUT_FILE.getAbsolutePath()));
-			    		// delay the video if needed ( http://howto-pages.org/ffmpeg/#delay )
-			    		if(encodingOpts.containsKey(OFFSET_VIDEO))
-			    			ffmpegArgs.addAll(parseParameters("-itsoffset 00:00:0"+encodingOpts.get(OFFSET_VIDEO)));
-			    	}
-			    	ffmpegArgs.addAll(parseParameters("-i "+ScreenRecorder.OUTPUT_FILE));
-			    	// export settings
-			    	ffmpegArgs.addAll(getFfmpegCopyParams());
-			    	// resize screen
-			    	ffmpegArgs.addAll(parseParameters("-s 1024x"+Math.round(1024.0/(double)Applet.SCREEN.width*(double)Applet.SCREEN.height)));
-			    	//ffmpegArgs.addAll(getFfmpegX264FastFirstPastBaselineParams());
-			    	ffmpegArgs.add(outputFile.getAbsolutePath());
-			    	logger.info("Executing this command: "+prettyCommand(ffmpegArgs));
-			        ProcessBuilder pb = new ProcessBuilder(ffmpegArgs);
-			        ffmpegProcess = pb.start();
+			String ffmpeg = "ffmpeg" + (Applet.IS_WINDOWS ? ".exe" : "");
 			
-			        errorGobbler = new StreamGobbler(ffmpegProcess.getErrorStream(), false, "ffmpeg E");
-			        inputGobbler = new StreamGobbler(ffmpegProcess.getInputStream(), false, "ffmpeg O");
-			        
-			        logger.info("Starting listener threads...");
-			        errorGobbler.addActionListener("frame", this);
-			        errorGobbler.start();
-			        inputGobbler.start();  
-			        
-			        ffmpegProcess.waitFor();
-			        logger.info("Done encoding...");
-			        fireProcessUpdate(ENCODING_COMPLETE);
-				}
-				else if(Applet.IS_MAC) {
-					FileUtils.copyFile(ScreenRecorder.OUTPUT_FILE, outputFile);
-					fireProcessUpdate(ENCODING_COMPLETE);
-				}
-			} // end if outputFile
+			// ----- quickly merge audio and video after recording -----------------------
+			if(outputFile != null && encodingOpts.containsKey(MERGE_AUDIO_VIDEO) && !Applet.IS_MAC) {
+				fireProcessUpdate(ENCODING_STARTED);
+				// get information about the media file:
+				//Map<String,Object> metadata = parseMediaFile(ScreenRecorder.OUTPUT_FILE.getAbsolutePath());
+				//printMetadata(metadata);
+				
+				List<String> ffmpegArgs = new ArrayList<String>();
+		    	ffmpegArgs.add(Applet.BIN_FOLDER.getAbsoluteFile()+File.separator+ffmpeg);
+		    	ffmpegArgs.add("-y"); // overwrite any existing file
+		    	// audio and video files
+		    	if(AudioRecorder.OUTPUT_FILE.exists()) { // if opted for microphone
+		    		// delay the audio if needed ( http://howto-pages.org/ffmpeg/#delay )
+		    		if(encodingOpts.containsKey(OFFSET_AUDIO))
+		    			ffmpegArgs.addAll(parseParameters("-itsoffset 00:00:0"+encodingOpts.get(OFFSET_AUDIO))); // assume offset is less than 10 seconds
+		    		ffmpegArgs.addAll(parseParameters("-i "+AudioRecorder.OUTPUT_FILE.getAbsolutePath()));
+		    		// delay the video if needed ( http://howto-pages.org/ffmpeg/#delay )
+		    		if(encodingOpts.containsKey(OFFSET_VIDEO))
+		    			ffmpegArgs.addAll(parseParameters("-itsoffset 00:00:0"+encodingOpts.get(OFFSET_VIDEO)));
+		    	}
+		    	ffmpegArgs.addAll(parseParameters("-i "+ScreenRecorder.OUTPUT_FILE));
+		    	// export settings
+			    ffmpegArgs.addAll(getFfmpegCopyParams());
+		    	// resize screen
+		    	//ffmpegArgs.addAll(parseParameters("-s 1024x"+Math.round(1024.0/(double)Applet.SCREEN.width*(double)Applet.SCREEN.height)));
+		    	
+		    	ffmpegArgs.add(outputFile.getAbsolutePath());
+		    	logger.info("Executing this command: "+prettyCommand(ffmpegArgs));
+		        ProcessBuilder pb = new ProcessBuilder(ffmpegArgs);
+		        ffmpegProcess = pb.start();
+		
+		        errorGobbler = new StreamGobbler(ffmpegProcess.getErrorStream(), false, "ffmpeg E");
+		        inputGobbler = new StreamGobbler(ffmpegProcess.getInputStream(), false, "ffmpeg O");
+		        
+		        logger.info("Starting listener threads...");
+		        errorGobbler.start();
+		        inputGobbler.start();  
+		        
+		        ffmpegProcess.waitFor();
+		        logger.info("Done encoding...");
+		        fireProcessUpdate(ENCODING_COMPLETE);
+			} // end merging audio/video
+			
+			// ----- encode file to X264 -----------------------
+			else if(outputFile != null && encodingOpts.containsKey(ENCODE_TO_X264) && !Applet.IS_MAC && !DEFAULT_OUTPUT_FILE.exists()) {
+				fireProcessUpdate(ENCODING_STARTED);
+				File inputFile = Applet.IS_LINUX ? LinuxController.MERGED_OUTPUT_FILE : WindowsController.MERGED_OUTPUT_FILE;
+				
+				// get information about the media file:
+				//metadata = parseMediaFile(inputFile.getAbsolutePath());
+				//printMetadata(metadata);
+				
+				List<String> ffmpegArgs = new ArrayList<String>();
+		    	ffmpegArgs.add(Applet.BIN_FOLDER.getAbsoluteFile()+File.separator+ffmpeg);
+		    	ffmpegArgs.addAll(parseParameters("-y -i "+inputFile.getAbsolutePath()));
+		    	ffmpegArgs.addAll(getFfmpegX264FastFirstPastBaselineParams());
+		    	
+		    	ffmpegArgs.add(DEFAULT_OUTPUT_FILE.getAbsolutePath());
+		    	logger.info("Executing this command: "+prettyCommand(ffmpegArgs));
+		        ProcessBuilder pb = new ProcessBuilder(ffmpegArgs);
+		        ffmpegProcess = pb.start();
+		
+		        errorGobbler = new StreamGobbler(ffmpegProcess.getErrorStream(), false, "ffmpeg E");
+		        inputGobbler = new StreamGobbler(ffmpegProcess.getInputStream(), false, "ffmpeg O");
+		        
+		        logger.info("Starting listener threads...");
+		        //errorGobbler.addActionListener("frame", this);
+		        errorGobbler.start();
+		        inputGobbler.start();  
+		        
+		        ffmpegProcess.waitFor();
+		        logger.info("Done encoding...");
+		        fireProcessUpdate(ENCODING_COMPLETE);
+			}
+			// do we need to copy the X264 encoded file somewhere?
+			if(outputFile != null && encodingOpts.containsKey(ENCODE_TO_X264) && !Applet.IS_MAC && !outputFile.getAbsolutePath().equals(DEFAULT_OUTPUT_FILE.getAbsolutePath())) {
+				FileUtils.copyFile(DEFAULT_OUTPUT_FILE, outputFile);
+				fireProcessUpdate(ENCODING_COMPLETE);
+			}
+			
+			// ----- just copy the file if it's a Mac -----------------------
+			if(outputFile != null && Applet.IS_MAC) {
+				FileUtils.copyFile(ScreenRecorder.OUTPUT_FILE, outputFile);
+				fireProcessUpdate(ENCODING_COMPLETE);
+			}
 			
 			// ----- post data of screen capture to Insight -----------------------			
 	        if(postRecording) {
@@ -256,9 +283,11 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 		  ioe.printStackTrace();
 	  } catch (Exception ie) {
 		  ie.printStackTrace();
+	  } finally {
+		  outputFile = null;
+		  encodingOpts = new HashMap<Integer, String>(); // reset encoding options   
+		  metadata = null;
 	  }
-	  
-	  outputFile = null;
 	}
 	
 	protected void finalize() throws Throwable {
@@ -287,7 +316,8 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 	 */
 	public void actionPerformed(ActionEvent e) {
 		if(e.getActionCommand().contains("frame")) {
-			//logger.info("Found frame!"); // TODO exact the frame
+			//double total_frames = (Double)metadata.get(Metadata.TOTAL_FRAMES);
+			//logger.info("Found frame! Total frames="+total_frames); // TODO exact the frame number
 			fireProcessUpdate(ENCODING_PROGRESS, null);
 		}
 	}

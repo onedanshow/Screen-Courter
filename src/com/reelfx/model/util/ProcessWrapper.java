@@ -88,9 +88,12 @@ public abstract class ProcessWrapper extends Thread {
     	ffmpegArgs.addAll(parseParameters("-coder 1 -flags +loop -cmp +chroma -partitions -parti8x8-parti4x4-partp8x8-partp4x4-partb8x8"));
     	ffmpegArgs.addAll(parseParameters("-me_method dia -subq 2 -me_range 16 -g 250 -keyint_min 25 -sc_threshold 40 -i_qfactor 0.71"));
     	ffmpegArgs.addAll(parseParameters("-b_strategy 1 -qcomp 0.6 -qmin 10 -qmax 51 -qdiff 4 -bf 3 -refs 1 -directpred 3 -trellis 0"));
-    	ffmpegArgs.addAll(parseParameters("-flags2 -bpyramid-wpred-mixed_refs-dct8x8+fastpskip+mbtree -wpredp 2"));
+    	if(!Applet.IS_LINUX) // linux version doesn't recognize flags2 or wpredp
+    		ffmpegArgs.addAll(parseParameters("-flags2 -bpyramid-wpred-mixed_refs-dct8x8+fastpskip+mbtree -wpredp 2"));
     	// baseline
-    	ffmpegArgs.addAll(parseParameters("-coder 0 -bf 0 -flags2 -wpred-dct8x8+mbtree -wpredp 0"));
+    	ffmpegArgs.addAll(parseParameters("-coder 0 -bf 0"));
+    	if(!Applet.IS_LINUX) // linux version doesn't recognize flags2 or wpredp
+    		ffmpegArgs.addAll(parseParameters("-flags2 -wpred-dct8x8+mbtree -wpredp 0"));
     	// so we can do this as fast as possible and good quality
     	ffmpegArgs.addAll(parseParameters("-crf 22 -threads 0"));
     	return ffmpegArgs;
@@ -183,12 +186,12 @@ public abstract class ProcessWrapper extends Thread {
         	// purposefully incorrectly call ffmpeg so it gives us some information about the file...
 			String command = Applet.BIN_FOLDER.getAbsoluteFile()+File.separator+"ffmpeg -i "+path;
         	
+			logger.info("Executing this command for metadata: "+command);
 	        Process postProcess = Runtime.getRuntime().exec(command);
 	
 	        StreamGobbler errorGobbler = new StreamGobbler(postProcess.getErrorStream(), false, "ffmpeg E");
 	        StreamGobbler inputGobbler = new StreamGobbler(postProcess.getInputStream(), false, "ffmpeg O");
 	        
-	        logger.info("Starting listener threads...");
 	        errorGobbler.addActionListener("Input #0", new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					

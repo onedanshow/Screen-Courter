@@ -142,6 +142,7 @@ public class PostOptions extends JPanel implements ViewListener {
 		
 		case THINKING_PROGRESS:
 			//logger.info("Progress update: "+body.toString());
+			progressBar.setIndeterminate(false);
 			progressBar.setValue(Integer.parseInt(body.toString()));
 			break;
 			
@@ -165,6 +166,7 @@ public class PostOptions extends JPanel implements ViewListener {
 		// any secondary changes
 		switch(notification) {
 		case THINKING:
+			progressBar.setIndeterminate(true);
 			progressBar.setVisible(true);
 		}
 		
