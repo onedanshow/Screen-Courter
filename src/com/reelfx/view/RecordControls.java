@@ -117,7 +117,7 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 		title = new JLabel();
 		title.setFont(new java.awt.Font("Arial", 1, 11));
 		title.setForeground(textColor);
-		title.setText("   Review for " + Applet.SCREEN_CAPTURE_NAME + "   ");
+		title.setText("   Screen Recording for \"" + Applet.SCREEN_CAPTURE_NAME + "\"   ");
 		title.setHorizontalAlignment(SwingConstants.CENTER);
 
 		titlePanel = new JPanel();
@@ -368,6 +368,9 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 		Applet.sendViewNotification(ViewNotifications.MOUSE_DRAG_RECORD_CONTROLS, e);
 	}
 
+	/**
+	 * Called when the "Record" button is pressed, starting the countdown timer.
+	 */
 	public void prepareForRecording() {
 		// do I need permission to delete a file first?
 		if (AttributesManager.OUTPUT_FILE.exists() && !deleteRecording())

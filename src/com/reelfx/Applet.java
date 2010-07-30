@@ -41,6 +41,7 @@ import com.reelfx.controller.ApplicationController;
 import com.reelfx.controller.LinuxController;
 import com.reelfx.controller.MacController;
 import com.reelfx.controller.WindowsController;
+import com.reelfx.model.AttributesManager;
 import com.reelfx.model.CaptureViewport;
 import com.reelfx.model.PreferencesManager;
 import com.reelfx.view.AudioSelector;
@@ -122,7 +123,9 @@ public class Applet extends JApplet {
 			SCREEN_CAPTURE_NAME = getParameter("screen_capture_name");
 			HOST_URL = DOCUMENT_BASE.getProtocol() + "://" + DOCUMENT_BASE.getHost();
 			if(getParameter("headless") != null)
-				HEADLESS = !getParameter("headless").isEmpty() && getParameter("headless").equals("true"); // Boolean.getBoolean(string) didn't work			 
+				HEADLESS = !getParameter("headless").isEmpty() && getParameter("headless").equals("true"); // Boolean.getBoolean(string) didn't work
+			if(API_KEY.isEmpty())
+				throw new Exception("An api key is required!");
 			if( RFX_FOLDER.exists() && !RFX_FOLDER.isDirectory() && !RFX_FOLDER.delete() )
 		        throw new IOException("Could not delete file for folder: " + RFX_FOLDER.getAbsolutePath());
 			if( !RFX_FOLDER.exists() && !RFX_FOLDER.mkdir() )
@@ -194,6 +197,21 @@ public class Applet extends JApplet {
 	}
 	*/
 	
+	public void changePostUrl(final String url) {
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
+			@Override
+			public Object run() {
+				try {
+					POST_URL = url;
+					logger.info("Changed post URL to "+url);
+				} catch (Exception e) {
+					logger.error("Can't change the post URL!",e);
+				}
+				return null;
+			}
+		});
+	}	
+	
 	/**
 	 *  This method piggy backs on record GUI to drive any external (i.e. Flash) GUI.
 	 */
@@ -242,8 +260,13 @@ public class Applet extends JApplet {
 					SwingUtilities.invokeLater(new Runnable() {
 		                public void run() {
 		                	if(controller != null) {
-		                		controller.showRecordingInterface();
-		                		logger.info("Outside call to show recording interface...");
+		                		if (AttributesManager.OUTPUT_FILE.exists()) {
+		                			handleExistingRecording();
+		                			logger.info("Outside call to show recording interface, but prior review exists...");
+		                		} else {
+		                			controller.showRecordingInterface();
+		                			logger.info("Outside call to show recording interface. Showing recording tools...");
+		                		}
 		                	}
 		                	else {
 		                		logger.error("No controller exists!");
@@ -295,6 +318,10 @@ public class Applet extends JApplet {
 	
 	public static void handleFreshRecording() {
 		jsCall("sct_handle_fresh_recording()");
+	}
+	
+	public static void handleUploadedRecording() {
+		jsCall("sct_handle_uploaded_recording()");
 	}
 	
 	public static void handleDeletedRecording() {

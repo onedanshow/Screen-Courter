@@ -22,7 +22,7 @@ public class AttributesManager {
 	public static File OUTPUT_FILE = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"attributes");
 	
 	private static Logger logger = Logger.getLogger(AttributesManager.class);
-	private String postUrl, screenCaptureName, userID;
+	private String postUrl, screenCaptureName, userID; // userID is not currently used
 	private Date date;
 	private boolean uploaded = false;
 

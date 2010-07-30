@@ -129,6 +129,7 @@ public abstract class ApplicationController implements ProcessListener {
 					new MessageNotification("Finished uploading.", "Would you like to do anything else with your screen recording?"));			
 			recordingAttributes.setUploaded(true);
 			recordingAttributes.writeAttributes();
+			Applet.handleUploadedRecording();
 		}
 	}
 
@@ -219,8 +220,8 @@ public abstract class ApplicationController implements ProcessListener {
 	protected void setReadyStateBasedOnPriorRecording() {		
 		if (AttributesManager.OUTPUT_FILE.exists()) {
 			SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM d HH:mm");
-			String message = "You have a screen recording for "
-					+ recordingAttributes.getScreenCaptureName() + " on "
+			String message = "You have a screen recording for \""
+					+ recordingAttributes.getScreenCaptureName() + "\" on "
 					+ sdf.format(recordingAttributes.getDate()) + ". ";
 			if (recordingAttributes.isUploaded()) {
 				message += "It has already been uploaded.";

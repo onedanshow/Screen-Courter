@@ -38,14 +38,13 @@ public class PostOptions extends JPanel implements ViewListener {
 	public PostOptions(final ApplicationController controller) {
 		super();
 		setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
-		setBackground(new Color(230,230,230));
+		setBackground(new Color(200,200,200));
 		setBorder(BorderFactory.createLineBorder(new Color(102, 102, 102)));
 		self = this;
 		this.controller = controller;
 		
         message = new JLabel();
-        message.setFont(new java.awt.Font("Arial", 0, 11));
-        message.setOpaque(false);
+        message.setFont(new java.awt.Font("Arial", 0, 12));
         message.setMaximumSize(new Dimension(180,1000));
         message.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         message.setAlignmentX(0.5F);
@@ -57,6 +56,7 @@ public class PostOptions extends JPanel implements ViewListener {
         
         JPanel messageBoard = new JPanel();
         messageBoard.setLayout(new BorderLayout());
+        messageBoard.setOpaque(false);
         messageBoard.add(message,BorderLayout.CENTER);
         messageBoard.add(progressBar,BorderLayout.SOUTH);
         add(messageBoard);
@@ -83,7 +83,7 @@ public class PostOptions extends JPanel implements ViewListener {
         });
         add(saveBtn);
 
-        insightBtn = new JButton("Post to Insight");
+        insightBtn = new JButton("Upload to Insight");
         insightBtn.setFont(new java.awt.Font("Arial", 0, 11));
         insightBtn.setAlignmentX(0.5F);
         insightBtn.addActionListener(new ActionListener() {

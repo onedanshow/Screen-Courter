@@ -7,6 +7,8 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -23,11 +25,14 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpVersion;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.utils.URIUtils;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.ContentBody;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.CoreProtocolPNames;
+import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
 
@@ -38,6 +43,7 @@ import com.reelfx.model.util.CountingMultipartEntity;
 import com.reelfx.model.util.ProcessWrapper;
 import com.reelfx.model.util.StreamGobbler;
 import com.reelfx.view.PostOptions;
+import com.reelfx.view.util.ViewNotifications;
 
 public class PostProcessor extends ProcessWrapper implements ActionListener {
 	
@@ -45,7 +51,7 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 	private static String ext = ".mov"; //Applet.IS_MAC ? ".mov" : ".mp4";
 	public static File DEFAULT_OUTPUT_FILE = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"review"+ext);
 	private File outputFile = null;
-	private String postUrl = null;
+	private URI postUrl = null;
 	private boolean postRecording = false, postData = false;
 	
 	// ENCODING SETTINGS
@@ -82,7 +88,7 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 	// implemented and works, but ended up not using
 	public synchronized void postDataToInsight(String url) {
 		outputFile = null;
-		postUrl = url;
+		setPostURI(url);
 		postRecording = false;
 		postData = true;
 		super.start();
@@ -90,7 +96,7 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 	
 	public synchronized void postRecordingToInsight(String url) {
 		outputFile = DEFAULT_OUTPUT_FILE;
-		postUrl = url;
+		setPostURI(url);
 		postRecording = true;
 		postData = false;
 		super.start();
@@ -170,6 +176,7 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 			// ----- post data of screen capture to Insight -----------------------			
 	        if(postRecording) {
 	        	// base code: http://stackoverflow.com/questions/1067655/how-to-upload-a-file-using-java-httpclient-library-working-with-php-strange-pro
+	        	fireProcessUpdate(POST_STARTED);
 	        	
 	        	HttpClient client = new DefaultHttpClient();
 	        	client.getParams().setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
@@ -178,12 +185,10 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 	        	ContentBody body = new FileBody(outputFile,"video/quicktime");
 	        	entity.addPart("capture_file",body);
 	        	
-	        	fireProcessUpdate(POST_STARTED,entity.getContentLength());
-	        	
-	        	HttpPost post = new HttpPost( postUrl + (Applet.API_KEY==null ? "" : "?api_key="+Applet.API_KEY) );
+	        	HttpPost post = new HttpPost(postUrl);
 	        	post.setEntity(entity);
 	        	
-	        	logger.info("Posting file to Insight... "+post.getRequestLine());
+	        	logger.info("Posting file to server... "+post.getRequestLine());
 	        	
 	        	HttpResponse response = client.execute(post);
 	        	HttpEntity responseEntity = response.getEntity();
@@ -193,12 +198,14 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 	            	logger.info(EntityUtils.toString(responseEntity)); // to see the response body
 	            }
 	            
-	            // redirection to show page (meaning everything was correct)
-	            if(response.getStatusLine().getStatusCode() == 302) {
+	            // redirection to show page (meaning everything was correct); NOTE: Insight redirects you to the login form when you're not logged in (or no api_key)
+	            //if(response.getStatusLine().getStatusCode() == 302) {
 	            	//Header header = response.getFirstHeader("Location");
 	            	//logger.info("Redirecting to "+header.getValue());
 	            	//Applet.redirectWebPage(header.getValue());
 	            	//Applet.APPLET.showDocument(new URL(header.getValue()),"_self");
+	            
+	            if(response.getStatusLine().getStatusCode() == 200) {
 	            	fireProcessUpdate(POST_COMPLETE);
 	            } else {
 	            	fireProcessUpdate(POST_FAILED);
@@ -217,7 +224,7 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 	        	HttpClient client = new DefaultHttpClient();
 		    	client.getParams().setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
 		    	
-		    	HttpPost post = new HttpPost( postUrl + (Applet.API_KEY==null ? "" : "?api_key="+Applet.API_KEY) );
+		    	HttpPost post = new HttpPost(postUrl);
 		    	
 		    	logger.info("Sending data to Insight... "+post.getRequestLine());
 		    	
@@ -229,11 +236,7 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 		        	logger.info(EntityUtils.toString(responseEntity)); // to see the response body
 		        }
 		        
-		        // redirection to show page (meaning everything was correct)
-		        if(response.getStatusLine().getStatusCode() == 302) {
-		        	Header header = response.getFirstHeader("Location");
-		        	logger.info("Redirecting to "+header.getValue());
-		        	Applet.redirectWebPage(header.getValue());
+		        if(response.getStatusLine().getStatusCode() == 200) {	
 		        	fireProcessUpdate(POST_COMPLETE);
 		        } else {
 		        	fireProcessUpdate(POST_FAILED);
@@ -261,6 +264,22 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 	protected void finalize() throws Throwable {
 		super.finalize();
 		ffmpegProcess.destroy();
+	}
+	
+	/**
+	 * s
+	 * 
+	 * @param url
+	 */
+	private void setPostURI(String url) {
+		try {
+			URI given = new URI(url);
+	    	String query = given.getQuery() + (given.getQuery().isEmpty() ? "" : "&") + "api_key="+Applet.API_KEY;
+	    	postUrl = new URI(given.getScheme(),given.getAuthority(),given.getPath(),query,given.getFragment());
+		} catch (URISyntaxException e) {
+			logger.error("Error occurred while processing the post URL", e);
+			fireProcessUpdate(POST_FAILED);
+		}
 	}
 	
 	/**
