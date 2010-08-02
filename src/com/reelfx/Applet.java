@@ -102,8 +102,8 @@ public class Applet extends JApplet {
 			DESKTOP_FOLDER = new File(getDesktopFolderPath());
 			// from: http://www.theserverside.com/discussions/thread.tss?thread_id=42709
 			if(Applet.DEV_MODE) {
-				System.setProperty("log.file.path", "../../logs/development.log");
-				PropertyConfigurator.configure("../../logs/config.properties");
+				System.setProperty("log.file.path", "../logs/development.log");
+				PropertyConfigurator.configure("../logs/config.properties");
 			} else {
 				System.setProperty("log.file.path", RFX_FOLDER.getAbsolutePath()+File.separator+"production.log");
 				PropertyConfigurator.configure(this.getClass().getClassLoader().getResource("config.properties"));

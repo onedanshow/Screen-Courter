@@ -15,7 +15,13 @@ import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.event.EventListenerList;
 
+import org.apache.log4j.Logger;
+
+import com.reelfx.view.PostOptions;
+
 public class StreamGobbler extends Thread {
+	private static Logger logger = Logger.getLogger(StreamGobbler.class);
+	
     protected InputStream is;
     protected boolean discardOutput;
     protected String prefix;
@@ -35,7 +41,7 @@ public class StreamGobbler extends Thread {
 	      String line=null;
 	      while ( (line = br.readLine()) != null) {
 	        if(!discardOutput)
-	          System.out.println(prefix+": "+line);
+	          logger.info(prefix+": "+line);
 	        for(String word : listeners.keySet())
 	        	if(line.contains(word))
 	        		fireActionPerformed(word,line);
