@@ -7,6 +7,8 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -23,32 +25,41 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpVersion;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.utils.URIUtils;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.ContentBody;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.CoreProtocolPNames;
+import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
+import org.apache.log4j.Logger;
 
 import com.reelfx.Applet;
 import com.reelfx.controller.LinuxController;
 import com.reelfx.controller.WindowsController;
+import com.reelfx.model.util.CountingMultipartEntity;
 import com.reelfx.model.util.ProcessWrapper;
 import com.reelfx.model.util.StreamGobbler;
 import com.reelfx.view.PostOptions;
+import com.reelfx.view.util.ViewNotifications;
 
 public class PostProcessor extends ProcessWrapper implements ActionListener {
 	
-	// FILE LOCATIONS
+	// FILE LOCATIONS AND FLAGS
 	private static String ext = ".mov"; //Applet.IS_MAC ? ".mov" : ".mp4";
 	public static File DEFAULT_OUTPUT_FILE = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"review"+ext);
 	private File outputFile = null;
-	private String postUrl = null;
+	private URI postUrl = null;
 	private boolean postRecording = false, postData = false;
+	private Map<String,Object> metadata;
 	
 	// ENCODING SETTINGS
 	public final static int OFFSET_VIDEO = 0;
 	public final static int OFFSET_AUDIO = 1;
+	public final static int MERGE_AUDIO_VIDEO = 2;
+	public final static int ENCODE_TO_X264 = 3;
 	private Map<Integer, String> encodingOpts = new HashMap<Integer, String>();
 	
 	// STATES
@@ -60,6 +71,7 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 	public final static int POST_FAILED = 5;
 	public final static int POST_COMPLETE = 6;
 	
+	private static Logger logger = Logger.getLogger(PostProcessor.class);
 	protected Process ffmpegProcess;
 	protected StreamGobbler errorGobbler, inputGobbler;
 	
@@ -79,7 +91,7 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 	// implemented and works, but ended up not using
 	public synchronized void postDataToInsight(String url) {
 		outputFile = null;
-		postUrl = url;
+		setPostURI(url);
 		postRecording = false;
 		postData = true;
 		super.start();
@@ -87,7 +99,7 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 	
 	public synchronized void postRecordingToInsight(String url) {
 		outputFile = DEFAULT_OUTPUT_FILE;
-		postUrl = url;
+		setPostURI(url);
 		postRecording = true;
 		postData = false;
 		super.start();
@@ -95,107 +107,132 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 
 	@Override
 	public synchronized void start() {
-		System.err.println("Don't call this directly!");
+		logger.fatal("Don't call this directly!");
 	}
 
 	public void run() {
 		try {
-			// ----- encode a file -----------------------
-			if(outputFile != null) {
-				String ffmpeg = "ffmpeg" + (Applet.IS_WINDOWS ? ".exe" : "");
-				
-				if(Applet.IS_WINDOWS 
-						&& outputFile.getAbsolutePath().equals(WindowsController.MERGED_OUTPUT_FILE.getAbsolutePath())
-						&& WindowsController.MERGED_OUTPUT_FILE.exists()) {
-					// do no encoding
-				}
-				else if(Applet.IS_LINUX 
-						&& outputFile.getAbsolutePath().equals(LinuxController.MERGED_OUTPUT_FILE.getAbsolutePath())
-						&& LinuxController.MERGED_OUTPUT_FILE.exists()) {
-					// do no encoding
-				}
-				else if(Applet.IS_WINDOWS || Applet.IS_LINUX) {
-					fireProcessUpdate(ENCODING_STARTED);
-					// get information about the media file:
-					//Map<String,Object> metadata = parseMediaFile(ScreenRecorder.OUTPUT_FILE.getAbsolutePath());
-					//printMetadata(metadata);
-					
-					if(outputFile.exists() && !outputFile.delete()) // ffmpeg will halt and ask what to do if file exists
-						throw new IOException("Could not delete the old exported file!");
-					
-					List<String> ffmpegArgs = new ArrayList<String>();
-			    	ffmpegArgs.add(Applet.BIN_FOLDER.getAbsoluteFile()+File.separator+ffmpeg);
-			    	// audio and video files
-			    	if(AudioRecorder.OUTPUT_FILE.exists()) { // if opted for microphone
-			    		// delay the audio if needed ( http://howto-pages.org/ffmpeg/#delay )
-			    		if(encodingOpts.containsKey(OFFSET_AUDIO))
-			    			ffmpegArgs.addAll(parseParameters("-itsoffset 00:00:0"+encodingOpts.get(OFFSET_AUDIO))); // assume offset is less than 10 seconds
-			    		ffmpegArgs.addAll(parseParameters("-i "+AudioRecorder.OUTPUT_FILE.getAbsolutePath()));
-			    		// delay the video if needed ( http://howto-pages.org/ffmpeg/#delay )
-			    		if(encodingOpts.containsKey(OFFSET_VIDEO))
-			    			ffmpegArgs.addAll(parseParameters("-itsoffset 00:00:0"+encodingOpts.get(OFFSET_VIDEO)));
-			    	}
-			    	ffmpegArgs.addAll(parseParameters("-i "+ScreenRecorder.OUTPUT_FILE));
-			    	// export settings
-			    	ffmpegArgs.addAll(getFfmpegCopyParams());
-			    	// resize screen
-			    	ffmpegArgs.addAll(parseParameters("-s 1024x"+Math.round(1024.0/(double)Applet.SCREEN.width*(double)Applet.SCREEN.height)));
-			    	//ffmpegArgs.addAll(getFfmpegX264FastFirstPastBaselineParams());
-			    	ffmpegArgs.add(outputFile.getAbsolutePath());
-			    	System.out.println("Executing this command: "+prettyCommand(ffmpegArgs));
-			        ProcessBuilder pb = new ProcessBuilder(ffmpegArgs);
-			        ffmpegProcess = pb.start();
+			String ffmpeg = "ffmpeg" + (Applet.IS_WINDOWS ? ".exe" : "");
 			
-			        errorGobbler = new StreamGobbler(ffmpegProcess.getErrorStream(), false, "ffmpeg E");
-			        inputGobbler = new StreamGobbler(ffmpegProcess.getInputStream(), false, "ffmpeg O");
-			        
-			        System.out.println("Starting listener threads...");
-			        errorGobbler.addActionListener("frame", this);
-			        errorGobbler.start();
-			        inputGobbler.start();  
-			        
-			        ffmpegProcess.waitFor();
-			        System.out.println("Done encoding...");
-			        fireProcessUpdate(ENCODING_COMPLETE);
-				}
-				else if(Applet.IS_MAC) {
-					FileUtils.copyFile(ScreenRecorder.OUTPUT_FILE, outputFile);
-					fireProcessUpdate(ENCODING_COMPLETE);
-				}
-			} // end if outputFile
+			// ----- quickly merge audio and video after recording -----------------------
+			if(outputFile != null && encodingOpts.containsKey(MERGE_AUDIO_VIDEO) && !Applet.IS_MAC) {
+				fireProcessUpdate(ENCODING_STARTED);
+				// get information about the media file:
+				//Map<String,Object> metadata = parseMediaFile(ScreenRecorder.OUTPUT_FILE.getAbsolutePath());
+				//printMetadata(metadata);
+				
+				List<String> ffmpegArgs = new ArrayList<String>();
+		    	ffmpegArgs.add(Applet.BIN_FOLDER.getAbsoluteFile()+File.separator+ffmpeg);
+		    	ffmpegArgs.add("-y"); // overwrite any existing file
+		    	// audio and video files
+		    	if(AudioRecorder.OUTPUT_FILE.exists()) { // if opted for microphone
+		    		// delay the audio if needed ( http://howto-pages.org/ffmpeg/#delay )
+		    		if(encodingOpts.containsKey(OFFSET_AUDIO))
+		    			ffmpegArgs.addAll(parseParameters("-itsoffset 00:00:0"+encodingOpts.get(OFFSET_AUDIO))); // assume offset is less than 10 seconds
+		    		ffmpegArgs.addAll(parseParameters("-i "+AudioRecorder.OUTPUT_FILE.getAbsolutePath()));
+		    		// delay the video if needed ( http://howto-pages.org/ffmpeg/#delay )
+		    		if(encodingOpts.containsKey(OFFSET_VIDEO))
+		    			ffmpegArgs.addAll(parseParameters("-itsoffset 00:00:0"+encodingOpts.get(OFFSET_VIDEO)));
+		    	}
+		    	ffmpegArgs.addAll(parseParameters("-i "+ScreenRecorder.OUTPUT_FILE));
+		    	// export settings
+			    ffmpegArgs.addAll(getFfmpegCopyParams());
+		    	// resize screen
+		    	//ffmpegArgs.addAll(parseParameters("-s 1024x"+Math.round(1024.0/(double)Applet.SCREEN.width*(double)Applet.SCREEN.height)));
+		    	
+		    	ffmpegArgs.add(outputFile.getAbsolutePath());
+		    	logger.info("Executing this command: "+prettyCommand(ffmpegArgs));
+		        ProcessBuilder pb = new ProcessBuilder(ffmpegArgs);
+		        ffmpegProcess = pb.start();
+		
+		        errorGobbler = new StreamGobbler(ffmpegProcess.getErrorStream(), false, "ffmpeg E");
+		        inputGobbler = new StreamGobbler(ffmpegProcess.getInputStream(), false, "ffmpeg O");
+		        
+		        logger.info("Starting listener threads...");
+		        errorGobbler.start();
+		        inputGobbler.start();  
+		        
+		        ffmpegProcess.waitFor();
+		        logger.info("Done encoding...");
+		        fireProcessUpdate(ENCODING_COMPLETE);
+			} // end merging audio/video
+			
+			// ----- encode file to X264 -----------------------
+			else if(outputFile != null && encodingOpts.containsKey(ENCODE_TO_X264) && !Applet.IS_MAC && !DEFAULT_OUTPUT_FILE.exists()) {
+				fireProcessUpdate(ENCODING_STARTED);
+				File inputFile = Applet.IS_LINUX ? LinuxController.MERGED_OUTPUT_FILE : WindowsController.MERGED_OUTPUT_FILE;
+				
+				// get information about the media file:
+				//metadata = parseMediaFile(inputFile.getAbsolutePath());
+				//printMetadata(metadata);
+				
+				List<String> ffmpegArgs = new ArrayList<String>();
+		    	ffmpegArgs.add(Applet.BIN_FOLDER.getAbsoluteFile()+File.separator+ffmpeg);
+		    	ffmpegArgs.addAll(parseParameters("-y -i "+inputFile.getAbsolutePath()));
+		    	ffmpegArgs.addAll(getFfmpegX264FastFirstPastBaselineParams());
+		    	
+		    	ffmpegArgs.add(DEFAULT_OUTPUT_FILE.getAbsolutePath());
+		    	logger.info("Executing this command: "+prettyCommand(ffmpegArgs));
+		        ProcessBuilder pb = new ProcessBuilder(ffmpegArgs);
+		        ffmpegProcess = pb.start();
+		
+		        errorGobbler = new StreamGobbler(ffmpegProcess.getErrorStream(), false, "ffmpeg E");
+		        inputGobbler = new StreamGobbler(ffmpegProcess.getInputStream(), false, "ffmpeg O");
+		        
+		        logger.info("Starting listener threads...");
+		        //errorGobbler.addActionListener("frame", this);
+		        errorGobbler.start();
+		        inputGobbler.start();  
+		        
+		        ffmpegProcess.waitFor();
+		        logger.info("Done encoding...");
+		        fireProcessUpdate(ENCODING_COMPLETE);
+			}
+			// do we need to copy the X264 encoded file somewhere?
+			if(outputFile != null && encodingOpts.containsKey(ENCODE_TO_X264) && !Applet.IS_MAC && !outputFile.getAbsolutePath().equals(DEFAULT_OUTPUT_FILE.getAbsolutePath())) {
+				FileUtils.copyFile(DEFAULT_OUTPUT_FILE, outputFile);
+				fireProcessUpdate(ENCODING_COMPLETE);
+			}
+			
+			// ----- just copy the file if it's a Mac -----------------------
+			if(outputFile != null && Applet.IS_MAC) {
+				FileUtils.copyFile(ScreenRecorder.OUTPUT_FILE, outputFile);
+				fireProcessUpdate(ENCODING_COMPLETE);
+			}
 			
 			// ----- post data of screen capture to Insight -----------------------			
 	        if(postRecording) {
-	        	fireProcessUpdate(POST_STARTED);
-	        	
 	        	// base code: http://stackoverflow.com/questions/1067655/how-to-upload-a-file-using-java-httpclient-library-working-with-php-strange-pro
+	        	fireProcessUpdate(POST_STARTED);
 	        	
 	        	HttpClient client = new DefaultHttpClient();
 	        	client.getParams().setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
 	        	
-	        	MultipartEntity entity = new MultipartEntity();
+	        	CountingMultipartEntity entity = new CountingMultipartEntity();
 	        	ContentBody body = new FileBody(outputFile,"video/quicktime");
 	        	entity.addPart("capture_file",body);
 	        	
-	        	HttpPost post = new HttpPost(postUrl+"?api_key="+Applet.API_KEY); // TODO make this url construction more robust
+	        	HttpPost post = new HttpPost(postUrl);
 	        	post.setEntity(entity);
 	        	
-	        	System.out.println("Posting file to Insight... "+post.getRequestLine());
+	        	logger.info("Posting file to server... "+post.getRequestLine());
 	        	
 	        	HttpResponse response = client.execute(post);
 	        	HttpEntity responseEntity = response.getEntity();
 	        	
-	        	System.out.println("Response Status Code: "+response.getStatusLine());
-	            /*if (responseEntity != null) {
-	            	System.out.println(EntityUtils.toString(responseEntity)); // to see the response body
-	            }*/
+	        	logger.info("Response Status Code: "+response.getStatusLine());
+	            if (responseEntity != null) {
+	            	logger.info(EntityUtils.toString(responseEntity)); // to see the response body
+	            }
 	            
-	            // redirection to show page (meaning everything was correct)
-	            if(response.getStatusLine().getStatusCode() == 302) {
+	            // redirection to show page (meaning everything was correct); NOTE: Insight redirects you to the login form when you're not logged in (or no api_key)
+	            //if(response.getStatusLine().getStatusCode() == 302) {
 	            	//Header header = response.getFirstHeader("Location");
-	            	//System.out.println("Redirecting to "+header.getValue());
+	            	//logger.info("Redirecting to "+header.getValue());
 	            	//Applet.redirectWebPage(header.getValue());
 	            	//Applet.APPLET.showDocument(new URL(header.getValue()),"_self");
+	            
+	            if(response.getStatusLine().getStatusCode() == 200) {
 	            	fireProcessUpdate(POST_COMPLETE);
 	            } else {
 	            	fireProcessUpdate(POST_FAILED);
@@ -214,23 +251,19 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 	        	HttpClient client = new DefaultHttpClient();
 		    	client.getParams().setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
 		    	
-		    	HttpPost post = new HttpPost(postUrl+"?api_key="+Applet.API_KEY); // TODO make this url construction more robust
+		    	HttpPost post = new HttpPost(postUrl);
 		    	
-		    	System.out.println("Sending data to Insight... "+post.getRequestLine());
+		    	logger.info("Sending data to Insight... "+post.getRequestLine());
 		    	
 		    	HttpResponse response = client.execute(post);
 		    	HttpEntity responseEntity = response.getEntity();
 		
-		    	System.out.println("Response Status Code: "+response.getStatusLine());
+		    	logger.info("Response Status Code: "+response.getStatusLine());
 		        if (responseEntity != null) {
-		        	System.out.println(EntityUtils.toString(responseEntity)); // to see the response body
+		        	logger.info(EntityUtils.toString(responseEntity)); // to see the response body
 		        }
 		        
-		        // redirection to show page (meaning everything was correct)
-		        if(response.getStatusLine().getStatusCode() == 302) {
-		        	Header header = response.getFirstHeader("Location");
-		        	System.out.println("Redirecting to "+header.getValue());
-		        	Applet.redirectWebPage(header.getValue());
+		        if(response.getStatusLine().getStatusCode() == 200) {	
 		        	fireProcessUpdate(POST_COMPLETE);
 		        } else {
 		        	fireProcessUpdate(POST_FAILED);
@@ -250,9 +283,11 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 		  ioe.printStackTrace();
 	  } catch (Exception ie) {
 		  ie.printStackTrace();
+	  } finally {
+		  outputFile = null;
+		  encodingOpts = new HashMap<Integer, String>(); // reset encoding options   
+		  metadata = null;
 	  }
-	  
-	  outputFile = null;
 	}
 	
 	protected void finalize() throws Throwable {
@@ -261,11 +296,28 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 	}
 	
 	/**
+	 * s
+	 * 
+	 * @param url
+	 */
+	private void setPostURI(String url) {
+		try {
+			URI given = new URI(url);
+	    	String query = given.getQuery() + (given.getQuery().isEmpty() ? "" : "&") + "api_key="+Applet.API_KEY;
+	    	postUrl = new URI(given.getScheme(),given.getAuthority(),given.getPath(),query,given.getFragment());
+		} catch (URISyntaxException e) {
+			logger.error("Error occurred while processing the post URL", e);
+			fireProcessUpdate(POST_FAILED);
+		}
+	}
+	
+	/**
 	 * Called when a stream gobbler finds a line that relevant to this wrapper.
 	 */
 	public void actionPerformed(ActionEvent e) {
 		if(e.getActionCommand().contains("frame")) {
-			//System.out.println("Found frame!"); // TODO exact the frame
+			//double total_frames = (Double)metadata.get(Metadata.TOTAL_FRAMES);
+			//logger.info("Found frame! Total frames="+total_frames); // TODO exact the frame number
 			fireProcessUpdate(ENCODING_PROGRESS, null);
 		}
 	}

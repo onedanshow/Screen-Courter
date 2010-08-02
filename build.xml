@@ -4,20 +4,25 @@
 	<!-- To make this project work with NetBeans: <import file="nbproject/build-impl.xml"/> -->  
 	<!-- Assumes the class files are already built (which Eclipse does) -->
 	
+	<!-- TODO: To add build numbers: http://www.jguru.com/faq/view.jsp?EID=481664 -->
+	<!-- TODO: Create local build.properties file so other developers can work on this project with git. -->
+	
 	<target name="build_jar">
 		<echo message="Copying apache files..." />
 		<!-- this is temporary -->
-		<copy todir="build/classes/org/apache">
+		<copy todir="build/org/apache">
 			<fileset dir="lib/org/apache"/>
 		</copy>
+		<echo message="Copying log config file..." />
+		<copy file="logs/config.properties" todir="build" />  
 		<echo message="Building build/applet.jar ..." />
-		<jar destfile="build/applet.jar" filesetmanifest="mergewithoutmain" basedir="build/classes" includes="com/**,org/**">
+		<jar destfile="build/applet.jar" filesetmanifest="mergewithoutmain" basedir="build" includes="com/**,org/**,config.*">
 			<manifest>
 				<attribute name="Main-Class" value=".Applet"/>
-				<attribute name="ReelFX-Comment" value="Review Tool V2" />
+				<attribute name="ReelFX-Comment" value="ReelFX Screen Recorder" />
 			</manifest>
 		</jar>
-		<jar destfile="build/applet.jar" filesetmanifest="mergewithoutmain" update="true" includes="lib/*" />
+		<!-- not sure why this is here: <jar destfile="build/applet.jar" filesetmanifest="mergewithoutmain" update="true" includes="lib/*" /> -->
 	</target>
 	
 	<target name="sign_jar" depends="build_jar">
@@ -54,6 +59,15 @@
 		<copy file="bin-windows-v1.1.jar" todir="${server}"/>
 		<copy file="bin-linux.jar" todir="${server}"/>
 	</target>
+	
+	<target name="create_local_pages_jar" depends="sign_jar">
+		<!-- CHANGE THIS TO THE FOLDER OF YOUR LOCAL PAGES PUBLIC FOLDER -->
+		<property name="server" value="/Users/daniel/Sites/pages/public/"/>
+		<copy file="build/applet.jar" todir="${server}"/>
+		<copy file="bin-mac.jar" todir="${server}"/>
+		<copy file="bin-windows-v1.1.jar" todir="${server}"/>
+		<copy file="bin-linux.jar" todir="${server}"/>
+	</target>	
 	
 	<!-- Taken from: http://docs.huihoo.com/apache/apachecon/eu2007/extending_ant.pdf -->
 	<scriptdef language="javascript" manager="javax" name="random"> 

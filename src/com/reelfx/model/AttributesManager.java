@@ -12,13 +12,17 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.apache.log4j.Logger;
+
 import com.reelfx.Applet;
 
+// TODO: Rewrite this class as static
 public class AttributesManager {
 
 	public static File OUTPUT_FILE = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"attributes");
 	
-	private String postUrl, screenCaptureName, userID;
+	private static Logger logger = Logger.getLogger(AttributesManager.class);
+	private String postUrl, screenCaptureName, userID; // userID is not currently used
 	private Date date;
 	private boolean uploaded = false;
 
@@ -50,8 +54,8 @@ public class AttributesManager {
 	        input.close();
 	      }
 	    }
-	    catch (IOException ex){
-	      ex.printStackTrace();
+	    catch (Exception ex){
+	      logger.error("Could not read the attributes file.",ex);
 	    }
 	}
 	
@@ -69,8 +73,8 @@ public class AttributesManager {
 				output.close();
 			}
 		}
-		catch (IOException ex) {
-			ex.printStackTrace();
+		catch (Exception ex) {
+			logger.error("Could not write the attributes file.",ex);
 		}
 	}
 
@@ -123,7 +127,7 @@ public class AttributesManager {
 					if(OUTPUT_FILE.exists() && !OUTPUT_FILE.delete())
 						throw new Exception("Can't delete the old preference file!");
 				} catch (Exception e) {
-					e.printStackTrace();
+					logger.error(e.getMessage(),e);
 				}
 				return null;
 			}

@@ -6,6 +6,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.sound.sampled.Mixer;
 import javax.swing.JFileChooser;
@@ -23,6 +25,7 @@ import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.CoreProtocolPNames;
 import org.apache.http.util.EntityUtils;
+import org.apache.log4j.Logger;
 
 import com.reelfx.Applet;
 import com.reelfx.model.AudioRecorder;
@@ -45,6 +48,7 @@ public abstract class ApplicationController implements ProcessListener {
 
 	public RecordControls recordGUI;
 	public PostOptions optionsGUI;
+	private static Logger logger = Logger.getLogger(ApplicationController.class);
 
 	protected InformationBox infoBox;
 
@@ -66,19 +70,22 @@ public abstract class ApplicationController implements ProcessListener {
 		optionsGUI = new PostOptions(this);
 		infoBox = new InformationBox();
 		
-		new CropLine(CropLine.TOP);
-		new CropLine(CropLine.RIGHT);
-		new CropLine(CropLine.BOTTOM);
-		new CropLine(CropLine.LEFT);
+		Applet.WINDOWS.add(recordGUI);
+		Applet.WINDOWS.add(infoBox);
 		
-		new CropHandle(CropHandle.TOP_LEFT);
-		new CropHandle(CropHandle.TOP_MIDDLE);
-		new CropHandle(CropHandle.TOP_RIGHT);
-		new CropHandle(CropHandle.MIDDLE_RIGHT);
-		new CropHandle(CropHandle.BOTTOM_LEFT);
-		new CropHandle(CropHandle.BOTTOM_MIDDLE);
-		new CropHandle(CropHandle.BOTTOM_RIGHT);
-		new CropHandle(CropHandle.MIDDLE_LEFT);
+		Applet.WINDOWS.add(new CropLine(CropLine.TOP));
+		Applet.WINDOWS.add(new CropLine(CropLine.RIGHT));
+		Applet.WINDOWS.add(new CropLine(CropLine.BOTTOM));
+		Applet.WINDOWS.add(new CropLine(CropLine.LEFT));
+		
+		Applet.WINDOWS.add(new CropHandle(CropHandle.TOP_LEFT));
+		Applet.WINDOWS.add(new CropHandle(CropHandle.TOP_MIDDLE));
+		Applet.WINDOWS.add(new CropHandle(CropHandle.TOP_RIGHT));
+		Applet.WINDOWS.add(new CropHandle(CropHandle.MIDDLE_RIGHT));
+		Applet.WINDOWS.add(new CropHandle(CropHandle.BOTTOM_LEFT));
+		Applet.WINDOWS.add(new CropHandle(CropHandle.BOTTOM_MIDDLE));
+		Applet.WINDOWS.add(new CropHandle(CropHandle.BOTTOM_RIGHT));
+		Applet.WINDOWS.add(new CropHandle(CropHandle.MIDDLE_LEFT));
 
 		Applet.APPLET.getContentPane().add(optionsGUI); // note, if this line
 														// changes, also change
@@ -95,7 +102,6 @@ public abstract class ApplicationController implements ProcessListener {
 			if (!Applet.BIN_FOLDER.exists()) {
 				Applet.sendViewNotification(ViewNotifications.THINKING, 
 						new MessageNotification("Performing one-time install...","Please wait as the program performs a one-time install / update of its native extensions."));
-				//recordGUI.changeState(RecordControls.THINKING,"Performing one-time install...");
 			} else {
 				setReadyStateBasedOnPriorRecording();
 			}
@@ -109,7 +115,7 @@ public abstract class ApplicationController implements ProcessListener {
 			break;
 		case PostProcessor.ENCODING_COMPLETE:
 			Applet.sendViewNotification(ViewNotifications.POST_OPTIONS, 
-					new MessageNotification("Finished encoding.","Your recording has finished encoding."));
+					new MessageNotification("Finished encoding.","Your screen recording has been encoded and saved."));
 			break;
 		case PostProcessor.POST_STARTED:
 			Applet.sendViewNotification(ViewNotifications.THINKING, 
@@ -124,6 +130,7 @@ public abstract class ApplicationController implements ProcessListener {
 					new MessageNotification("Finished uploading.", "Would you like to do anything else with your screen recording?"));			
 			recordingAttributes.setUploaded(true);
 			recordingAttributes.writeAttributes();
+			Applet.handleUploadedRecording();
 		}
 	}
 
@@ -168,6 +175,9 @@ public abstract class ApplicationController implements ProcessListener {
 		if (postProcess != null)
 			postProcess.removeAllProcessListeners();
 		postProcess = new PostProcessor();
+		Map<Integer,String> opts = new HashMap<Integer, String>();
+		opts.put(PostProcessor.ENCODE_TO_X264, null);
+		postProcess.encodingOptions(opts);
 		postProcess.addProcessListener(this);
 		postProcess.saveToComputer(file);
 	}
@@ -190,6 +200,9 @@ public abstract class ApplicationController implements ProcessListener {
 		if (postProcess != null)
 			postProcess.removeAllProcessListeners();
 		postProcess = new PostProcessor();
+		Map<Integer,String> opts = new HashMap<Integer, String>();
+		opts.put(PostProcessor.ENCODE_TO_X264, null);
+		postProcess.encodingOptions(opts);
 		postProcess.addProcessListener(this);
 		postProcess.postRecordingToInsight(recordingAttributes.getPostUrl());
 	}
@@ -214,8 +227,8 @@ public abstract class ApplicationController implements ProcessListener {
 	protected void setReadyStateBasedOnPriorRecording() {		
 		if (AttributesManager.OUTPUT_FILE.exists()) {
 			SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM d HH:mm");
-			String message = "You have a screen recording for "
-					+ recordingAttributes.getScreenCaptureName() + " on "
+			String message = "You have a screen recording for \""
+					+ recordingAttributes.getScreenCaptureName() + "\" on "
 					+ sdf.format(recordingAttributes.getDate()) + ". ";
 			if (recordingAttributes.isUploaded()) {
 				message += "It has already been uploaded.";

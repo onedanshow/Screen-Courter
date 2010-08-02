@@ -17,6 +17,7 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Mixer;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.log4j.Logger;
 
 import com.reelfx.Applet;
 import com.reelfx.model.AudioRecorder;
@@ -33,6 +34,7 @@ import com.reelfx.view.util.ViewNotifications;
 public class WindowsController extends ApplicationController {
 
 	public static File MERGED_OUTPUT_FILE = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"screen_capture_temp.avi");
+	private static Logger logger = Logger.getLogger(WindowsController.class);
 	
 	private AudioRecorder mic, systemAudio;
 	private boolean stopped = false;
@@ -60,15 +62,13 @@ public class WindowsController extends ApplicationController {
 				Applet.copyFolderFromRemoteJar(new URL(Applet.HOST_URL+"/"+Applet.getBinFolderName()+".jar?"+Math.random()*10000), Applet.getBinFolderName());
 				if(!Applet.BIN_FOLDER.exists()) throw new IOException("Did not copy Windows extensions to the execution directory!");
 			}
-			System.out.println("Have access to execution folder: "+Applet.BIN_FOLDER.getAbsolutePath());
+			logger.info("Have access to execution folder: "+Applet.BIN_FOLDER.getAbsolutePath());
 			setReadyStateBasedOnPriorRecording();
         } catch (Exception e) { // possibilities: MalformedURL, IOException, etc.
         	Applet.sendViewNotification(ViewNotifications.FATAL, new MessageNotification(
         			"Error with install", 
         			"Sorry, an error occurred while installing the native extensions. Please contact an Insight admin."));
-        	//recordGUI.changeState(RecordControls.FATAL,);
-        	//optionsGUI.changeState(PostOptions.FATAL, );
-			e.printStackTrace();
+        	logger.error("Could not install the native extensions",e);
 		}
 	}
 	
@@ -117,7 +117,7 @@ public class WindowsController extends ApplicationController {
 		        	}
 		        	*/
 		        } else {
-		        	System.out.println("No audio source specified.");
+		        	logger.info("No audio source specified.");
 		        	mic = null;
 		        	systemAudio = null;
 		        }
@@ -166,15 +166,16 @@ public class WindowsController extends ApplicationController {
 						postProcess.removeAllProcessListeners();
 					postProcess = new PostProcessor();
 					Map<Integer,String> opts = new HashMap<Integer, String>();
+					opts.put(PostProcessor.MERGE_AUDIO_VIDEO, null);
 					if(audioStart > videoStart) {
 						long ms = videoStart - audioStart;
 						float s = ((float)ms)/1000f;
-						System.out.println("Video delay: "+ms+" ms "+s+" s");
+						logger.info("Video delay: "+ms+" ms "+s+" s");
 						opts.put(PostProcessor.OFFSET_VIDEO, s+"");
 					} else if(videoStart > audioStart) {
 						long ms = audioStart - videoStart;
 						float s = ((float)ms)/1000f;
-						System.out.println("Audio delay: "+ms+" ms "+s+" s");
+						logger.info("Audio delay: "+ms+" ms "+s+" s");
 						opts.put(PostProcessor.OFFSET_AUDIO, s+"");
 					}
 			    	//postProcess.setSilent(true); // no need to notify UI for this encoding

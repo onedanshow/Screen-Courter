@@ -4,3 +4,4 @@ build/*
 dist/*
 old-bin-mac/*
 bin/*
+*.log

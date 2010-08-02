@@ -19,13 +19,20 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Enumeration;
 import java.util.EventObject;
+import java.util.Vector;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import javax.swing.JApplet;
+import javax.swing.JWindow;
 import javax.swing.SwingUtilities;
+
+import org.apache.log4j.FileAppender;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
+import org.apache.log4j.RollingFileAppender;
 
 import netscape.javascript.JSException;
 import netscape.javascript.JSObject;
@@ -34,6 +41,7 @@ import com.reelfx.controller.ApplicationController;
 import com.reelfx.controller.LinuxController;
 import com.reelfx.controller.MacController;
 import com.reelfx.controller.WindowsController;
+import com.reelfx.model.AttributesManager;
 import com.reelfx.model.CaptureViewport;
 import com.reelfx.model.PreferencesManager;
 import com.reelfx.view.AudioSelector;
@@ -79,8 +87,10 @@ public class Applet extends JApplet {
 			GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDisplayMode().getWidth(), 
 			GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDisplayMode().getHeight());
 	public final static CaptureViewport CAPTURE_VIEWPORT = new CaptureViewport();
+	public static Vector<Window> WINDOWS = new Vector<Window>(); // didn't want to manually manage windows, but Safari would only return a Frame through Window.getWindows() on commands called via JS
 	
 	private ApplicationController controller = null;
+	private static Logger logger = Logger.getLogger(Applet.class);
 	
 	// called when this applet is loaded into the browser.
 	@Override
@@ -90,10 +100,18 @@ public class Applet extends JApplet {
 			RFX_FOLDER = new File(getRfxFolderPath()); // should be first
 			BIN_FOLDER = new File(getBinFolderPath());
 			DESKTOP_FOLDER = new File(getDesktopFolderPath());
+			// from: http://www.theserverside.com/discussions/thread.tss?thread_id=42709
+			if(Applet.DEV_MODE) {
+				System.setProperty("log.file.path", "../logs/development.log");
+				PropertyConfigurator.configure("../logs/config.properties");
+			} else {
+				System.setProperty("log.file.path", RFX_FOLDER.getAbsolutePath()+File.separator+"production.log");
+				PropertyConfigurator.configure(this.getClass().getClassLoader().getResource("config.properties"));
+			}
 			try {
 				JS_BRIDGE = JSObject.getWindow(this);
 			} catch(JSException e) {
-				System.err.println("Could not create JSObject.  Probably in development mode.");
+				logger.error("Could not create JSObject.  Probably in development mode.");
 			}
 			DOCUMENT_BASE = getDocumentBase();
 			CODE_BASE = getCodeBase();
@@ -105,14 +123,16 @@ public class Applet extends JApplet {
 			SCREEN_CAPTURE_NAME = getParameter("screen_capture_name");
 			HOST_URL = DOCUMENT_BASE.getProtocol() + "://" + DOCUMENT_BASE.getHost();
 			if(getParameter("headless") != null)
-				HEADLESS = !getParameter("headless").isEmpty() && getParameter("headless").equals("true"); // Boolean.getBoolean(string) didn't work			 
+				HEADLESS = !getParameter("headless").isEmpty() && getParameter("headless").equals("true"); // Boolean.getBoolean(string) didn't work
+			if(API_KEY.isEmpty())
+				throw new Exception("An api key is required!");
 			if( RFX_FOLDER.exists() && !RFX_FOLDER.isDirectory() && !RFX_FOLDER.delete() )
 		        throw new IOException("Could not delete file for folder: " + RFX_FOLDER.getAbsolutePath());
 			if( !RFX_FOLDER.exists() && !RFX_FOLDER.mkdir() )
 		        throw new IOException("Could not create folder: " + RFX_FOLDER.getAbsolutePath());
 			
 			// print information to console
-			System.out.println(getAppletInfo());
+			logger.info(getAppletInfo());
 			
 			// execute a job on the event-dispatching thread; creating this applet's GUI
             SwingUtilities.invokeAndWait(new Runnable() {
@@ -134,12 +154,8 @@ public class Applet extends JApplet {
                 		controller.setupExtensions();
                 }
             });
-        
-		} catch (IOException e) {
-			e.printStackTrace();
-		}	catch (Exception e) {
-            System.err.println("Could not create GUI!");
-            e.printStackTrace();
+		} catch (Exception e) {
+            logger.error("Could not create GUI!",e);
         }
     }
 	
@@ -150,15 +166,16 @@ public class Applet extends JApplet {
 	 * @param body
 	 */
 	public static void sendViewNotification(ViewNotifications notification,Object body) {
-		//System.out.println("View Notification: "+notification);
+		//logger.info("View Notification: "+notification);
 		// applet is a special case (see ApplicationController constructor)
 		if(APPLET.getContentPane().getComponents().length > 0)
 			((ViewListener) APPLET.getContentPane().getComponent(0)).receiveViewNotification(notification, body);
 		// another special case where the capture viewport is a pseudo-model
 		CAPTURE_VIEWPORT.receiveViewNotification(notification, body);
 		// notify all the open windows
-		Window[] windows = Window.getWindows();
-		for(Window win : windows) {
+		//Window[] windows = Window.getWindows();
+		for(Window win : Applet.WINDOWS) {
+			//System.out.println("Window: "+win);
 			if(win instanceof ViewListener) {
 				((ViewListener) win).receiveViewNotification(notification, body);
 			}
@@ -180,6 +197,21 @@ public class Applet extends JApplet {
 	}
 	*/
 	
+	public void changePostUrl(final String url) {
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
+			@Override
+			public Object run() {
+				try {
+					POST_URL = url;
+					logger.info("Changed post URL to "+url);
+				} catch (Exception e) {
+					logger.error("Can't change the post URL!",e);
+				}
+				return null;
+			}
+		});
+	}	
+	
 	/**
 	 *  This method piggy backs on record GUI to drive any external (i.e. Flash) GUI.
 	 */
@@ -190,8 +222,7 @@ public class Applet extends JApplet {
 				try {
 					controller.recordGUI.prepareForRecording();
 				} catch (Exception e) {
-					System.err.println("Can't prepare and start the recording!");
-					e.printStackTrace();
+					logger.error("Can't prepare and start the recording!",e);
 				}
 				return null;
 			}
@@ -205,8 +236,7 @@ public class Applet extends JApplet {
 				try {
 					controller.recordGUI.stopRecording();
 				} catch (Exception e) {
-					System.err.println("Can't stop the recording!");
-					e.printStackTrace();
+					logger.error("Can't stop the recording!",e);
 				}
 				return null;
 			}
@@ -224,19 +254,28 @@ public class Applet extends JApplet {
 	*/
 	public void showRecordingInterface() {
 		AccessController.doPrivileged(new PrivilegedAction<Object>() {
-
 			@Override
 			public Object run() {
 				try {
 					SwingUtilities.invokeLater(new Runnable() {
 		                public void run() {
-		                	if(controller != null)
-		                		controller.showRecordingInterface();
+		                	if(controller != null) {
+		                		if (AttributesManager.OUTPUT_FILE.exists()) {
+		                			handleExistingRecording();
+		                			logger.info("Outside call to show recording interface, but prior review exists...");
+		                		} else {
+		                			controller.showRecordingInterface();
+		                			logger.info("Outside call to show recording interface. Showing recording tools...");
+		                		}
+		                	}
+		                	else {
+		                		logger.error("No controller exists!");
+		                	}
+		                	
 		                }
 		            });
 				} catch (Exception e) {
-					System.err.println("Can't show the recording interface!");
-					e.printStackTrace();
+					logger.error("Can't show the recording interface!",e);
 				}
 				return null;
 			}
@@ -257,8 +296,7 @@ public class Applet extends JApplet {
 		                }
 		            });
 				} catch (Exception e) {
-					System.err.println("Can't hide the recording interface!");
-					e.printStackTrace();
+					logger.error("Can't hide the recording interface!",e);
 				}
 				return null;
 			}
@@ -280,6 +318,10 @@ public class Applet extends JApplet {
 	
 	public static void handleFreshRecording() {
 		jsCall("sct_handle_fresh_recording()");
+	}
+	
+	public static void handleUploadedRecording() {
+		jsCall("sct_handle_uploaded_recording()");
 	}
 	
 	public static void handleDeletedRecording() {
@@ -309,7 +351,7 @@ public class Applet extends JApplet {
 	
 	private static void jsCall(String method) {
 		if(JS_BRIDGE == null) {
-			System.err.println("Call to "+method+" but no JS Bridge exists. Probably in development mode...");
+			logger.error("Call to "+method+" but no JS Bridge exists. Probably in development mode...");
 		} else {
 			//System.out.println("Sending javascript call: "+method);
 			//JSObject doc = (JSObject) JS_BRIDGE.getMember("document");
@@ -476,7 +518,7 @@ public class Applet extends JApplet {
 		}
 		try {
 			return 
-				"APPLET PROPERLY INITIALIZED WITH THIS VARIABLES:\n"+
+				"\n\n\n\nAPPLET PROPERLY INITIALIZED WITH THIS VARIABLES:\n"+
 				"Java Version: \t"+System.getProperty("java.version")+"\n"+
 				"OS Name: \t"+System.getProperty("os.name")+"\n"+
 				"OS Version: \t"+System.getProperty("os.version")+"\n"+
@@ -493,7 +535,7 @@ public class Applet extends JApplet {
 				"Applet window is on screen " + myScreenIndex+"\n"+
 				"Primary screen is index " + primaryScreenIndex+"\n"+
 				"Primary screen resolution: "+SCREEN+"\n"+
-				"Headless: \t"+HEADLESS+"\n";
+				"Headless: \t"+HEADLESS;
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
 			return "Error";

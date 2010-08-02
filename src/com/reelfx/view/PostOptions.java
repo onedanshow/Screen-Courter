@@ -15,7 +15,10 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JSeparator;
 
+import org.apache.log4j.Logger;
+
 import com.reelfx.controller.ApplicationController;
+import com.reelfx.model.PostProcessor;
 import com.reelfx.view.util.MessageNotification;
 import com.reelfx.view.util.ViewListener;
 import com.reelfx.view.util.ViewNotifications;
@@ -24,6 +27,7 @@ public class PostOptions extends JPanel implements ViewListener {
 	
 	private static final long serialVersionUID = 4036818007133606840L;
 	
+	private static Logger logger = Logger.getLogger(PostOptions.class);
 	public JButton previewBtn, saveBtn, insightBtn, deleteBtn;
 	private final ApplicationController controller;
 	private JLabel message;
@@ -34,35 +38,25 @@ public class PostOptions extends JPanel implements ViewListener {
 	public PostOptions(final ApplicationController controller) {
 		super();
 		setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
-		setBackground(new Color(230,230,230));
+		setBackground(new Color(200,200,200));
 		setBorder(BorderFactory.createLineBorder(new Color(102, 102, 102)));
 		self = this;
 		this.controller = controller;
-        
-        /*
-        message = new JTextArea();
-        message.setFont(new java.awt.Font("Arial", 0, 13));
-        message.setMinimumSize(new Dimension(200,20));
-        message.setOpaque(false);
-        message.setLineWrap(true);
-        message.setBorder(javax.swing.BorderFactory.createLineBorder(messageColor, 5));
-        //message.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        message.setText("You have a review for \"Shot 2000-0300\" from 04/03/2010");
-        message.setAlignmentX(0.5F);
-        /* */
 		
         message = new JLabel();
-        message.setFont(new java.awt.Font("Arial", 0, 11));
-        message.setOpaque(false);
+        message.setFont(new java.awt.Font("Arial", 0, 12));
         message.setMaximumSize(new Dimension(180,1000));
         message.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         message.setAlignmentX(0.5F);
         
         progressBar = new JProgressBar();
-        progressBar.setIndeterminate(true);
+        //progressBar.setIndeterminate(true);
+        progressBar.setMinimum(0);
+        progressBar.setMaximum(100);
         
         JPanel messageBoard = new JPanel();
         messageBoard.setLayout(new BorderLayout());
+        messageBoard.setOpaque(false);
         messageBoard.add(message,BorderLayout.CENTER);
         messageBoard.add(progressBar,BorderLayout.SOUTH);
         add(messageBoard);
@@ -89,7 +83,7 @@ public class PostOptions extends JPanel implements ViewListener {
         });
         add(saveBtn);
 
-        insightBtn = new JButton("Post to Insight");
+        insightBtn = new JButton("Upload to Insight");
         insightBtn.setFont(new java.awt.Font("Arial", 0, 11));
         insightBtn.setAlignmentX(0.5F);
         insightBtn.addActionListener(new ActionListener() {
@@ -146,6 +140,12 @@ public class PostOptions extends JPanel implements ViewListener {
     		}
 			break;
 		
+		case THINKING_PROGRESS:
+			//logger.info("Progress update: "+body.toString());
+			progressBar.setIndeterminate(false);
+			progressBar.setValue(Integer.parseInt(body.toString()));
+			break;
+			
 		case SHOW_ALL:
 		case FATAL:
 		case THINKING:
@@ -166,6 +166,7 @@ public class PostOptions extends JPanel implements ViewListener {
 		// any secondary changes
 		switch(notification) {
 		case THINKING:
+			progressBar.setIndeterminate(true);
 			progressBar.setVisible(true);
 		}
 		

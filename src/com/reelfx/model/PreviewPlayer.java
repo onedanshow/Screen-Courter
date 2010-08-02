@@ -15,6 +15,8 @@ import javax.sound.sampled.DataLine;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 
+import org.apache.log4j.Logger;
+
 import com.reelfx.Applet;
 import com.reelfx.controller.LinuxController;
 import com.reelfx.controller.WindowsController;
@@ -27,6 +29,7 @@ public class PreviewPlayer extends ProcessWrapper {
     AudioPlayer audioPlayer;
     StreamGobbler errorGobbler, inputGobbler;
     boolean keepPlaying = true;
+    private static Logger logger = Logger.getLogger(PreviewPlayer.class);
     
     @Override
 	public void run() {
@@ -65,12 +68,12 @@ public class PreviewPlayer extends ProcessWrapper {
 				        ProcessBuilder pb = new ProcessBuilder(ffplayArgs);
 				        ffplayProcess = pb.start();
 				        
-				        System.out.println("Executing this command: "+prettyCommand(ffplayArgs));
+				        logger.info("Executing this command: "+prettyCommand(ffplayArgs));
 				        
 				        errorGobbler = new StreamGobbler(ffplayProcess.getErrorStream(), true, "ffplay E");
 				        inputGobbler = new StreamGobbler(ffplayProcess.getInputStream(), true, "ffplay O");
 				        
-				        System.out.println("Starting listener threads for PreviewPlayer...");
+				        logger.info("Starting listener threads for PreviewPlayer...");
 				        errorGobbler.start();
 				        inputGobbler.start();
 				
@@ -78,7 +81,7 @@ public class PreviewPlayer extends ProcessWrapper {
 				        ffplayProcess.waitFor();
 				        //stopAudio();
 				        ffplayProcess = null;
-				        System.out.println("PreviewPlayer has finished.");
+				        logger.info("PreviewPlayer has finished.");
 		        	}
 		      } catch (IOException ioe) {
 		    	  ioe.printStackTrace();
@@ -98,7 +101,7 @@ public class PreviewPlayer extends ProcessWrapper {
     @Deprecated
     private void playAudio() {
     	if(Applet.IS_WINDOWS) {
-	        System.out.println("Playing audio independently...");
+	        logger.info("Playing audio independently...");
 	        audioPlayer = new AudioPlayer();
 	        audioPlayer.start();
     	}
@@ -107,7 +110,7 @@ public class PreviewPlayer extends ProcessWrapper {
     @Deprecated
     private void stopAudio() {
     	if(Applet.IS_WINDOWS) {
-	        System.out.println("Stopping independent audio...");
+	        logger.info("Stopping independent audio...");
 	        if(audioPlayer.isAlive())
 	            audioPlayer.keepPlaying = false;
     	}
@@ -123,12 +126,12 @@ public class PreviewPlayer extends ProcessWrapper {
 
 class AudioPlayer extends Thread {
     private static final int	EXTERNAL_BUFFER_SIZE = 128000;
-
+    private static Logger logger = Logger.getLogger(AudioPlayer.class);
     public boolean keepPlaying = true;
 
     @Override
     public void run() {
-        System.out.println("Playing audio...");
+        logger.info("Playing audio...");
         File soundFile = AudioRecorder.OUTPUT_FILE;
 
         /*
@@ -141,8 +144,7 @@ class AudioPlayer extends Thread {
         }
         catch (Exception e)
         {
-                System.err.println("Could not playback the audio file!");
-                e.printStackTrace();
+                logger.error("Could not playback the audio file!",e);
                 return;
         }
 

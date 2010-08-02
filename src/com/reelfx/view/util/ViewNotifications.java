@@ -49,5 +49,6 @@ public enum ViewNotifications {
 	PRE_RECORDING,
 	RECORDING,
 	THINKING,
+	THINKING_PROGRESS,
 	FATAL
 }

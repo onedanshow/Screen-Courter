@@ -13,6 +13,8 @@ import java.security.PrivilegedAction;
 
 import javax.swing.Timer;
 
+import org.apache.log4j.Logger;
+
 import com.reelfx.Applet;
 
 /**
@@ -26,6 +28,7 @@ public class PreferencesManager {
 	public static File OUTPUT_FILE = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"preferences");
 	public final static String FROM_PREFERENCES = "from_prefs"; // should be lowercase
 	
+	private static Logger logger = Logger.getLogger(PreferencesManager.class);
 	private static int x = -1, y = -1, width = -1, height = -1;
 	private static boolean forceRecordingToolsToCorner = false;
 	private static Timer timer = null;
@@ -48,8 +51,8 @@ public class PreferencesManager {
 			input.close();
 			initialized = true;
 	    }
-	    catch (IOException ex){
-	      ex.printStackTrace();
+	    catch (Exception ex){
+	      logger.error("Could not read the preferences file",ex);
 	    }
 	}
 	
@@ -86,8 +89,8 @@ public class PreferencesManager {
 				output.close();
 			}
 		}
-		catch (IOException ex) {
-			ex.printStackTrace();
+		catch (Exception ex) {
+			logger.error("Could not write the preferences file",ex);
 		}
 	}
 
@@ -100,7 +103,7 @@ public class PreferencesManager {
 					if(OUTPUT_FILE.exists() && !OUTPUT_FILE.delete())
 						throw new Exception("Can't delete the old preference file!");
 				} catch (Exception e) {
-					e.printStackTrace();
+					logger.error(e.getMessage(),e);
 				}
 				return null;
 			}

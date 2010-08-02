@@ -37,6 +37,8 @@ import javax.swing.Timer;
 import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 
+import org.apache.log4j.Logger;
+
 import com.reelfx.Applet;
 import com.reelfx.controller.ApplicationController;
 import com.reelfx.model.AttributesManager;
@@ -50,18 +52,21 @@ import com.reelfx.view.util.ViewNotifications;
 public class RecordControls extends MoveableWindow implements ActionListener {
 
 	public final static String NAME = "RecordControls";
-
+	private static Logger logger = Logger.getLogger(RecordControls.class);
+	
 	public JButton recordBtn, positionBtn, closeBtn;
 	public AudioSelector audioSelect;
 	public JPanel titlePanel, recordingOptionsPanel, statusPanel;
 
 	private JLabel title, status;
+	private JPanel borderPanel;
 	// private JTextArea message;
 	private Timer timer;
 	private ApplicationController controller;
 	private JFileChooser fileSelect = new JFileChooser();
-	private Color backgroundColor = new Color(200,200,200); // new Color(34, 34, 34); // 
-	private Color textColor = Color.BLACK;
+	private static Color backgroundColor = new Color(200,200,200); // new Color(34, 34, 34); //
+	private static Color borderColor = new Color(62,64,65);
+	private static Color textColor = Color.BLACK;
 	private int timerCount = 0;
 	private JComboBox viewportSelect;
 	private ViewNotifications currentState;
@@ -103,18 +108,18 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 		 * System.out.println("Transparency supported!"); }
 		 */
 		
-		JPanel border = new JPanel();
-		border.setBackground(backgroundColor);
-		border.setBorder(new LineBorder(new Color(62,64,65), 3));
-		border.setLayout(new BoxLayout(border, BoxLayout.PAGE_AXIS));
-		add(border);
+		borderPanel = new JPanel();
+		borderPanel.setBackground(backgroundColor);
+		borderPanel.setBorder(new LineBorder(borderColor, 3));
+		borderPanel.setLayout(new BoxLayout(borderPanel, BoxLayout.PAGE_AXIS));
+		add(borderPanel);
 
 		// ------- setup title bar -------
 
 		title = new JLabel();
 		title.setFont(new java.awt.Font("Arial", 1, 11));
 		title.setForeground(textColor);
-		title.setText("   Review for " + Applet.SCREEN_CAPTURE_NAME + "   ");
+		title.setText("   Screen Recording for \"" + Applet.SCREEN_CAPTURE_NAME + "\"   ");
 		title.setHorizontalAlignment(SwingConstants.CENTER);
 
 		titlePanel = new JPanel();
@@ -149,12 +154,14 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 		
 		JPanel buttons = new JPanel();
 		buttons.setLayout(new FlowLayout(FlowLayout.RIGHT));
-		buttons.add(positionBtn);
+		if(!Applet.IS_MAC || Applet.DEV_MODE) {
+			buttons.add(positionBtn);
+		}
 		buttons.add(closeBtn);
 		buttons.setBackground(backgroundColor);
 		titlePanel.add(buttons, BorderLayout.EAST);
 
-		border.add(titlePanel); // ,BorderLayout.CENTER);
+		borderPanel.add(titlePanel); // ,BorderLayout.CENTER);
 
 		// ------- setup recording options -------
 
@@ -173,13 +180,12 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 				}
 			}
 		});
-		recordBtn.setFont(new Font("Arial", 0, 11));
+		recordBtn.setFont(new Font("Arial", Font.BOLD, 12));
 		recordingOptionsPanel.add(recordBtn);
 
 		status = new JLabel();
 		// status.setBackground(statusColor);
-		// status.setPreferredSize(new Dimension(50, 40));
-		status.setFont(new java.awt.Font("Arial", 1, 11));
+		status.setFont(new java.awt.Font("Arial", 1, 12));
 		status.setForeground(textColor);
 		status.setHorizontalAlignment(SwingConstants.CENTER);
 		recordingOptionsPanel.add(status);
@@ -214,9 +220,9 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 		if(!Applet.IS_MAC || Applet.DEV_MODE) // TODO temporary
 			recordingOptionsPanel.add(viewportSelect);
 
-		border.add(recordingOptionsPanel);
+		borderPanel.add(recordingOptionsPanel);
 
-		System.out.println("RecordControls initialized...");
+		logger.info("Initialized...");
 		
 		pack();
 		receiveViewNotification(ViewNotifications.CAPTURE_VIEWPORT_CHANGE);
@@ -246,6 +252,7 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 		case SHOW_RECORD_CONTROLS:
 			setAlwaysOnTop(true);
 			setVisible(true);
+			borderPanel.setBorder(new LineBorder(borderColor,3));
 			break;
 		
 		case PRE_RECORDING:
@@ -275,6 +282,7 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 			viewportSelect.setVisible(false);
 			closeBtn.setVisible(false);
 			currentState = notification;
+			borderPanel.setBorder(new LineBorder(new Color(255,71,71),3)); // recording color
 			if (body instanceof MessageNotification) {
 				status.setText(((MessageNotification) body).getStatusText());
 			} else {
@@ -302,6 +310,7 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 			viewportSelect.setEnabled(false);
 			viewportSelect.setVisible(true);
 			currentState = notification;
+			borderPanel.setBorder(new LineBorder(borderColor,3));
 			if (body instanceof MessageNotification) {
 				status.setText(((MessageNotification) body).getStatusText());
 			} else {
@@ -363,6 +372,9 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 		Applet.sendViewNotification(ViewNotifications.MOUSE_DRAG_RECORD_CONTROLS, e);
 	}
 
+	/**
+	 * Called when the "Record" button is pressed, starting the countdown timer.
+	 */
 	public void prepareForRecording() {
 		// do I need permission to delete a file first?
 		if (AttributesManager.OUTPUT_FILE.exists() && !deleteRecording())
@@ -387,10 +399,8 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 	public void actionPerformed(ActionEvent e) { // this method is for the timer
 		if (status.getText().equals("Ready")) {
 			Applet.sendViewNotification(ViewNotifications.PRE_RECORDING, new MessageNotification("Set"));
-			//changeState(PRE_RECORDING, "Set");
 		} else if (status.getText().equals("Set")) {
 			Applet.sendViewNotification(ViewNotifications.RECORDING, new MessageNotification("Go!"));
-			//changeState(RECORDING, "Go!");
 			startRecording();
 		} else {
 			status.setText((timerCount / 60 < 10 ? "0" : "") + timerCount
@@ -409,22 +419,6 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 		timer.stop();
 		timerCount = 0;
 		controller.stopRecording();
-	}
-
-	public void previewRecording() {
-		controller.previewRecording();
-	}
-
-	public void saveRecording() {
-		int returnVal = fileSelect.showSaveDialog(this);
-		if (returnVal == JFileChooser.APPROVE_OPTION) {
-			File file = fileSelect.getSelectedFile();
-			controller.saveRecording(file);
-		}
-	}
-
-	public void postRecording() {
-		controller.postRecording();
 	}
 
 	/**

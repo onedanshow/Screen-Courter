@@ -61,6 +61,8 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.spi.AudioFileWriter;
 
+import org.apache.log4j.Logger;
+
 import com.reelfx.Applet;
 import com.reelfx.model.util.ProcessWrapper;
 import com.sun.media.sound.JDK13Services;
@@ -80,6 +82,7 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
     public final static int RECORDING_COMPLETE = 201;
     public final static int RECORDING_ERROR = 202;
     
+    private static Logger logger = Logger.getLogger(AudioRecorder.class);
 	private TargetDataLine m_line = null;
 	private AudioFileFormat.Type m_targetType;
 	private AudioInputStream m_audioInputStream;
@@ -93,17 +96,17 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 		// tried switching to mono, but it threw an exception
 		//AudioFormat	audioFormat = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, FREQ, 16, 2, 4, FREQ, false);
 
-		System.out.println("Creating new AudioRecorder");
+		logger.info("Creating new AudioRecorder");
 		DataLine.Info info = new DataLine.Info(TargetDataLine.class, AUDIO_FORMAT);
 		try
 		{
 			if(mixer != null) {// try with the mixer given
-				System.out.println("Grabbing the specified audio mixer: "+mixer.getLineInfo().toString());
+				logger.info("Grabbing the specified audio mixer: "+mixer.getLineInfo().toString());
 				m_line = (TargetDataLine) mixer.getLine(info);
 				m_outputFile = OUTPUT_FILE;
 			}
 			else { // try to grab one ourselves
-				System.out.println("Grabbing whatever AudioSystem line I can get...(system audio?)");
+				logger.info("Grabbing whatever AudioSystem line I can get...(system audio?)");
 				m_line = (TargetDataLine) AudioSystem.getLine(info);
 				m_outputFile = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"screen_capture_system.wav");
 			}
@@ -113,8 +116,7 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 		}
 		catch (LineUnavailableException e)
 		{
-			System.err.println("Unable to get a recording line");
-			e.printStackTrace();
+			logger.error("Unable to get a recording line",e);
 		}
 		
 		m_audioInputStream = new AudioInputStream(m_line);
@@ -126,7 +128,7 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 	/** Starts the recording. */
 	public void startRecording()
 	{
-		System.out.println("Setting up audio line recording...");
+		logger.info("Setting up audio line recording...");
 		/* Starting the thread. This call results in the
 		   method 'run()' (see below) being called. There, the
 		   data is actually read from the line.
@@ -165,7 +167,7 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 		    			// are we ready to save the file and finish the thread?
 		    			if(m_saveFile || m_line == null) {
 		    				if(bos != null) {
-		    					System.out.println("Saving audio file...");
+		    					logger.info("Saving audio file...");
 								bos.flush();
 								bos.close();
 								// now properly reconstruct the audio file that we just made (if we made one)
