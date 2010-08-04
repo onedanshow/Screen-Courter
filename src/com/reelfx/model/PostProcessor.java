@@ -65,11 +65,12 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 	// STATES
 	public final static int ENCODING_STARTED = 0;
 	public final static int ENCODING_PROGRESS = 1;
-	public final static int ENCODING_COMPLETE = 2;
-	public final static int POST_STARTED = 3;
-	public final static int POST_PROGRESS = 4;
-	public final static int POST_FAILED = 5;
-	public final static int POST_COMPLETE = 6;
+	public final static int ENCODING_FAILED = 2;	
+	public final static int ENCODING_COMPLETE = 3;
+	public final static int POST_STARTED = 4;
+	public final static int POST_PROGRESS = 5;
+	public final static int POST_FAILED = 6;
+	public final static int POST_COMPLETE = 7;
 	
 	private static Logger logger = Logger.getLogger(PostProcessor.class);
 	protected Process ffmpegProcess;
@@ -200,94 +201,100 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 				fireProcessUpdate(ENCODING_COMPLETE);
 			}
 			
-			// ----- post data of screen capture to Insight -----------------------			
-	        if(postRecording) {
-	        	// base code: http://stackoverflow.com/questions/1067655/how-to-upload-a-file-using-java-httpclient-library-working-with-php-strange-pro
-	        	fireProcessUpdate(POST_STARTED);
-	        	
-	        	HttpClient client = new DefaultHttpClient();
-	        	client.getParams().setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
-	        	
-	        	CountingMultipartEntity entity = new CountingMultipartEntity();
-	        	ContentBody body = new FileBody(outputFile,"video/quicktime");
-	        	entity.addPart("capture_file",body);
-	        	
-	        	HttpPost post = new HttpPost(postUrl);
-	        	post.setEntity(entity);
-	        	
-	        	logger.info("Posting file to server... "+post.getRequestLine());
-	        	
-	        	HttpResponse response = client.execute(post);
-	        	HttpEntity responseEntity = response.getEntity();
-	        	
-	        	logger.info("Response Status Code: "+response.getStatusLine());
-	            if (responseEntity != null) {
-	            	logger.info(EntityUtils.toString(responseEntity)); // to see the response body
-	            }
-	            
-	            // redirection to show page (meaning everything was correct); NOTE: Insight redirects you to the login form when you're not logged in (or no api_key)
-	            //if(response.getStatusLine().getStatusCode() == 302) {
-	            	//Header header = response.getFirstHeader("Location");
-	            	//logger.info("Redirecting to "+header.getValue());
-	            	//Applet.redirectWebPage(header.getValue());
-	            	//Applet.APPLET.showDocument(new URL(header.getValue()),"_self");
-	            
-	            if(response.getStatusLine().getStatusCode() == 200) {
-	            	fireProcessUpdate(POST_COMPLETE);
-	            } else {
-	            	fireProcessUpdate(POST_FAILED);
-	            }
-	            	
-	            if (responseEntity != null) {
-	            	responseEntity.consumeContent();
-	            }
-	        	
-	        	client.getConnectionManager().shutdown();
-	        }
-			// ----- post data of screen capture to Insight -----------------------	        
-	        else if(postData) {
-	        	fireProcessUpdate(POST_STARTED);
-	        	
-	        	HttpClient client = new DefaultHttpClient();
-		    	client.getParams().setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
-		    	
-		    	HttpPost post = new HttpPost(postUrl);
-		    	
-		    	logger.info("Sending data to Insight... "+post.getRequestLine());
-		    	
-		    	HttpResponse response = client.execute(post);
-		    	HttpEntity responseEntity = response.getEntity();
-		
-		    	logger.info("Response Status Code: "+response.getStatusLine());
-		        if (responseEntity != null) {
-		        	logger.info(EntityUtils.toString(responseEntity)); // to see the response body
+			try {	
+				
+				// ----- post data of screen capture to Insight -----------------------			
+		        if(postRecording) {
+		        	// base code: http://stackoverflow.com/questions/1067655/how-to-upload-a-file-using-java-httpclient-library-working-with-php-strange-pro
+		        	fireProcessUpdate(POST_STARTED);
+		        	
+		        	HttpClient client = new DefaultHttpClient();
+		        	client.getParams().setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
+		        	
+		        	CountingMultipartEntity entity = new CountingMultipartEntity();
+		        	ContentBody body = new FileBody(outputFile,"video/quicktime");
+		        	entity.addPart("capture_file",body);
+		        	
+		        	HttpPost post = new HttpPost(postUrl);
+		        	post.setEntity(entity);
+		        	
+		        	logger.info("Posting file to server... "+post.getRequestLine());
+		        	
+		        	HttpResponse response = client.execute(post);
+		        	HttpEntity responseEntity = response.getEntity();
+		        	
+		        	logger.info("Response Status Code: "+response.getStatusLine());
+		            if (responseEntity != null) {
+		            	logger.info(EntityUtils.toString(responseEntity)); // to see the response body
+		            }
+		            
+		            // redirection to show page (meaning everything was correct); NOTE: Insight redirects you to the login form when you're not logged in (or no api_key)
+		            //if(response.getStatusLine().getStatusCode() == 302) {
+		            	//Header header = response.getFirstHeader("Location");
+		            	//logger.info("Redirecting to "+header.getValue());
+		            	//Applet.redirectWebPage(header.getValue());
+		            	//Applet.APPLET.showDocument(new URL(header.getValue()),"_self");
+		            
+		            if(response.getStatusLine().getStatusCode() == 200) {
+		            	fireProcessUpdate(POST_COMPLETE);
+		            } else {
+		            	fireProcessUpdate(POST_FAILED);
+		            }
+		            	
+		            if (responseEntity != null) {
+		            	responseEntity.consumeContent();
+		            }
+		        	
+		        	client.getConnectionManager().shutdown();
+		        }
+				// ----- post data of screen capture to Insight -----------------------	        
+		        else if(postData) {
+		        	fireProcessUpdate(POST_STARTED);
+		        	
+		        	HttpClient client = new DefaultHttpClient();
+			    	client.getParams().setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
+			    	
+			    	HttpPost post = new HttpPost(postUrl);
+			    	
+			    	logger.info("Sending data to Insight... "+post.getRequestLine());
+			    	
+			    	HttpResponse response = client.execute(post);
+			    	HttpEntity responseEntity = response.getEntity();
+			
+			    	logger.info("Response Status Code: "+response.getStatusLine());
+			        if (responseEntity != null) {
+			        	logger.info(EntityUtils.toString(responseEntity)); // to see the response body
+			        }
+			        
+			        if(response.getStatusLine().getStatusCode() == 200) {	
+			        	fireProcessUpdate(POST_COMPLETE);
+			        } else {
+			        	fireProcessUpdate(POST_FAILED);
+			        }
+			        	
+			        if (responseEntity != null) {
+			        	responseEntity.consumeContent();
+			        }
+			    	
+			    	client.getConnectionManager().shutdown();
 		        }
 		        
-		        if(response.getStatusLine().getStatusCode() == 200) {	
-		        	fireProcessUpdate(POST_COMPLETE);
-		        } else {
-		        	fireProcessUpdate(POST_FAILED);
-		        }
-		        	
-		        if (responseEntity != null) {
-		        	responseEntity.consumeContent();
-		        }
-		    	
-		    	client.getConnectionManager().shutdown();
-	        }
-	        
-	        // TODO monitor the progress of the event
-	        // TODO allow canceling of the transcoding?
-	        
-	  } catch (IOException ioe) {
-		  ioe.printStackTrace();
-	  } catch (Exception ie) {
-		  ie.printStackTrace();
-	  } finally {
-		  outputFile = null;
-		  encodingOpts = new HashMap<Integer, String>(); // reset encoding options   
-		  metadata = null;
-	  }
+		        // TODO monitor the progress of the event
+		        // TODO allow canceling of the transcoding?
+		        
+		  } catch (Exception e) {
+			  logger.error("Error occurred while posting the file.", e);
+			  fireProcessUpdate(POST_FAILED);
+		  } finally {
+			  outputFile = null;   
+			  encodingOpts = new HashMap<Integer, String>(); // reset encoding options 
+			  metadata = null;
+		  }
+		}
+		catch (Exception e) {
+			  logger.error("Error occurred while encoding the file.", e);
+			  fireProcessUpdate(ENCODING_FAILED);
+		}	
 	}
 	
 	protected void finalize() throws Throwable {
@@ -303,10 +310,11 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 	private void setPostURI(String url) {
 		try {
 			URI given = new URI(url);
-	    	String query = given.getQuery() + (given.getQuery().isEmpty() ? "" : "&") + "api_key="+Applet.API_KEY;
+			String query = given.getQuery() == null ? "" : given.getQuery();
+	    	query = query + (query.isEmpty() ? "" : "&") + "api_key="+Applet.API_KEY;
 	    	postUrl = new URI(given.getScheme(),given.getAuthority(),given.getPath(),query,given.getFragment());
-		} catch (URISyntaxException e) {
-			logger.error("Error occurred while processing the post URL", e);
+		} catch (Exception e) {
+			logger.error("Error occurred while processing the post URL (received: "+url+")", e);
 			fireProcessUpdate(POST_FAILED);
 		}
 	}

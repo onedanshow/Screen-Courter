@@ -113,6 +113,10 @@ public abstract class ApplicationController implements ProcessListener {
 		case PostProcessor.ENCODING_STARTED:
 			Applet.sendViewNotification(ViewNotifications.THINKING, new MessageNotification("Encoding...", "Encoding..."));
 			break;
+		case PostProcessor.ENCODING_FAILED:	
+			Applet.sendViewNotification(ViewNotifications.FATAL, 
+					new MessageNotification("Encoding failed!", "An error occurred while encoding the screen recording. Please contact an Insight development."));
+			break;	
 		case PostProcessor.ENCODING_COMPLETE:
 			Applet.sendViewNotification(ViewNotifications.POST_OPTIONS, 
 					new MessageNotification("Finished encoding.","Your screen recording has been encoded and saved."));
@@ -120,7 +124,7 @@ public abstract class ApplicationController implements ProcessListener {
 		case PostProcessor.POST_STARTED:
 			Applet.sendViewNotification(ViewNotifications.THINKING, 
 					new MessageNotification("Uploading to Insight...", "Uploading your screen recording to Insight. Do NOT close the browser window."));
-			break;
+			break;	
 		case PostProcessor.POST_FAILED:
 			Applet.sendViewNotification(ViewNotifications.FATAL, 
 					new MessageNotification("Upload failed!", "An error occurred while uploading the screen recording. It is stored locally, so you can try again later."));
