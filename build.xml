@@ -44,7 +44,7 @@
 		<property name="server" value="/Users/daniel/Sites/review_tool/"/>
 		<copy file="build/applet.jar" todir="${server}"/>
 		<copy file="bin-mac.jar" todir="${server}"/>
-		<copy file="bin-windows-v1.1.jar" todir="${server}"/>
+		<copy file="bin-windows-v1.2.jar" todir="${server}"/>
 		<copy file="bin-linux.jar" todir="${server}"/>
 		<copy file="src/template.html" tofile="${server}index.html" overwrite="true" />
 		<random max="100000000" property="randomValue"></random>
@@ -56,7 +56,7 @@
 		<property name="server" value="/Users/daniel/Sites/classic/public/"/>
 		<copy file="build/applet.jar" todir="${server}"/>
 		<copy file="bin-mac.jar" todir="${server}"/>
-		<copy file="bin-windows-v1.1.jar" todir="${server}"/>
+		<copy file="bin-windows-v1.2.jar" todir="${server}"/>
 		<copy file="bin-linux.jar" todir="${server}"/>
 	</target>
 	
@@ -65,7 +65,7 @@
 		<property name="server" value="/Users/daniel/Sites/pages/public/"/>
 		<copy file="build/applet.jar" todir="${server}"/>
 		<copy file="bin-mac.jar" todir="${server}"/>
-		<copy file="bin-windows-v1.1.jar" todir="${server}"/>
+		<copy file="bin-windows-v1.2.jar" todir="${server}"/>
 		<copy file="bin-linux.jar" todir="${server}"/>
 	</target>	
 	

@@ -1,9 +1,7 @@
 package com.reelfx;
 
 
-import java.applet.AppletContext;
 import java.awt.Dimension;
-import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Window;
@@ -18,7 +16,6 @@ import java.net.URL;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Enumeration;
-import java.util.EventObject;
 import java.util.Vector;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -26,16 +23,13 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import javax.swing.JApplet;
-import javax.swing.JWindow;
 import javax.swing.SwingUtilities;
-
-import org.apache.log4j.FileAppender;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
-import org.apache.log4j.RollingFileAppender;
 
 import netscape.javascript.JSException;
 import netscape.javascript.JSObject;
+
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
 
 import com.reelfx.controller.ApplicationController;
 import com.reelfx.controller.LinuxController;
@@ -43,11 +37,6 @@ import com.reelfx.controller.MacController;
 import com.reelfx.controller.WindowsController;
 import com.reelfx.model.AttributesManager;
 import com.reelfx.model.CaptureViewport;
-import com.reelfx.model.PreferencesManager;
-import com.reelfx.view.AudioSelector;
-import com.reelfx.view.InformationBox;
-import com.reelfx.view.VolumeVisualizer;
-import com.reelfx.view.util.MoveableWindow;
 import com.reelfx.view.util.ViewListener;
 import com.reelfx.view.util.ViewNotifications;
 import com.sun.JarClassLoader;
@@ -565,7 +554,7 @@ public class Applet extends JApplet {
 		else if(IS_LINUX)
 			return "bin-linux";
 		else if(IS_WINDOWS)
-			return "bin-windows-v1.1";
+			return "bin-windows-v1.2";
 		else
 			throw new IOException("I don't know what bin folder to use!");
 	}
