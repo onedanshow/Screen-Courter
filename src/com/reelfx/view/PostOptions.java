@@ -17,25 +17,31 @@ import javax.swing.JSeparator;
 
 import org.apache.log4j.Logger;
 
-import com.reelfx.controller.ApplicationController;
+import com.reelfx.controller.AbstractController;
 import com.reelfx.model.PostProcessor;
 import com.reelfx.view.util.MessageNotification;
 import com.reelfx.view.util.ViewListener;
 import com.reelfx.view.util.ViewNotifications;
 
+/**
+ * The JPanel displayed in the Java Applet itself so they can be part of the webpage itself.
+ * 
+ * @author Daniel Dixon (http://www.danieldixon.com)
+ *
+ */
 public class PostOptions extends JPanel implements ViewListener {
 	
 	private static final long serialVersionUID = 4036818007133606840L;
 	
 	private static Logger logger = Logger.getLogger(PostOptions.class);
 	public JButton previewBtn, saveBtn, insightBtn, deleteBtn;
-	private final ApplicationController controller;
+	private final AbstractController controller;
 	private JLabel message;
 	private ViewNotifications currentState;
 	private JPanel self;
 	private JProgressBar progressBar;
 	
-	public PostOptions(final ApplicationController controller) {
+	public PostOptions(final AbstractController controller) {
 		super();
 		setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
 		setBackground(new Color(200,200,200));

@@ -24,6 +24,12 @@ import com.reelfx.Applet;
 import com.reelfx.model.AudioRecorder;
 import com.reelfx.model.util.ProcessListener;
 
+/**
+ * A drop down box for selecting an audio source.
+ * 
+ * @author Daniel Dixon (http://www.danieldixon.com)
+ *
+ */
 public class AudioSelector extends JComboBox implements MouseListener, ItemListener, ProcessListener {
 	
 	private static final long serialVersionUID = -1739456139353607514L;
@@ -49,10 +55,8 @@ public class AudioSelector extends JComboBox implements MouseListener, ItemListe
 		
 		// find all audio inputs that have target outputs 
 		// (excluding those with 'port' is a Linux hack, possibly temporary)
-		// (exclude 'stereo mix' for capturing system audio
 		for(Mixer.Info info : AudioSystem.getMixerInfo())
         	if(!info.getName().toLowerCase().contains("port")
-        			//&& !info.getName().toLowerCase().contains("stereo mix")
         			&& AudioSystem.getMixer(info).getTargetLineInfo().length != 0)
         		addItem(info.getName());
 		
@@ -218,31 +222,4 @@ public class AudioSelector extends JComboBox implements MouseListener, ItemListe
 		@Override
 		public void setItem(Object anObject) {}	
 	}
-	
-	/*class ItemRenderer extends JLabel implements ListCellRenderer {
-		private static final long serialVersionUID = 7794106572744408569L;
-
-		public ItemRenderer() {
-            setOpaque(true);
-            setHorizontalAlignment(CENTER);
-            setVerticalAlignment(CENTER);
-        }
-		
-		@Override
-		public Component getListCellRendererComponent(JList list, Object value,
-				int index, boolean isSelected, boolean cellHasFocus) {
-
-			if(cellHasFocus) {
-				setText("C:"+value.toString());
-			}
-			else if(isSelected) {
-				setText("V: "+volume);
-			} else {
-				setText("D:"+value.toString());
-			}
-			
-			return this;
-		}
-	}*/
-
 }

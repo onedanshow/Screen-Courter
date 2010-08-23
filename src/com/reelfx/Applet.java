@@ -31,7 +31,7 @@ import netscape.javascript.JSObject;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
-import com.reelfx.controller.ApplicationController;
+import com.reelfx.controller.AbstractController;
 import com.reelfx.controller.LinuxController;
 import com.reelfx.controller.MacController;
 import com.reelfx.controller.WindowsController;
@@ -43,7 +43,11 @@ import com.sun.JarClassLoader;
 
 /**
  * 
- * @author daniel
+ * The applet initializer class. It adheres to the standard Java applet, setups all a series of 
+ * global variables used throughout the applet, acts as a middle man for the Java/Javascript
+ * communication, and provides a series of auxilary methods for unpacking JAR files, etc.
+ * 
+ * @author Daniel Dixon (http://www.danieldixon.com)
  *
  * SPECIAL NOTE ON JSObject on Mac (Used for communicating with Javascript)
  * In Eclipse, initially couldn't find the class.  This guy said to add a reference to 'plugin.jar' 
@@ -53,16 +57,14 @@ import com.sun.JarClassLoader;
  * that pointed to /System/Library/Frameworks/JavaVM.framework/Versions/A/Resources/Deploy.bundle/Contents/Resources/Java/plugin.jar
  * I had no issue adding it on Windows or Linux.
  * 
- * further information: http://java.sun.com/j2se/1.5.0/docs/guide/plugin/developer_guide/java_js.html
+ * Further information: http://java.sun.com/j2se/1.5.0/docs/guide/plugin/developer_guide/java_js.html
  */
-
-// TODO setup log4j
 
 public class Applet extends JApplet {
 
 	private static final long serialVersionUID = 4544354980928245103L;
 	
-	public static File RFX_FOLDER, BIN_FOLDER, DESKTOP_FOLDER;
+	public static File BASE_FOLDER, BIN_FOLDER, DESKTOP_FOLDER;
 	public static URL DOCUMENT_BASE, CODE_BASE;
 	public static JApplet APPLET;
 	public static JSObject JS_BRIDGE;
@@ -76,32 +78,37 @@ public class Applet extends JApplet {
 			GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDisplayMode().getWidth(), 
 			GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDisplayMode().getHeight());
 	public final static CaptureViewport CAPTURE_VIEWPORT = new CaptureViewport();
-	public static Vector<Window> WINDOWS = new Vector<Window>(); // didn't want to manually manage windows, but Safari would only return a Frame through Window.getWindows() on commands called via JS
+	public static Vector<Window> APPLET_WINDOWS = new Vector<Window>(); // didn't want to manually manage windows, but Safari would only return a Frame through Window.getWindows() on commands called via JS
 	
-	private ApplicationController controller = null;
+	private AbstractController controller = null;
 	private static Logger logger = Logger.getLogger(Applet.class);
 	
-	// called when this applet is loaded into the browser.
+	/**
+	 * The init method is called when this applet is loaded into the browser.  It is used to initialize
+	 * finish initializing all static variables used for state.
+	 */
 	@Override
     public void init() {
 		try {
-			// finish initializing all static variables
-			RFX_FOLDER = new File(getRfxFolderPath()); // should be first
+			BASE_FOLDER = new File(getBaseFolderPath()); // should be first
 			BIN_FOLDER = new File(getBinFolderPath());
 			DESKTOP_FOLDER = new File(getDesktopFolderPath());
-			// from: http://www.theserverside.com/discussions/thread.tss?thread_id=42709
+			
+			// setup logging (http://www.theserverside.com/discussions/thread.tss?thread_id=42709)
 			if(Applet.DEV_MODE) {
 				System.setProperty("log.file.path", "../logs/development.log");
 				PropertyConfigurator.configure("../logs/config.properties");
 			} else {
-				System.setProperty("log.file.path", RFX_FOLDER.getAbsolutePath()+File.separator+"production.log");
+				System.setProperty("log.file.path", BASE_FOLDER.getAbsolutePath()+File.separator+"production.log");
 				PropertyConfigurator.configure(this.getClass().getClassLoader().getResource("config.properties"));
 			}
+			// setup the javascript API
 			try {
 				JS_BRIDGE = JSObject.getWindow(this);
 			} catch(JSException e) {
 				logger.error("Could not create JSObject.  Probably in development mode.");
 			}
+			
 			DOCUMENT_BASE = getDocumentBase();
 			CODE_BASE = getCodeBase();
 			APPLET = this; // breaking OOP so I can have a "root"
@@ -111,14 +118,16 @@ public class Applet extends JApplet {
 				DEV_MODE = getParameter("dev_mode").equals("true");
 			SCREEN_CAPTURE_NAME = getParameter("screen_capture_name");
 			HOST_URL = DOCUMENT_BASE.getProtocol() + "://" + DOCUMENT_BASE.getHost();
+			
+			// verify that we have what we need
 			if(getParameter("headless") != null)
 				HEADLESS = !getParameter("headless").isEmpty() && getParameter("headless").equals("true"); // Boolean.getBoolean(string) didn't work
 			if(API_KEY.isEmpty())
 				throw new Exception("An api key is required!");
-			if( RFX_FOLDER.exists() && !RFX_FOLDER.isDirectory() && !RFX_FOLDER.delete() )
-		        throw new IOException("Could not delete file for folder: " + RFX_FOLDER.getAbsolutePath());
-			if( !RFX_FOLDER.exists() && !RFX_FOLDER.mkdir() )
-		        throw new IOException("Could not create folder: " + RFX_FOLDER.getAbsolutePath());
+			if( BASE_FOLDER.exists() && !BASE_FOLDER.isDirectory() && !BASE_FOLDER.delete() )
+		        throw new IOException("Could not delete file for folder: " + BASE_FOLDER.getAbsolutePath());
+			if( !BASE_FOLDER.exists() && !BASE_FOLDER.mkdir() )
+		        throw new IOException("Could not create folder: " + BASE_FOLDER.getAbsolutePath());
 			
 			// print information to console
 			logger.info(getAppletInfo());
@@ -155,16 +164,13 @@ public class Applet extends JApplet {
 	 * @param body
 	 */
 	public static void sendViewNotification(ViewNotifications notification,Object body) {
-		//logger.info("View Notification: "+notification);
 		// applet is a special case (see ApplicationController constructor)
 		if(APPLET.getContentPane().getComponents().length > 0)
 			((ViewListener) APPLET.getContentPane().getComponent(0)).receiveViewNotification(notification, body);
 		// another special case where the capture viewport is a pseudo-model
 		CAPTURE_VIEWPORT.receiveViewNotification(notification, body);
-		// notify all the open windows
-		//Window[] windows = Window.getWindows();
-		for(Window win : Applet.WINDOWS) {
-			//System.out.println("Window: "+win);
+		// notify all the open windows (tried Window.getWindows() but had issues)
+		for(Window win : Applet.APPLET_WINDOWS) {
 			if(win instanceof ViewListener) {
 				((ViewListener) win).receiveViewNotification(notification, body);
 			}
@@ -174,35 +180,10 @@ public class Applet extends JApplet {
 		sendViewNotification(notification, null);
 	}
 	
-	// ---------- BEGIN JAVASCRIPT API ----------
-	/*
-	public void prepareForRecording() {
-		controller.prepareForRecording();
-	}
-	
-	public void startRecording() {
-		// TODO grabs default mixer right now, need a way to select microphones...
-		//controller.startRecording(AudioSelector.get); // TODO fix when needed
-	}
-	*/
-	
-	public void changePostUrl(final String url) {
-		AccessController.doPrivileged(new PrivilegedAction<Object>() {
-			@Override
-			public Object run() {
-				try {
-					POST_URL = url;
-					logger.info("Changed post URL to "+url);
-				} catch (Exception e) {
-					logger.error("Can't change the post URL!",e);
-				}
-				return null;
-			}
-		});
-	}	
+	// ---------- BEGIN INCOMING JAVASCRIPT API ----------
 	
 	/**
-	 *  This method piggy backs on record GUI to drive any external (i.e. Flash) GUI.
+	 *  Allow an external interface trigger the count-down and subsequent recording
 	 */
 	public void prepareAndRecord() { 
 		AccessController.doPrivileged(new PrivilegedAction<Object>() {
@@ -218,6 +199,9 @@ public class Applet extends JApplet {
 		});
 	}
 	
+	/**
+	 *  Allow an external interface top the recording
+	 */
 	public void stopRecording() {
 		AccessController.doPrivileged(new PrivilegedAction<Object>() {
 			@Override
@@ -231,16 +215,43 @@ public class Applet extends JApplet {
 			}
 		});
 	}
-	/*
+	
+	/**
+	 * 	Allow an external interface to open the preview player
+	 */ 
 	public void previewRecording() {
 		controller.previewRecording();
 	}
-
+	
+	/**	
+	 * 	Allow an external interface change where the final movie file is posted to
+	 */
+	public void changePostUrl(final String url) {
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
+			@Override
+			public Object run() {
+				try {
+					POST_URL = url;
+					logger.info("Changed post URL to "+url);
+				} catch (Exception e) {
+					logger.error("Can't change the post URL!",e);
+				}
+				return null;
+			}
+		});
+	}	
+	
+	
+	/**
+	 * 	Allow an external interface to post process and upload the recording
+	 */
 	public void postRecording() {
-		// TODO TEMPORARY until I get the Insight posting process down
-		controller.askForAndSaveRecording();
+		controller.postRecording();
 	}
-	*/
+	
+	/**
+	 * 	Allow an external interface to show the recording interface
+	 */
 	public void showRecordingInterface() {
 		AccessController.doPrivileged(new PrivilegedAction<Object>() {
 			@Override
@@ -271,6 +282,9 @@ public class Applet extends JApplet {
 		});
 	}
 	
+	/**
+	 * 	Allow an external interface to hide the recording interface
+	 */
 	public void hideRecordingInterface() {
 		AccessController.doPrivileged(new PrivilegedAction<Object>() {
 
@@ -291,6 +305,8 @@ public class Applet extends JApplet {
 			}
 		});
 	}
+	
+	// ---------- END INCOMING / BEGIN OUTGOING JAVASCRIPT API ----------
 	
 	public static void handleRecordingUpdate(ViewNotifications state,String status) {
 		if(status == null) status = "";
@@ -336,7 +352,6 @@ public class Applet extends JApplet {
 	public static void sendError(String message) {
 		jsCall("sct_error(\""+message+"\");");
 	}
-	// ---------- END JAVASCRIPT API ----------
 	
 	private static void jsCall(String method) {
 		if(JS_BRIDGE == null) {
@@ -348,6 +363,8 @@ public class Applet extends JApplet {
 			JS_BRIDGE.eval(method);
 		}
 	}
+	
+	// ---------- END OUTGOING JAVASCRIPT API ----------
 	
 	/** 
 	 * Copies an entire folder out of a jar to a physical location. 
@@ -371,7 +388,7 @@ public class Applet extends JApplet {
 			while (entries.hasMoreElements()) {
 				ZipEntry entry = (ZipEntry)entries.nextElement();
 				if (entry.getName().contains(folderName)) {
-					File f = new File(RFX_FOLDER.getAbsolutePath()+File.separator+entry.getName());
+					File f = new File(BASE_FOLDER.getAbsolutePath()+File.separator+entry.getName());
 					if (entry.isDirectory() && f.mkdir()) { 
 						System.out.println("Created folder "+f.getAbsolutePath()+" for "+entry.getName());
 					}
@@ -408,7 +425,7 @@ public class Applet extends JApplet {
 			while (entries.hasMoreElements()) {
 				ZipEntry entry = (ZipEntry)entries.nextElement();
 				if (entry.getName().contains(folderName)) {
-					File f = new File(RFX_FOLDER.getAbsolutePath()+File.separator+entry.getName());
+					File f = new File(BASE_FOLDER.getAbsolutePath()+File.separator+entry.getName());
 					if (entry.isDirectory() && f.mkdir()) { 
 						System.out.println("Created folder "+f.getAbsolutePath()+" for "+entry.getName());
 					}
@@ -483,11 +500,13 @@ public class Applet extends JApplet {
 		return fDest.exists();
 	}
 	
+    /**
+     * Print out information the configuration the Applet is running under.
+     * 
+     * base code: http://stackoverflow.com/questions/2234476/how-to-detect-the-current-display-with-java
+     */
 	@Override
-	public String getAppletInfo() {
-		
-		// base code: http://stackoverflow.com/questions/2234476/how-to-detect-the-current-display-with-java
-		
+	public String getAppletInfo() {		
 		// screen the Applet is on
 		GraphicsDevice myScreen = getGraphicsConfiguration().getDevice();
 		// screen the start bar, OS bar, whatever is on
@@ -514,7 +533,7 @@ public class Applet extends JApplet {
 				"Run Directory: \t"+System.getProperty("user.dir")+"\n"+
 				"User Home: \t"+System.getProperty("user.home")+"\n"+
 				"User Name: \t"+System.getProperty("user.name")+"\n"+
-				"ReelFX Folder: \t"+RFX_FOLDER.getPath()+"\n"+
+				"Base Folder: \t"+BASE_FOLDER.getPath()+"\n"+
 				"Bin Folder: \t"+BIN_FOLDER.getPath()+"\n"+
 				"User Desktop: \t"+DESKTOP_FOLDER.getPath()+"\n"+
 				"Code Base: \t"+getCodeBase()+"\n"+
@@ -543,6 +562,33 @@ public class Applet extends JApplet {
 	}
 	
 	/**
+	 * The "base" folder is where all preference files and media files are recorded.
+	 * 
+	 * @return
+	 * @throws IOException
+	 */
+	public static String getBaseFolderPath() throws IOException {
+		if(IS_MAC)
+			return System.getProperty("user.home")+File.separator+"Library"+File.separator+"ReelFX";
+		else if(IS_LINUX)
+			return System.getProperty("user.home")+File.separator+".ReelFX";
+		else if(IS_WINDOWS)
+			return System.getenv("TEMP")+File.separator+"ReelFX";
+		else 
+			throw new IOException("I don't know where to find the native extensions!");
+	}
+	
+	/**
+	 * The "bin" folder is where the binaries are downloaded to and execute from.
+	 * 
+	 * @return
+	 * @throws IOException
+	 */
+	public static String getBinFolderPath() throws IOException {
+		return BASE_FOLDER.getAbsolutePath()+File.separator+getBinFolderName();
+	}
+	
+	/**
 	 * These must start with "bin".
 	 * 
 	 * @return Name of folder and JAR with folder of same name for holding native extensions.
@@ -559,22 +605,11 @@ public class Applet extends JApplet {
 			throw new IOException("I don't know what bin folder to use!");
 	}
 	
-	public static String getBinFolderPath() throws IOException {
-		return RFX_FOLDER.getAbsolutePath()+File.separator+getBinFolderName();
-	}
-	
-	public static String getRfxFolderPath() throws IOException {
-		if(IS_MAC)
-			return System.getProperty("user.home")+File.separator+"Library"+File.separator+"ReelFX";
-		else if(IS_LINUX)
-			return System.getProperty("user.home")+File.separator+".ReelFX";
-		else if(IS_WINDOWS)
-			return System.getenv("TEMP")+File.separator+"ReelFX";
-		else 
-			throw new IOException("I don't know where to find the native extensions!");
-	}
-	
-	// not tested, and not used
+	/**
+	 * Determines the desktop folder for the machine that the Java applet is running on. Not tested, and not used.
+	 * @return
+	 * @throws IOException
+	 */
 	public static String getDesktopFolderPath() throws IOException {
 		if(IS_MAC || IS_LINUX || IS_WINDOWS)
 			return System.getProperty("user.home")+File.separator+"Desktop";

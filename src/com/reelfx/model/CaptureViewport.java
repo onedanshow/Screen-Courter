@@ -14,6 +14,12 @@ import com.reelfx.view.util.MoveableWindow;
 import com.reelfx.view.util.ViewListener;
 import com.reelfx.view.util.ViewNotifications;
 
+/**
+ * The model for managing the information on the capture window that is being recorded.
+ * 
+ * @author Daniel Dixon (http://www.danieldixon.com)
+ *
+ */
 @SuppressWarnings("serial")
 public class CaptureViewport extends Rectangle implements ViewListener {
 	

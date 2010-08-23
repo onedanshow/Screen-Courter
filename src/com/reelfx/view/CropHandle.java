@@ -16,6 +16,12 @@ import com.reelfx.view.util.MoveableWindow;
 import com.reelfx.view.util.ViewListener;
 import com.reelfx.view.util.ViewNotifications;
 
+/**
+ * A little box handle for dragging the crop interface.
+ * 
+ * @author Daniel Dixon (http://www.danieldixon.com)
+ *
+ */
 @SuppressWarnings("serial")
 public class CropHandle extends MoveableWindow implements ViewListener {
 	

@@ -15,6 +15,12 @@ import com.reelfx.Applet;
 import com.reelfx.view.util.MoveableWindow;
 import com.reelfx.view.util.ViewNotifications;
 
+/**
+ * The dashed line of the crop interface.
+ * 
+ * @author Daniel Dixon (http://www.danieldixon.com)
+ *
+ */
 @SuppressWarnings("serial")
 public class CropLine extends MoveableWindow {
 	

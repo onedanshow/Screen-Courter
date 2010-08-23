@@ -20,12 +20,12 @@ import com.reelfx.Applet;
 /**
  * Singleton to manage reading/writing preferences between application runs.
  * 
- * @author daniel
+ * @author Daniel Dixon (http://www.danieldixon.com)
  *
  */
 public class PreferencesManager {
 
-	public static File OUTPUT_FILE = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"preferences");
+	public static File OUTPUT_FILE = new File(Applet.BASE_FOLDER.getAbsolutePath()+File.separator+"preferences");
 	public final static String FROM_PREFERENCES = "from_prefs"; // should be lowercase
 	
 	private static Logger logger = Logger.getLogger(PreferencesManager.class);

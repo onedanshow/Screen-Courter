@@ -44,11 +44,17 @@ import com.reelfx.view.RecordControls;
 import com.reelfx.view.util.MessageNotification;
 import com.reelfx.view.util.ViewNotifications;
 
-public abstract class ApplicationController implements ProcessListener {
+/**
+ * Base class for the OS-specific controllers.
+ * 
+ * @author Daniel Dixon (http://www.danieldixon.com)
+ *
+ */
+public abstract class AbstractController implements ProcessListener {
 
 	public RecordControls recordGUI;
 	public PostOptions optionsGUI;
-	private static Logger logger = Logger.getLogger(ApplicationController.class);
+	private static Logger logger = Logger.getLogger(AbstractController.class);
 
 	protected InformationBox infoBox;
 
@@ -58,7 +64,7 @@ public abstract class ApplicationController implements ProcessListener {
 	protected AttributesManager recordingAttributes = new AttributesManager();
 	protected CaptureViewport captureViewport = new CaptureViewport();
 
-	public ApplicationController() {
+	public AbstractController() {
 		super();
 		
 		if (PreferencesManager.hasPreferences()) {
@@ -70,22 +76,22 @@ public abstract class ApplicationController implements ProcessListener {
 		optionsGUI = new PostOptions(this);
 		infoBox = new InformationBox();
 		
-		Applet.WINDOWS.add(recordGUI);
-		Applet.WINDOWS.add(infoBox);
+		Applet.APPLET_WINDOWS.add(recordGUI);
+		Applet.APPLET_WINDOWS.add(infoBox);
 		
-		Applet.WINDOWS.add(new CropLine(CropLine.TOP));
-		Applet.WINDOWS.add(new CropLine(CropLine.RIGHT));
-		Applet.WINDOWS.add(new CropLine(CropLine.BOTTOM));
-		Applet.WINDOWS.add(new CropLine(CropLine.LEFT));
+		Applet.APPLET_WINDOWS.add(new CropLine(CropLine.TOP));
+		Applet.APPLET_WINDOWS.add(new CropLine(CropLine.RIGHT));
+		Applet.APPLET_WINDOWS.add(new CropLine(CropLine.BOTTOM));
+		Applet.APPLET_WINDOWS.add(new CropLine(CropLine.LEFT));
 		
-		Applet.WINDOWS.add(new CropHandle(CropHandle.TOP_LEFT));
-		Applet.WINDOWS.add(new CropHandle(CropHandle.TOP_MIDDLE));
-		Applet.WINDOWS.add(new CropHandle(CropHandle.TOP_RIGHT));
-		Applet.WINDOWS.add(new CropHandle(CropHandle.MIDDLE_RIGHT));
-		Applet.WINDOWS.add(new CropHandle(CropHandle.BOTTOM_LEFT));
-		Applet.WINDOWS.add(new CropHandle(CropHandle.BOTTOM_MIDDLE));
-		Applet.WINDOWS.add(new CropHandle(CropHandle.BOTTOM_RIGHT));
-		Applet.WINDOWS.add(new CropHandle(CropHandle.MIDDLE_LEFT));
+		Applet.APPLET_WINDOWS.add(new CropHandle(CropHandle.TOP_LEFT));
+		Applet.APPLET_WINDOWS.add(new CropHandle(CropHandle.TOP_MIDDLE));
+		Applet.APPLET_WINDOWS.add(new CropHandle(CropHandle.TOP_RIGHT));
+		Applet.APPLET_WINDOWS.add(new CropHandle(CropHandle.MIDDLE_RIGHT));
+		Applet.APPLET_WINDOWS.add(new CropHandle(CropHandle.BOTTOM_LEFT));
+		Applet.APPLET_WINDOWS.add(new CropHandle(CropHandle.BOTTOM_MIDDLE));
+		Applet.APPLET_WINDOWS.add(new CropHandle(CropHandle.BOTTOM_RIGHT));
+		Applet.APPLET_WINDOWS.add(new CropHandle(CropHandle.MIDDLE_LEFT));
 
 		Applet.APPLET.getContentPane().add(optionsGUI); // note, if this line
 														// changes, also change
@@ -108,6 +114,9 @@ public abstract class ApplicationController implements ProcessListener {
 		}
 	}
 
+	/**
+	 * 	The listener method when a process has a notification.
+	 */
 	public void processUpdate(int event, Object body) {
 		switch (event) {
 		case PostProcessor.ENCODING_STARTED:
@@ -137,7 +146,7 @@ public abstract class ApplicationController implements ProcessListener {
 			Applet.handleUploadedRecording();
 		}
 	}
-
+	
 	public void prepareForRecording() {
 		recordingAttributes.setPostUrl(Applet.POST_URL);
 		recordingAttributes.setScreenCaptureName(Applet.SCREEN_CAPTURE_NAME);

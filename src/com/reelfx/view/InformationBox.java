@@ -24,6 +24,12 @@ import com.reelfx.Applet;
 import com.reelfx.view.util.MoveableWindow;
 import com.reelfx.view.util.ViewNotifications;
 
+/**
+ * The center information/move box of the crop interface.
+ * 
+ * @author Daniel Dixon (http://www.danieldixon.com)
+ *
+ */
 @SuppressWarnings("serial")
 public class InformationBox extends MoveableWindow {
 

@@ -3,7 +3,7 @@ package com.reelfx.view.util;
 /**
  * List of notifications that can be sent to the view
  * 
- * @author daniel
+ * @author Daniel Dixon (http://www.danieldixon.com)
  * 
  * Helpful notes on enums: http://java.sun.com/j2se/1.5.0/docs/guide/language/enums.html
  *

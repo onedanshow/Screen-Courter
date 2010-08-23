@@ -19,7 +19,7 @@ import com.reelfx.Applet;
 // TODO: Rewrite this class as static
 public class AttributesManager {
 
-	public static File OUTPUT_FILE = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"attributes");
+	public static File OUTPUT_FILE = new File(Applet.BASE_FOLDER.getAbsolutePath()+File.separator+"attributes");
 	
 	private static Logger logger = Logger.getLogger(AttributesManager.class);
 	private String postUrl, screenCaptureName, userID; // userID is not currently used

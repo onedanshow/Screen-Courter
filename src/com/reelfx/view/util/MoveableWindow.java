@@ -16,7 +16,12 @@ import javax.swing.JWindow;
 
 import com.reelfx.Applet;
 
-
+/**
+ * Abstract class that is the base for all the always-on-top applet windows.
+ * 
+ * @author Daniel Dixon (http://www.danieldixon.com)
+ *
+ */
 @SuppressWarnings("serial")
 public abstract class MoveableWindow extends JWindow implements MouseListener,
 		MouseMotionListener, WindowListener, ViewListener {

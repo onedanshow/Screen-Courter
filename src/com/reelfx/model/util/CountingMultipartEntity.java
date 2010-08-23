@@ -20,7 +20,7 @@ import com.reelfx.view.util.ViewNotifications;
  * http://stackoverflow.com/questions/254719/file-upload-with-java-with-progress-bar/3154929
  * http://stackoverflow.com/questions/3163131/how-to-properly-extend-java-filteroutputstream-class
  * 
- * @author daniel
+ * @author Daniel Dixon (http://www.danieldixon.com)
  *
  */
 public class CountingMultipartEntity extends MultipartEntity {

@@ -48,9 +48,7 @@ public class ScreenRecorder extends ProcessWrapper implements ActionListener {
 	private static Logger logger = Logger.getLogger(ScreenRecorder.class);
 	
 	// FILE LOCATIONS
-	public static File OUTPUT_FILE = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"screen_capture"+EXT);
-	//public static File VLC_JAR = new File(System.getProperty("java.class.path")+File.separator+"bin-mac.jar");
-	//public static File VLC_JAR = new File("/Users/daniel/Documents/Java/java-review-tool/lib"+File.separator+"bin-mac.jar");
+	public static File OUTPUT_FILE = new File(Applet.BASE_FOLDER.getAbsolutePath()+File.separator+"screen_capture"+EXT);
 	protected static File MAC_EXEC = new File(Applet.BIN_FOLDER.getAbsoluteFile()+File.separator+"mac-screen-recorder");
 	protected static File FFMPEG_EXEC = new File(Applet.BIN_FOLDER.getAbsoluteFile()+File.separator+"ffmpeg"+(Applet.IS_WINDOWS ? ".exe" : ""));
 	
@@ -176,7 +174,7 @@ public class ScreenRecorder extends ProcessWrapper implements ActionListener {
 							recordingProcess = pb.start();
 				            //fireProcessUpdate(RECORDING_STARTED); // moved to action listener method
 				            
-							// ffmpeg doesn't get the microphone on Windows, but this allows it to record a better frame rate
+							// ffmpeg doesn't get the microphone on Windows, but this allows it to record a better frame rate anyway
 							
 				            errorGobbler = new StreamGobbler(recordingProcess.getErrorStream(), false, "ffmpeg E");
 				            inputGobbler = new StreamGobbler(recordingProcess.getInputStream(), false, "ffmpeg O");

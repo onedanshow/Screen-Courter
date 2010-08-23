@@ -31,9 +31,9 @@ import com.reelfx.view.RecordControls;
 import com.reelfx.view.util.MessageNotification;
 import com.reelfx.view.util.ViewNotifications;
 
-public class WindowsController extends ApplicationController {
+public class WindowsController extends AbstractController {
 
-	public static File MERGED_OUTPUT_FILE = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"screen_capture_temp.avi");
+	public static File MERGED_OUTPUT_FILE = new File(Applet.BASE_FOLDER.getAbsolutePath()+File.separator+"screen_capture_temp.avi");
 	private static Logger logger = Logger.getLogger(WindowsController.class);
 	
 	private AudioRecorder mic, systemAudio;
@@ -51,7 +51,7 @@ public class WindowsController extends ApplicationController {
 		try {
 			if(!Applet.BIN_FOLDER.exists()){
 				// delete any old versions
-				for(File file : Applet.RFX_FOLDER.listFiles()) {
+				for(File file : Applet.BASE_FOLDER.listFiles()) {
 					if(file.getName().startsWith("bin") && file.isDirectory()) {
 						FileUtils.deleteDirectory(file);
 						if(file.exists())

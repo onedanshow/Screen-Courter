@@ -70,8 +70,8 @@ import com.sun.media.sound.JDK13Services;
 public class AudioRecorder extends ProcessWrapper implements LineListener
 {
 	
-    public static File OUTPUT_FILE = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"screen_capture.wav");
-    public static File TEMP_FILE = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"temp.wav");
+    public static File OUTPUT_FILE = new File(Applet.BASE_FOLDER.getAbsolutePath()+File.separator+"screen_capture.wav");
+    public static File TEMP_FILE = new File(Applet.BASE_FOLDER.getAbsolutePath()+File.separator+"temp.wav");
 	
     // AUDIO SETTINGS
     public static float FREQ = 22050; //11025.0F; // 22050; //44100;  lowered because it was skipping and dropping audio
@@ -108,7 +108,7 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 			else { // try to grab one ourselves
 				logger.info("Grabbing whatever AudioSystem line I can get...(system audio?)");
 				m_line = (TargetDataLine) AudioSystem.getLine(info);
-				m_outputFile = new File(Applet.RFX_FOLDER.getAbsolutePath()+File.separator+"screen_capture_system.wav");
+				m_outputFile = new File(Applet.BASE_FOLDER.getAbsolutePath()+File.separator+"screen_capture_system.wav");
 			}
 			m_line.addLineListener(this);
 			m_line.open(AUDIO_FORMAT);
@@ -250,11 +250,11 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 			//fireProcessUpdate(RECORDING_STARTED); // moved to run() because line is already started
 		} 
 		else if(event.getType().equals(LineEvent.Type.STOP)) {
-			System.out.println("Audio Recording Stopped...");
+			logger.info("Audio Recording Stopped...");
 			//fireProcessUpdate(RECORDING_COMPLETE);
 		} 
 		else if(event.getType().equals(LineEvent.Type.CLOSE)) {
-			System.out.println("Audio Line Closed...");
+			logger.info("Audio Line Closed...");
 		}
 	}
 	

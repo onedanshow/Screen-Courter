@@ -8,7 +8,7 @@ import java.util.EventListener;
  * 
  * Files: ViewListener and ProcessListener
  * 
- * @author daniel
+ * @author Daniel Dixon (http://www.danieldixon.com)
  *
  */
 public interface ViewListener extends EventListener {

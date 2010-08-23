@@ -3,7 +3,7 @@ package com.reelfx.view.util;
 /**
  * This is a view notification that's meant to carrying messages for the parts of the screen that need such things.
  * 
- * @author daniel
+ * @author Daniel Dixon (http://www.danieldixon.com)
  *
  */
 public class MessageNotification {

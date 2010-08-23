@@ -20,7 +20,7 @@ import com.reelfx.view.RecordControls;
 import com.reelfx.view.util.MessageNotification;
 import com.reelfx.view.util.ViewNotifications;
 
-public class MacController extends ApplicationController {
+public class MacController extends AbstractController {
 
 	private static Logger logger = Logger.getLogger(MacController.class);	
 	
@@ -40,7 +40,7 @@ public class MacController extends ApplicationController {
     		} else */
 			if(!Applet.BIN_FOLDER.exists()) {
 				// delete any old versions
-				for(File file : Applet.RFX_FOLDER.listFiles()) {
+				for(File file : Applet.BASE_FOLDER.listFiles()) {
 					if(file.getName().startsWith("bin") && file.isDirectory()) {
 						FileUtils.deleteDirectory(file);
 						if(file.exists())

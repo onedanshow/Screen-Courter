@@ -40,7 +40,7 @@ import javax.swing.border.LineBorder;
 import org.apache.log4j.Logger;
 
 import com.reelfx.Applet;
-import com.reelfx.controller.ApplicationController;
+import com.reelfx.controller.AbstractController;
 import com.reelfx.model.AttributesManager;
 import com.reelfx.model.PreferencesManager;
 import com.reelfx.model.ScreenRecorder;
@@ -48,6 +48,12 @@ import com.reelfx.view.util.MessageNotification;
 import com.reelfx.view.util.MoveableWindow;
 import com.reelfx.view.util.ViewNotifications;
 
+/**
+ * Interface shown while recording that displays controls and recording time/status.
+ * 
+ * @author Daniel Dixon (http://www.danieldixon.com)
+ *
+ */
 @SuppressWarnings("serial")
 public class RecordControls extends MoveableWindow implements ActionListener {
 
@@ -60,9 +66,8 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 
 	private JLabel title, status;
 	private JPanel borderPanel;
-	// private JTextArea message;
 	private Timer timer;
-	private ApplicationController controller;
+	private AbstractController controller;
 	private JFileChooser fileSelect = new JFileChooser();
 	private static Color backgroundColor = new Color(200,200,200); // new Color(34, 34, 34); //
 	private static Color borderColor = new Color(62,64,65);
@@ -81,7 +86,7 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 	 * 
 	 * @param controller
 	 */
-	public RecordControls(ApplicationController controller) {
+	public RecordControls(AbstractController controller) {
 		super();
 		setName(NAME);
 		
