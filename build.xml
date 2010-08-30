@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project default="create_local_insight_jar" name="Create Runnable Jar for Project java-review-tool">
 	
-	<!-- To make this project work with NetBeans: <import file="nbproject/build-impl.xml"/> -->  
 	<!-- Assumes the class files are already built (which Eclipse does) -->
 	
 	<!-- TODO: To add build numbers: http://www.jguru.com/faq/view.jsp?EID=481664 -->
