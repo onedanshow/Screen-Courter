@@ -5,3 +5,4 @@ dist/*
 old-bin-mac/*
 bin/*
 *.log
+build.properties

@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project default="create_local_insight_jar" name="Create Runnable Jar for Project java-review-tool">
+<project default="create_production_jar1" name="Create JAR files for Screen-Courter">
 	
 	<!-- Assumes the class files are already built (which Eclipse does) -->
 	
 	<!-- TODO: To add build numbers: http://www.jguru.com/faq/view.jsp?EID=481664 -->
-	<!-- TODO: Create local build.properties file so other developers can work on this project with git. -->
+	
+	<property file="build.properties" />
+	<!-- TODO: Version the Mac and Linux version if need be -->
+	<property name="win-version" value="1.2"/>
 	
 	<target name="build_jar">
 		<echo message="Copying apache files..." />
-		<!-- this is temporary -->
+		<!-- Copy all the needed apache class files into the jar (temporary?) -->
 		<copy todir="build/org/apache">
 			<fileset dir="lib/org/apache"/>
 		</copy>
@@ -18,10 +21,8 @@
 		<jar destfile="build/applet.jar" filesetmanifest="mergewithoutmain" basedir="build" includes="com/**,org/**,config.*">
 			<manifest>
 				<attribute name="Main-Class" value=".Applet"/>
-				<attribute name="ReelFX-Comment" value="ReelFX Screen Recorder" />
 			</manifest>
 		</jar>
-		<!-- not sure why this is here: <jar destfile="build/applet.jar" filesetmanifest="mergewithoutmain" update="true" includes="lib/*" /> -->
 	</target>
 	
 	<target name="sign_jar" depends="build_jar">
@@ -30,42 +31,37 @@
 		<exec dir="build" executable="jarsigner">
 	     <arg value="-verbose" />
 	     <arg value="-storepass" />
-	     <arg value="password" />
+	     <arg value="${keystore.storepass}" />
 	     <arg value="-keypass" />
-	     <arg value="password" />
+	     <arg value="${keystore.keypass}" />
 	     <arg value="applet.jar" />
-	     <arg value="duke" />
+	     <arg value="${keystore.alias}" />
 	   </exec>
 	</target>
 			
-	<target name="create_local_test_page" depends="sign_jar">
-		<!-- CHANGE THIS TO THE FOLDER OF YOUR LOCAL HOST -->
-		<property name="server" value="/Users/daniel/Sites/review_tool/"/>
-		<copy file="build/applet.jar" todir="${server}"/>
-		<copy file="bin-mac.jar" todir="${server}"/>
-		<copy file="bin-windows-v1.2.jar" todir="${server}"/>
-		<copy file="bin-linux.jar" todir="${server}"/>
-		<copy file="src/template.html" tofile="${server}index.html" overwrite="true" />
+	<target name="create_test_page" depends="sign_jar">
+		<copy file="build/applet.jar" todir="${build.test}"/>
+		<copy file="bin-mac.jar" todir="${build.test}"/>
+		<copy file="bin-windows-v${win-version}.jar" todir="${build.test}"/>
+		<copy file="bin-linux.jar" todir="${build.test}"/>
+		<copy file="src/template.html" tofile="${build.test}index.html" overwrite="true" />
+		<!-- Random number used to prevent browser caching -->
 		<random max="100000000" property="randomValue"></random>
-		<replace file="${server}index.html" token="@@@UNIQUE@@@" value="${randomValue}"/>
+		<replace file="${build.test}index.html" token="@@@UNIQUE@@@" value="${randomValue}"/>
 	</target>
 	
-	<target name="create_local_insight_jar" depends="sign_jar">
-		<!-- CHANGE THIS TO THE FOLDER OF YOUR LOCAL INSIGHT PUBLIC FOLDER -->
-		<property name="server" value="/Users/daniel/Sites/classic/public/"/>
-		<copy file="build/applet.jar" todir="${server}"/>
-		<copy file="bin-mac.jar" todir="${server}"/>
-		<copy file="bin-windows-v1.2.jar" todir="${server}"/>
-		<copy file="bin-linux.jar" todir="${server}"/>
+	<target name="create_production_jar1" depends="sign_jar">
+		<copy file="build/applet.jar" todir="${build.production1}"/>
+		<copy file="bin-mac.jar" todir="${build.production1}"/>
+		<copy file="bin-windows-v${win-version}.jar" todir="${build.production1}"/>
+		<copy file="bin-linux.jar" todir="${build.production1}"/>
 	</target>
 	
-	<target name="create_local_pages_jar" depends="sign_jar">
-		<!-- CHANGE THIS TO THE FOLDER OF YOUR LOCAL PAGES PUBLIC FOLDER -->
-		<property name="server" value="/Users/daniel/Sites/pages/public/"/>
-		<copy file="build/applet.jar" todir="${server}"/>
-		<copy file="bin-mac.jar" todir="${server}"/>
-		<copy file="bin-windows-v1.2.jar" todir="${server}"/>
-		<copy file="bin-linux.jar" todir="${server}"/>
+	<target name="create_production_jar2" depends="sign_jar">
+		<copy file="build/applet.jar" todir="${build.production2}"/>
+		<copy file="bin-mac.jar" todir="${build.production2}"/>
+		<copy file="bin-windows-v${win-version}.jar" todir="${build.production2}"/>
+		<copy file="bin-linux.jar" todir="${build.production2}"/>
 	</target>	
 	
 	<!-- Taken from: http://docs.huihoo.com/apache/apachecon/eu2007/extending_ant.pdf -->

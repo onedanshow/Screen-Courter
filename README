@@ -48,7 +48,7 @@ SETUP USING ECLIPSE:
 	
 2) Import the project folder into an Eclipse workspace
 
-3) 
+3) Rename build-example.properties to build.properties and configure it accordingly.
 
 ========================================
 
