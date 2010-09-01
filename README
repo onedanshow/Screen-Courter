@@ -1,5 +1,3 @@
-#### THIS FILE IS STILL IN PROGRESS ####
-
 ========================================
 
  Screen-Courter v0.8 - A screen recording app who loves your screen and likes to show her off.
@@ -89,18 +87,56 @@ It is assumed that you already have generated a certificate in your local keysto
 
 BUILDING OS-SPECIFIC BINARIES FOR SCREEN RECORDING:
 
-The binaries needed for each OS are included with the source code. However the need may arise for your to compile them yourself.
+The binaries needed for each OS are included with the source code. However the need may arise for you to compile them yourself.
 
-Linux: 
+LINUX:
+A standard copy of FFMPEG with X264 and FFPLAY are used. No modification to the source code was made.
 
-Mac:
+MAC:
+A custom but limited application was developed for the Mac. It currently doesn't support cropping nor full-resolution recording. It's
+source code is available here: http://github.com/onedanshow/Mac-Screen-Recorder
 
-Windows:
+WINDOWS:
+A custom copy of FFMPEG with X264 and FFPLAY are used, based on discussion from the FFMPEG developer forum 
+(http://lists.mplayerhq.hu/pipermail/ffmpeg-devel/2010-March/thread.html#85332).
 
 ========================================
 
 WISH LIST:
 
--
+-Create a new Mac binary that can support cropping, full-resolution recording, and encoding.  Preferring it would be an addition to FFMPEG
+using OpenGL (discussion here: http://lists.mplayerhq.hu/pipermail/ffmpeg-devel/2010-May/thread.html#88180)
+
+-Support system audio recording
+
+-Support within-Java-applet preview of the encoded file instead of opening in FFPLAY (Windows, Linux) or Quicktime (Mac).
+
+-General code and interface clean-ups.
+
+========================================
+
+F.A.Q.
+
+Q) Why did you not use VLC under the covers?
+A) I was never able to get good results with it (e.g. high fps, good quality capture, decent file size)
+
+======================================== 
+
+LICENSE:
+
+Copyright (C) 2010  ReelFX Creative Studios (http://www.reelfx.com)
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+ 	
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+ 	
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 ======================================== 
