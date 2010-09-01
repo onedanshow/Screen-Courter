@@ -44,18 +44,63 @@ Server-side:
 SETUP USING ECLIPSE:
 
 1) Checkout the code:
-	git clone 
+	git clone http://github.com/onedanshow/Screen-Courter.git
 	
 2) Import the project folder into an Eclipse workspace
 
-3) Rename build-example.properties to build.properties and configure it accordingly.
+3) In Eclipse, open the Run > Run Configurations window and follow these sub-steps:
+	-For the Main tab, select "Screen-Courter" as the project and "com.reelfx.Applet" as the Applet
+	-For the Parameters tab, set or add the following:
+		width: 770
+		height: 70
+		post_url: (url to post the screen recording video file to)
+		screen_capture_name: (name for the screen to show in the interface; ex: "Test Screen Capture")
+		dev_mode: true (used only when running from Eclipse for debugging purposes and to work with the cropping interface when developing on Mac)
+	-For the JRE tab, make sure you're using Java 1.6
+	-Press "Apply" and then close the Run Configurations window
+
+4) Copy and rename config-example.properties to config.properties and configure it accordingly.  This file will not go in source control.
+
+5) Run the Applet.
 
 ========================================
 
-DEPLOYMENT:
+TEST DEPLOYMENT:
+
+1) Copy and rename build-example.properties to build.properties and configure it accordingly. This file will not go in source control. 
+Some properties are the same as those in the Parameters tab above. It is assumed that you already have generated a certificate in your local keystore. 
+
+2) Using Ant, run the create_test_page action.
+
+3) Open the test page in a browser.
+
+========================================
+
+PRODUCTION DEPLOYMENT:
+
+1) Copy and rename build-example.properties to build.properties and configure it accordingly. This file will not go in source control. 
+It is assumed that you already have generated a certificate in your local keystore. 
+
+2) Using Ant, run the create_production_jar# action.
+
+3) Embed the applet.jar in the appropriate page of your website, using the template.html and/or test page as a guide.
+
+========================================
+
+BUILDING OS-SPECIFIC BINARIES FOR SCREEN RECORDING:
+
+The binaries needed for each OS are included with the source code. However the need may arise for your to compile them yourself.
+
+Linux: 
+
+Mac:
+
+Windows:
 
 ========================================
 
 WISH LIST:
+
+-
 
 ======================================== 

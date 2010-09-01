@@ -6,3 +6,4 @@ old-bin-mac/*
 bin/*
 *.log
 build.properties
+config.properties

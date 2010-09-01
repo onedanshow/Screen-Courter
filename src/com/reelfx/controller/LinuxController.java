@@ -70,17 +70,30 @@ public class LinuxController extends AbstractController {
 					}
 				}
 				// download an install the new one
-				Applet.copyFolderFromRemoteJar(new URL(Applet.HOST_URL+"/"+Applet.getBinFolderName()+".jar?"+Math.random()*10000),Applet.getBinFolderName());
+				String url = Applet.HOST_URL+"/"+Applet.getBinFolderName()+".jar?"+Math.random()*10000;
+				Applet.copyFolderFromRemoteJar(new URL(url), Applet.getBinFolderName());
+				if(!Applet.BIN_FOLDER.exists()) {
+					logger.info("Could not find native extensions at "+url+". Trying next code base url...");
+					url = Applet.CODE_BASE.toString()+"/"+Applet.getBinFolderName()+".jar?"+Math.random()*10000;
+					Applet.copyFolderFromRemoteJar(new URL(url), Applet.getBinFolderName());
+					if(!Applet.BIN_FOLDER.exists()) {
+						logger.info("Could not find native extensions at "+url+". Trying next document base url...");
+						url = Applet.DOCUMENT_BASE.toString()+"/"+Applet.getBinFolderName()+".jar?"+Math.random()*10000;
+						Applet.copyFolderFromRemoteJar(new URL(url), Applet.getBinFolderName());
+						if(!Applet.BIN_FOLDER.exists()) {
+							throw new IOException("Did not copy Linux extensions to the execution directory! Last url: "+url);
+						}
+					}
+				}
 				Runtime.getRuntime().exec("chmod 755 "+Applet.BIN_FOLDER+File.separator+"ffmpeg").waitFor();
 				Runtime.getRuntime().exec("chmod 755 "+Applet.BIN_FOLDER+File.separator+"ffplay").waitFor();
-				if(!Applet.BIN_FOLDER.exists()) throw new IOException("Did not copy Linux extensions to the execution directory!");
 			}
 			logger.info("Have access to execution folder: "+Applet.BIN_FOLDER.getAbsolutePath());
 			setReadyStateBasedOnPriorRecording();
         } catch (Exception e) { // possibilities: MalformedURL, InterriptedException, IOException
         	Applet.sendViewNotification(ViewNotifications.FATAL, new MessageNotification(
         			"Error with install",
-        			"Sorry, an error occurred while installing the native extensions. Please contact an Insight admin."));
+        			"Sorry, an error occurred while installing the native extensions. Please contact an admin."));
         	logger.error("Could not install native extensions",e);
 		}
 	}

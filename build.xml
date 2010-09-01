@@ -15,10 +15,12 @@
 		<copy todir="build/org/apache">
 			<fileset dir="lib/org/apache"/>
 		</copy>
-		<echo message="Copying log config file..." />
-		<copy file="logs/config.properties" todir="build" />  
+		<echo message="Copying applet config file..." />
+		<copy file="config.properties" todir="build" />
+		<echo message="Copying log4j config file..." />
+		<copy file="logs/log4j.properties" todir="build" />  
 		<echo message="Building build/applet.jar ..." />
-		<jar destfile="build/applet.jar" filesetmanifest="mergewithoutmain" basedir="build" includes="com/**,org/**,config.*">
+		<jar destfile="build/applet.jar" filesetmanifest="mergewithoutmain" basedir="build" includes="com/**,org/**,config.*,log4j.*">
 			<manifest>
 				<attribute name="Main-Class" value=".Applet"/>
 			</manifest>

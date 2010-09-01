@@ -6,6 +6,7 @@ import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Window;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,6 +17,7 @@ import java.net.URL;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Enumeration;
+import java.util.Properties;
 import java.util.Vector;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -85,7 +87,7 @@ public class Applet extends JApplet {
 	public static URL DOCUMENT_BASE, CODE_BASE;
 	public static JApplet APPLET;
 	public static JSObject JS_BRIDGE;
-	public static String POST_URL = null, SCREEN_CAPTURE_NAME = null, API_KEY = null, HOST_URL = null;
+	public static String POST_URL = null, SCREEN_CAPTURE_NAME = null, API_KEY, HOST_URL;
 	public static boolean HEADLESS = false;
 	public static boolean IS_MAC = System.getProperty("os.name").toLowerCase().contains("mac");
 	public static boolean IS_LINUX = System.getProperty("os.name").toLowerCase().contains("linux");
@@ -99,6 +101,7 @@ public class Applet extends JApplet {
 	
 	private AbstractController controller = null;
 	private static Logger logger = Logger.getLogger(Applet.class);
+	public static Properties PROPERTIES = new Properties(); // TODO move some of these static variables into the Properties obj? clean up properties in general?
 	
 	/**
 	 * The init method is called when this applet is loaded into the browser.  It is used to initialize
@@ -107,17 +110,27 @@ public class Applet extends JApplet {
 	@Override
     public void init() {
 		try {
-			BASE_FOLDER = new File(getBaseFolderPath()); // should be first
+			if(!DEV_MODE && getParameter("dev_mode") != null)
+				DEV_MODE = getParameter("dev_mode").equals("true");
+			
+			// setup properties configuration (should before base folder)
+			if(Applet.DEV_MODE) {
+				PROPERTIES.load(new FileInputStream("../config.properties"));
+			} else {
+				PROPERTIES.load(this.getClass().getClassLoader().getResourceAsStream("config.properties"));
+			}
+			
+			BASE_FOLDER = new File(getBaseFolderPath()); // should be next, after property loading
 			BIN_FOLDER = new File(getBinFolderPath());
 			DESKTOP_FOLDER = new File(getDesktopFolderPath());
-			
+
 			// setup logging (http://www.theserverside.com/discussions/thread.tss?thread_id=42709)
 			if(Applet.DEV_MODE) {
 				System.setProperty("log.file.path", "../logs/development.log");
-				PropertyConfigurator.configure("../logs/config.properties");
+				PropertyConfigurator.configure("../logs/log4j.properties");
 			} else {
 				System.setProperty("log.file.path", BASE_FOLDER.getAbsolutePath()+File.separator+"production.log");
-				PropertyConfigurator.configure(this.getClass().getClassLoader().getResource("config.properties"));
+				PropertyConfigurator.configure(this.getClass().getClassLoader().getResource("log4j.properties"));
 			}
 			// setup the javascript API
 			try {
@@ -131,8 +144,6 @@ public class Applet extends JApplet {
 			APPLET = this; // breaking OOP so I can have a "root"
 			POST_URL = getParameter("post_url");
 			API_KEY = getParameter("api_key");
-			if(!DEV_MODE && getParameter("dev_mode") != null)
-				DEV_MODE = getParameter("dev_mode").equals("true");
 			SCREEN_CAPTURE_NAME = getParameter("screen_capture_name");
 			HOST_URL = DOCUMENT_BASE.getProtocol() + "://" + DOCUMENT_BASE.getHost();
 			
@@ -405,13 +416,13 @@ public class Applet extends JApplet {
 				if (entry.getName().contains(folderName)) {
 					File f = new File(BASE_FOLDER.getAbsolutePath()+File.separator+entry.getName());
 					if (entry.isDirectory() && f.mkdir()) { 
-						System.out.println("Created folder "+f.getAbsolutePath()+" for "+entry.getName());
+						logger.info("Created folder "+f.getAbsolutePath()+" for "+entry.getName());
 					}
 					else if (!f.exists()) {
 						if (copyFileFromJar(entry.getName(), f)) {
-							System.out.println("Copied file: " + entry.getName());
+							logger.info("Copied file: " + entry.getName());
 						} else {
-							System.err.println("Could not copy file: "+entry.getName());
+							logger.error("Could not copy file: "+entry.getName());
 						}
 					}
 				}
@@ -442,13 +453,13 @@ public class Applet extends JApplet {
 				if (entry.getName().contains(folderName)) {
 					File f = new File(BASE_FOLDER.getAbsolutePath()+File.separator+entry.getName());
 					if (entry.isDirectory() && f.mkdir()) { 
-						System.out.println("Created folder "+f.getAbsolutePath()+" for "+entry.getName());
+						logger.info("Created folder "+f.getAbsolutePath()+" for "+entry.getName());
 					}
 					else if (!f.exists()) {
 						if (copyFileFromJar(entry.getName(), f, jarLoader)) {
-							System.out.println("Copied file: " + entry.getName());
+							logger.info("Copied file: " + entry.getName());
 						} else {
-							System.err.println("Could not copy file: "+entry.getName());
+							logger.error("Could not copy file: "+entry.getName());
 						}
 					}
 				}
@@ -551,6 +562,7 @@ public class Applet extends JApplet {
 				"Base Folder: \t"+BASE_FOLDER.getPath()+"\n"+
 				"Bin Folder: \t"+BIN_FOLDER.getPath()+"\n"+
 				"User Desktop: \t"+DESKTOP_FOLDER.getPath()+"\n"+
+				"Host URL:\t"+HOST_URL+"\n"+
 				"Code Base: \t"+getCodeBase()+"\n"+
 				"Document Base: \t"+getDocumentBase()+"\n"+
 				"Execution URL: \t"+Applet.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()+"\n"+
@@ -584,11 +596,11 @@ public class Applet extends JApplet {
 	 */
 	public static String getBaseFolderPath() throws IOException {
 		if(IS_MAC)
-			return System.getProperty("user.home")+File.separator+"Library"+File.separator+"ReelFX";
+			return System.getProperty("user.home")+File.separator+"Library"+File.separator+PROPERTIES.getProperty("base.folder");
 		else if(IS_LINUX)
-			return System.getProperty("user.home")+File.separator+".ReelFX";
+			return System.getProperty("user.home")+File.separator+"."+PROPERTIES.getProperty("base.folder");
 		else if(IS_WINDOWS)
-			return System.getenv("TEMP")+File.separator+"ReelFX";
+			return System.getenv("TEMP")+File.separator+PROPERTIES.getProperty("base.folder");
 		else 
 			throw new IOException("I don't know where to find the native extensions!");
 	}
