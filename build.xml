@@ -40,14 +40,17 @@
 	</target>
 			
 	<target name="create_test_page" depends="sign_jar">
-		<copy file="build/applet.jar" todir="${build.test}"/>
-		<copy file="bin-mac.jar" todir="${build.test}"/>
-		<copy file="bin-windows-v${win-version}.jar" todir="${build.test}"/>
-		<copy file="bin-linux.jar" todir="${build.test}"/>
-		<copy file="src/template.html" tofile="${build.test}index.html" overwrite="true" />
+		<copy file="build/applet.jar" todir="${test.path}"/>
+		<copy file="bin-mac.jar" todir="${test.path}"/>
+		<copy file="bin-windows-v${win-version}.jar" todir="${test.path}"/>
+		<copy file="bin-linux.jar" todir="${test.path}"/>
+		<copy file="src/template.html" tofile="${test.path}index.html" overwrite="true" />
 		<!-- Random number used to prevent browser caching -->
 		<random max="100000000" property="randomValue"></random>
-		<replace file="${build.test}index.html" token="@@@UNIQUE@@@" value="${randomValue}"/>
+		<replace file="${test.path}index.html" token="@@@UNIQUE@@@" value="${randomValue}"/>
+		<replace file="${test.path}index.html" token="@@@POST_URL@@@" value="${test.post_url}"/>
+		<replace file="${test.path}index.html" token="@@@HEIGHT@@@" value="${test.applet_height}"/>
+		<replace file="${test.path}index.html" token="@@@WIDTH@@@" value="${test.applet_width}"/>
 	</target>
 	
 	<target name="create_production_jar1" depends="sign_jar">

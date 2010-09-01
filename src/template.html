@@ -2,32 +2,111 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>Applet</title>
+<title>Screen Courter Test Page</title>
+<script src="http://ajax.googleapis.com/ajax/libs/prototype/1.6.1.0/prototype.js" type="text/javascript"></script>
 </head>
-<body onload="onload();">
-  <p>There is applet right here:</p>
-<applet id="applet" archive="http://localhost/~daniel/review_tool/applet.jar?@@@UNIQUE@@@" code="com.reelfx.Applet" width="650" height="50" name="applet" mayscript="mayscript">
-	<param name="headless" value="true">
-	<param name="mayscript" value="true">
-	<param name="cache_option" value="no">
-</applet>
-<!--  Firebug posts an error of "too much recursion" if this guy is in the <head>...odd... -->
+<body>
+<h1>Screen Courter Test Page</h1>
+<p>On this page is the Screen Courter Java applet. To create a screen recording, click the link below to open the always-on-top Java recording user interface. 
+Once done, the recording interface will disappear and the post options user interface that is embedded in the page will appear on top of everything else on the page.
+Because the recording exists on the user's machine, this post options interface will remain present until the user has explicitly said that s/he is done with it, even upon 
+revisiting the page at a later time.
+</p>
+<p><a href="#" onclick="sct_show_tools();return false;">Create a new screen recording</a></p>
+<div id="sct_popup" style="position:fixed;z-index:5;width:@@@WIDTH@@@px;height:@@@HEIGHT@@@px;top:-1000px;left:-1000px;background-color:#c3c3c3;margin:0 auto">
+  <applet id="applet" archive="applet.jar?@@@UNIQUE@@@" code="com.reelfx.Applet" width="@@@WIDTH@@@" height="@@@HEIGHT@@@" name="applet" mayscript="true" scriptable="true">
+    <param name="headless" value="true">
+  	<param name="screen_capture_name" value="Test Screen Capture">
+  	<param name="mayscript" value="true">
+  	<param name="post_url" value="@@@POST_URL@@@"> 	
+  	<param name="cache_option" VALUE="no">
+  </applet>
+</div>
 <script type="text/javascript" charset="utf-8">
-	function onload() {
-		//alert("Headless? "+document.getElementById('applet').HEADLESS);
-	}
-	function info(s) {
+  function sct_info(s) {
 		console.log(s);
 	}
-	function debug(s) {
+	function sct_debug(s) {
 		console.warn(s);
 	}
-	function error(s) {
-		alert(s);
+	function sct_error(s) {
 		console.error(s);
 	}
-	function showTools() {
-		document.getElementById('applet').showInterface();
+	function sct_show_tools() {
+		document.getElementById('applet').showRecordingInterface();
+	}
+	function sct_hide_tools() {
+		document.getElementById('applet').hideRecordingInterface();
+	}
+	function sct_prepare_and_record() {
+	  document.getElementById('applet').prepareAndRecord();
+	}
+	function sct_stop_recording() {
+	  document.getElementById('applet').stopRecording();
+	}
+	function sct_change_post_url(new_url) {
+	  document.getElementById('applet').changePostUrl(new_url);
+	}
+	function sct_handle_recording_update(state,status) {
+	  if(typeof handle_recording_update == 'function') {
+	    handle_recording_update(state,status); // trigger updates while recording
+	  }
+	}
+	function sct_handle_recording_ui_hide() {
+	  if(typeof handle_recording_update == 'function') {
+	    handle_recording_ui_hide(); // when user closes Java Applet recording UI
+	  }
+	}
+	function sct_handle_existing_recording() {
+	  var win_dim = document.viewport.getDimensions();
+	  if(Prototype.Browser.WebKit) {
+	    $('sct_popup').setStyle({
+	      position: 'static',
+	    });
+	  } else {
+	    $('sct_popup').setStyle({ 
+  	    left: (win_dim.width/2 - @@@WIDTH@@@/2)+"px", 
+  	    top: (win_dim.height/2 - @@@HEIGHT@@@/2)+"px"
+  	  });
+	  }
+	  if(typeof ask_about_existing_recording == 'function') {
+	    ask_about_existing_recording(); // trigger to disable/prep other things on the page
+	  }
+	}
+	function sct_handle_fresh_recording() {
+	  var win_dim = document.viewport.getDimensions();
+	  if(Prototype.Browser.WebKit) {
+	    $('sct_popup').setStyle({
+	      position: 'static'
+	    });
+	  } else {
+  	  $('sct_popup').setStyle({ 
+  	    left: (win_dim.width/2 - @@@WIDTH@@@/2)+"px", 
+  	    top: (win_dim.height/2 - @@@HEIGHT@@@/2)+"px"
+  	  });
+    }
+	  if(typeof ask_about_fresh_recording == 'function') {
+	    ask_about_fresh_recording(); // trigger to disable/prep other things on the page
+	  }
+	}
+	function sct_handle_uploaded_recording() {
+	  if(typeof after_uploaded_recording == 'function') {
+	    after_uploaded_recording();
+	  }
+	}
+	function sct_handle_deleted_recording() {
+	  // can't use display:none on Java Applets
+	  $('sct_popup').setStyle({
+	    position: 'fixed',
+	    left: "-1000px",
+	    top: "-1000px"
+	  });
+	  if(typeof after_deleted_recording == 'function') {
+	    after_deleted_recording(); // trigger to enable/prep other things on the page
+	  }
+	}
+	function sct_redirect_page(url) {
+	  window.location.href = url;
 	}
 </script>
 </body>
