@@ -1,0 +1,61 @@
+#### THIS FILE IS STILL IN PROGRESS ####
+
+========================================
+
+ Screen-Courter v0.8 - A screen recording app who loves your screen and likes to show her off.
+ 	
+ 	by Daniel Dixon (http://www.danieldixon.com)
+ 	Copyright (C) 2010  ReelFX Creative Studios (http://www.reelfx.com)	
+
+========================================
+
+DESCRIPTION:
+
+An instant, cross-platform, web-based, screen recording Java applet for posting user-created screencasts
+to a server. The applet acts as a standard interface for recording, cropping, and posting while an 
+OS-specific command-line tool is fired up under the covers as a process to create a high-fps screen recording 
+of the user's screen and handle any post-processing needs.  For Linux, this tool is a standard build of FFMPEG.
+For Windows, a custom build of FFMPEG based on discussion on the FFMPEG developer mailing list. For Mac, a
+custom built screen recording Objective-C app based on the QTKit of Snow Leopard.
+
+This tool was inspired by websites like www.screencast-o-matic.com and www.screentoaster.com whose
+approaches include all sorts of technologies, including FFMPEG, VNC, and JNI.
+
+========================================
+
+REQUIREMENTS:
+
+Developer:
+	JRE 1.6
+	Eclipse (recommended)
+	Ant (recommended)
+	Access to Mac, Windows, and Linux environments for testing and compilation
+	Ability to sign a JAR file
+
+Client-side:
+	JRE 1.6
+	
+Server-side:
+	Ability to serve a signed Java applet
+	Ability to receive a POST with a multi-part file	
+
+========================================
+
+SETUP USING ECLIPSE:
+
+1) Checkout the code:
+	git clone 
+	
+2) Import the project folder into an Eclipse workspace
+
+3) 
+
+========================================
+
+DEPLOYMENT:
+
+========================================
+
+WISH LIST:
+
+======================================== 

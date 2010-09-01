@@ -48,6 +48,23 @@ import com.sun.JarClassLoader;
  * communication, and provides a series of auxilary methods for unpacking JAR files, etc.
  * 
  * @author Daniel Dixon (http://www.danieldixon.com)
+ * 
+ * 
+ * 	Copyright (C) 2010  ReelFX Creative Studios (http://www.reelfx.com)
+ *
+ *	This program is free software: you can redistribute it and/or modify
+ * 	it under the terms of the GNU General Public License as published by
+ * 	the Free Software Foundation, either version 3 of the License, or
+ * 	(at your option) any later version.
+ * 	
+ * 	This program is distributed in the hope that it will be useful,
+ * 	but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * 	GNU General Public License for more details.
+ * 	
+ * 	You should have received a copy of the GNU General Public License
+ * 	along with this program.  If not, see <http://www.gnu.org/licenses/>
+ * 	
  *
  * SPECIAL NOTE ON JSObject on Mac (Used for communicating with Javascript)
  * In Eclipse, initially couldn't find the class.  This guy said to add a reference to 'plugin.jar' 
@@ -122,8 +139,6 @@ public class Applet extends JApplet {
 			// verify that we have what we need
 			if(getParameter("headless") != null)
 				HEADLESS = !getParameter("headless").isEmpty() && getParameter("headless").equals("true"); // Boolean.getBoolean(string) didn't work
-			if(API_KEY.isEmpty())
-				throw new Exception("An api key is required!");
 			if( BASE_FOLDER.exists() && !BASE_FOLDER.isDirectory() && !BASE_FOLDER.delete() )
 		        throw new IOException("Could not delete file for folder: " + BASE_FOLDER.getAbsolutePath());
 			if( !BASE_FOLDER.exists() && !BASE_FOLDER.mkdir() )

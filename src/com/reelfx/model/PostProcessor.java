@@ -1,15 +1,9 @@
 package com.reelfx.model;
 
-import java.awt.Dimension;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
@@ -18,21 +12,15 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.http.Header;
-import org.apache.http.HeaderElement;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpVersion;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.utils.URIUtils;
-import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.ContentBody;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.CoreProtocolPNames;
-import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
 
@@ -42,9 +30,27 @@ import com.reelfx.controller.WindowsController;
 import com.reelfx.model.util.CountingMultipartEntity;
 import com.reelfx.model.util.ProcessWrapper;
 import com.reelfx.model.util.StreamGobbler;
-import com.reelfx.view.PostOptions;
-import com.reelfx.view.util.ViewNotifications;
 
+/**
+ * 
+ * @author Daniel Dixon (http://www.danieldixon.com)
+ * 
+ * 	Copyright (C) 2010  ReelFX Creative Studios (http://www.reelfx.com)
+ *
+ *	This program is free software: you can redistribute it and/or modify
+ * 	it under the terms of the GNU General Public License as published by
+ * 	the Free Software Foundation, either version 3 of the License, or
+ * 	(at your option) any later version.
+ * 	
+ * 	This program is distributed in the hope that it will be useful,
+ * 	but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * 	GNU General Public License for more details.
+ * 	
+ * 	You should have received a copy of the GNU General Public License
+ * 	along with this program.  If not, see <http://www.gnu.org/licenses/>
+ *
+ */
 public class PostProcessor extends ProcessWrapper implements ActionListener {
 	
 	// FILE LOCATIONS AND FLAGS
@@ -279,7 +285,7 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 			    	client.getConnectionManager().shutdown();
 		        }
 		        
-		        // TODO monitor the progress of the event
+		        // TODO monitor the progress of the transcoding?
 		        // TODO allow canceling of the transcoding?
 		        
 		  } catch (Exception e) {
@@ -311,7 +317,7 @@ public class PostProcessor extends ProcessWrapper implements ActionListener {
 		try {
 			URI given = new URI(url);
 			String query = given.getQuery() == null ? "" : given.getQuery();
-	    	query = query + (query.isEmpty() ? "" : "&") + "api_key="+Applet.API_KEY;
+	    	query = query + (query.isEmpty() ? "" : "&") + (Applet.API_KEY.isEmpty() ? "" : "api_key="+Applet.API_KEY);
 	    	postUrl = new URI(given.getScheme(),given.getAuthority(),given.getPath(),query,given.getFragment());
 		} catch (Exception e) {
 			logger.error("Error occurred while processing the post URL (received: "+url+")", e);

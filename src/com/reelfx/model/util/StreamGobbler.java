@@ -19,6 +19,12 @@ import org.apache.log4j.Logger;
 
 import com.reelfx.view.PostOptions;
 
+/**
+ * Handles output from processes.
+ * 
+ * @author Daniel Dixon (http://www.danieldixon.com)
+ *
+ */
 public class StreamGobbler extends Thread {
 	private static Logger logger = Logger.getLogger(StreamGobbler.class);
 	
