@@ -44,7 +44,10 @@ SETUP USING ECLIPSE:
 1) Checkout the code:
 	git clone http://github.com/onedanshow/Screen-Courter.git
 	
-2) Import the project folder into an Eclipse workspace
+2) Import the project folder into an Eclipse workspace. 
+	-Make sure the 'src' folder is selected as the source folder.
+	-Make sure all of the JARs in the 'lib' folder are added to Project > Properties > Java Build Path > Libraries
+	-Make sure to add 'plugin.jar' for the Javascript interface. See the note at the top of Applet.java
 
 3) In Eclipse, open the Run > Run Configurations window and follow these sub-steps:
 	-For the Main tab, select "Screen-Courter" as the project and "com.reelfx.Applet" as the Applet
@@ -119,6 +122,10 @@ F.A.Q.
 
 Q) Why did you not use VLC under the covers?
 A) I was never able to get good results with it (e.g. high fps, good quality capture, decent file size)
+
+Q) Why are there a bunch of Apache Commons files in the src folder and class files in the lib folder from the shared JARs?
+A) I was trying to limit the size of the JAR and freeze the common code I used by just including those files needed instead of the whole
+	Apache Commons JAR, plus not have to deal with finding/loading other JARs or including JARs within JARs.  This needs to be cleaned up.
 
 ======================================== 
 

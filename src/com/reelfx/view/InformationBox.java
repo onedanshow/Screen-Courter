@@ -50,7 +50,7 @@ public class InformationBox extends MoveableWindow {
 
 	public final static String NAME = "InformationBox";
 	
-	private final String defaultMessage = "ReelFX Screen Recorder    ";
+	private String defaultMessage;
 	private ViewNotifications currentState;
 	private JLabel title;
 	public InformationBox() {
@@ -63,6 +63,8 @@ public class InformationBox extends MoveableWindow {
 		setPreferredSize(new Dimension(230, 33));
 		setAlwaysOnTop(true);
 		setName(NAME);
+		
+		defaultMessage = Applet.PROPERTIES.getProperty("app.name")+"    ";
 		
 		title = new JLabel(defaultMessage);
 		title.setFont(new Font("Arial", Font.BOLD, 15));

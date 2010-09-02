@@ -278,7 +278,7 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 		case PRE_RECORDING:
 			recordBtn.setEnabled(false);
 			audioSelect.setEnabled(false);
-			audioSelect.setVisible(false);
+			audioSelect.setVisible(true);
 			viewportSelect.setEnabled(false);
 			viewportSelect.setVisible(false);
 			status.setEnabled(true);
@@ -297,7 +297,7 @@ public class RecordControls extends MoveableWindow implements ActionListener {
 			recordBtn.setEnabled(true);
 			recordBtn.setText("Stop");
 			audioSelect.setEnabled(false);
-			audioSelect.setVisible(false);
+			audioSelect.setVisible(true);
 			viewportSelect.setEnabled(false);
 			viewportSelect.setVisible(false);
 			closeBtn.setVisible(false);

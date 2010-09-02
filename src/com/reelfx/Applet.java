@@ -71,7 +71,7 @@ import com.sun.JarClassLoader;
  * SPECIAL NOTE ON JSObject on Mac (Used for communicating with Javascript)
  * In Eclipse, initially couldn't find the class.  This guy said to add a reference to 'plugin.jar' 
  * (http://stackoverflow.com/questions/1664604/jsobject-download-it-or-available-in-jre-1-6) however
- * the only plugin.jar's I found for Java via the 'locate' command were either bad symlinks or inside
+ * the only plugin.jar's I found for Java via the 'locate plugin.jar' command were either bad symlinks or inside
  * .bundle so I had to create a good symlink called plugin-daniel.jar in /System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Home/lib
  * that pointed to /System/Library/Frameworks/JavaVM.framework/Versions/A/Resources/Deploy.bundle/Contents/Resources/Java/plugin.jar
  * I had no issue adding it on Windows or Linux.
@@ -556,6 +556,7 @@ public class Applet extends JApplet {
 				"Java Version: \t"+System.getProperty("java.version")+"\n"+
 				"OS Name: \t"+System.getProperty("os.name")+"\n"+
 				"OS Version: \t"+System.getProperty("os.version")+"\n"+
+				"Dev Mode? \t"+DEV_MODE+"\n"+
 				"Run Directory: \t"+System.getProperty("user.dir")+"\n"+
 				"User Home: \t"+System.getProperty("user.home")+"\n"+
 				"User Name: \t"+System.getProperty("user.name")+"\n"+
