@@ -111,7 +111,7 @@ public class Applet extends JApplet {
     public void init() {
 		try {
 			if(getParameter("dev_mode") != null)
-				DEV_MODE = true;
+				DEV_MODE = getParameter("dev_mode").equals("true");
 			
 			// setup properties configuration (should before base folder)
 			if(Applet.DEV_MODE) {
