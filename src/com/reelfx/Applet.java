@@ -92,7 +92,7 @@ public class Applet extends JApplet {
 	public static boolean IS_MAC = System.getProperty("os.name").toLowerCase().contains("mac");
 	public static boolean IS_LINUX = System.getProperty("os.name").toLowerCase().contains("linux");
 	public static boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("windows");
-	public static boolean DEV_MODE = System.getProperty("user.dir").contains(System.getProperty("user.home")); // assume dev files are in developer's home
+	public static boolean DEV_MODE = false;
 	public final static Dimension SCREEN = new Dimension( // for the primary monitor only
 			GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDisplayMode().getWidth(), 
 			GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDisplayMode().getHeight());
@@ -110,8 +110,8 @@ public class Applet extends JApplet {
 	@Override
     public void init() {
 		try {
-			if(!DEV_MODE && getParameter("dev_mode") != null)
-				DEV_MODE = getParameter("dev_mode").equals("true");
+			if(getParameter("dev_mode") != null)
+				DEV_MODE = true;
 			
 			// setup properties configuration (should before base folder)
 			if(Applet.DEV_MODE) {
