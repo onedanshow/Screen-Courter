@@ -5,7 +5,7 @@
 	
 	<!-- TODO: To add build numbers: http://www.jguru.com/faq/view.jsp?EID=481664 -->
 	
-	<property file="build.properties" />
+	<property file="config.properties" />
 	<!-- TODO: Version the Mac and Linux version if need be -->
 	<property name="win-version" value="1.2"/>
 	
