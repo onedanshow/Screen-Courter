@@ -68,8 +68,9 @@ SETUP USING ECLIPSE:
 
 TEST DEPLOYMENT:
 
-1) Copy and rename build-example.properties to build.properties and configure it accordingly. This file will not go in source control. 
-Some properties are the same as those in the Parameters tab above. It is assumed that you already have generated a certificate in your local keystore. 
+1) If not done so already, copy and rename config-example.properties to config.properties and configure it accordingly.
+Some properties are the same as those in the Parameters tab above. 
+It is assumed that you already have generated a certificate in your local keystore. 
 
 2) Using Ant, run the create_test_page action.
 
