@@ -59,32 +59,20 @@ revisiting the page at a later time.
 	}
 	function sct_handle_existing_recording() {
 	  var win_dim = document.viewport.getDimensions();
-	  if(Prototype.Browser.WebKit) {
-	    $('sct_popup').setStyle({
-	      position: 'static',
-	    });
-	  } else {
-	    $('sct_popup').setStyle({ 
+	  $('sct_popup').setStyle({ 
   	    left: (win_dim.width/2 - @@@WIDTH@@@/2)+"px", 
   	    top: (win_dim.height/2 - @@@HEIGHT@@@/2)+"px"
   	  });
-	  }
 	  if(typeof ask_about_existing_recording == 'function') {
 	    ask_about_existing_recording(); // trigger to disable/prep other things on the page
 	  }
 	}
 	function sct_handle_fresh_recording() {
 	  var win_dim = document.viewport.getDimensions();
-	  if(Prototype.Browser.WebKit) {
-	    $('sct_popup').setStyle({
-	      position: 'static'
-	    });
-	  } else {
   	  $('sct_popup').setStyle({ 
   	    left: (win_dim.width/2 - @@@WIDTH@@@/2)+"px", 
   	    top: (win_dim.height/2 - @@@HEIGHT@@@/2)+"px"
   	  });
-    }
 	  if(typeof ask_about_fresh_recording == 'function') {
 	    ask_about_fresh_recording(); // trigger to disable/prep other things on the page
 	  }
