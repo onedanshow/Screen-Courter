@@ -140,9 +140,11 @@ public class AudioSelector extends JComboBox implements MouseListener, ItemListe
 		switch(event) {
 		case AudioRecorder.RECORDING_ERROR:
 			setSelectedIndex(getItemCount()-1);
-			JOptionPane.showMessageDialog(null, 
-					"The selected audio source could not be initialized. Please choose another.",
-					"Error",JOptionPane.ERROR_MESSAGE);
+			if(isVisible()) {
+				JOptionPane.showMessageDialog(null, 
+						"The selected audio source could not be initialized. Please choose another.",
+						"Error",JOptionPane.ERROR_MESSAGE);
+			}
 		}
 	}
 
