@@ -20,9 +20,18 @@
 		<echo message="Copying log4j config file..." />
 		<copy file="logs/log4j.properties" todir="build" />  
 		<echo message="Building build/applet.jar ..." />
+		<property name="version.num" value="0.8"/>
+		<buildnumber />
+		<tstamp>
+			<format property="TODAY" pattern="yyyy-MM-dd HH:mm:ss" />
+		</tstamp>
+
 		<jar destfile="build/applet.jar" filesetmanifest="mergewithoutmain" basedir="build" includes="com/**,org/**,config.*,log4j.*">
 			<manifest>
+				<attribute name="Built-By" value="${user.name}"/>
 				<attribute name="Main-Class" value=".Applet"/>
+				<attribute name="Implementation-Version" value="${version.num}-b${build.number}"/>
+				<attribute name="Built-Date" value="${TODAY}"/>
 			</manifest>
 		</jar>
 	</target>

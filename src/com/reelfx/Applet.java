@@ -554,6 +554,7 @@ public class Applet extends JApplet {
 			return 
 				"\n\n\n\nAPPLET PROPERLY INITIALIZED WITH THIS VARIABLES:\n"+
 				"Java Version: \t"+System.getProperty("java.version")+"\n"+
+				"Implementation-Build: \t"+Applet.class.getPackage().getImplementationVersion()+"\n"+
 				"OS Name: \t"+System.getProperty("os.name")+"\n"+
 				"OS Version: \t"+System.getProperty("os.version")+"\n"+
 				"Dev Mode? \t"+DEV_MODE+"\n"+
