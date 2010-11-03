@@ -3,11 +3,10 @@
 	
 	<!-- Assumes the class files are already built (which Eclipse does) -->
 	
-	<!-- TODO: To add build numbers: http://www.jguru.com/faq/view.jsp?EID=481664 -->
-	
 	<property file="config.properties" />
-	<!-- TODO: Version the Mac and Linux version if need be -->
+	<!-- TODO: Version the Mac version if need be. If you update here, also update in Applet.java -->
 	<property name="win-version" value="1.2"/>
+	<property name="linux-version" value="1.1"/>
 	
 	<target name="build_jar">
 		<echo message="Copying apache files..." />
@@ -54,7 +53,7 @@
 		<copy file="build/applet.jar" todir="${test.path}"/>
 		<copy file="bin-mac.jar" todir="${test.path}"/>
 		<copy file="bin-windows-v${win-version}.jar" todir="${test.path}"/>
-		<copy file="bin-linux.jar" todir="${test.path}"/>
+		<copy file="bin-linux-v${linux-version}.jar" todir="${test.path}"/>
 		<copy file="src/template.html" tofile="${test.path}index.html" overwrite="true" />
 		<!-- Random number used to prevent browser caching -->
 		<random max="100000000" property="randomValue"></random>
@@ -68,14 +67,14 @@
 		<copy file="build/applet.jar" todir="${build.production1}"/>
 		<copy file="bin-mac.jar" todir="${build.production1}"/>
 		<copy file="bin-windows-v${win-version}.jar" todir="${build.production1}"/>
-		<copy file="bin-linux.jar" todir="${build.production1}"/>
+		<copy file="bin-linux-v${linux-version}.jar" todir="${build.production1}"/>
 	</target>
 	
 	<target name="create_production_jar2" depends="sign_jar">
 		<copy file="build/applet.jar" todir="${build.production2}"/>
 		<copy file="bin-mac.jar" todir="${build.production2}"/>
 		<copy file="bin-windows-v${win-version}.jar" todir="${build.production2}"/>
-		<copy file="bin-linux.jar" todir="${build.production2}"/>
+		<copy file="bin-linux-v${linux-version}.jar" todir="${build.production2}"/>
 	</target>	
 	
 	<!-- Taken from: http://docs.huihoo.com/apache/apachecon/eu2007/extending_ant.pdf -->

@@ -627,7 +627,7 @@ public class Applet extends JApplet {
 		if(IS_MAC)
 			return "bin-mac";
 		else if(IS_LINUX)
-			return "bin-linux";
+			return "bin-linux-v1.1";
 		else if(IS_WINDOWS)
 			return "bin-windows-v1.2";
 		else
