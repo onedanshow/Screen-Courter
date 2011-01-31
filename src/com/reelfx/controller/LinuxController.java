@@ -70,15 +70,15 @@ public class LinuxController extends AbstractController {
 					}
 				}
 				// download an install the new one
-				String url = Applet.HOST_URL+"/"+Applet.getBinFolderName()+".jar?"+Math.random()*10000;
+				String url = Applet.HOST_URL+File.separator+Applet.getBinFolderName()+".jar?"+Math.random()*10000;
 				Applet.copyFolderFromRemoteJar(new URL(url), Applet.getBinFolderName());
 				if(!Applet.BIN_FOLDER.exists()) {
 					logger.info("Could not find native extensions at "+url+". Trying next code base url...");
-					url = Applet.CODE_BASE.toString()+"/"+Applet.getBinFolderName()+".jar?"+Math.random()*10000;
+					url = Applet.CODE_BASE.toString()+File.separator+Applet.getBinFolderName()+".jar?"+Math.random()*10000;
 					Applet.copyFolderFromRemoteJar(new URL(url), Applet.getBinFolderName());
 					if(!Applet.BIN_FOLDER.exists()) {
 						logger.info("Could not find native extensions at "+url+". Trying next document base url...");
-						url = Applet.DOCUMENT_BASE.toString()+"/"+Applet.getBinFolderName()+".jar?"+Math.random()*10000;
+						url = Applet.DOCUMENT_BASE.toString()+File.separator+Applet.getBinFolderName()+".jar?"+Math.random()*10000;
 						Applet.copyFolderFromRemoteJar(new URL(url), Applet.getBinFolderName());
 						if(!Applet.BIN_FOLDER.exists()) {
 							throw new IOException("Did not copy Linux extensions to the execution directory! Last url: "+url);

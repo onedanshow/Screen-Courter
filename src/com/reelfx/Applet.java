@@ -16,6 +16,9 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.Vector;
@@ -550,9 +553,12 @@ public class Applet extends JApplet {
 		    	primaryScreenIndex = i;
 		    }
 		}
+		DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+		Date date = new Date();
 		try {
 			return 
 				"\n\n\n\nAPPLET PROPERLY INITIALIZED WITH THIS VARIABLES:\n"+
+				"Date Time: \t"+dateFormat.format(date)+"\n"+
 				"Java Version: \t"+System.getProperty("java.version")+"\n"+
 				"Implementation-Build: \t"+Applet.class.getPackage().getImplementationVersion()+"\n"+
 				"OS Name: \t"+System.getProperty("os.name")+"\n"+
