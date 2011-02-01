@@ -144,6 +144,7 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 	{
 		m_captureToFile = false;
 		m_saveFile = true;
+		logger.info("Audio recording should be stopped.");
 	}
 
     @Override
@@ -158,7 +159,9 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 				// used: http://forums.sun.com/thread.jspa?threadID=5402696
 				// used: http://www.jsresources.org/examples/RawAudioDataConverter.java.html
 				// another approach: http://proteo.me.uk/?p=38
+				logger.info("Audio recording thread is running...");
 				BufferedOutputStream bos = null;
+				int numBytesRead = 0;
 		    	try
 				{
 		    		// start looping to grab bytes to sample volume, writing out a file if necessary
@@ -175,19 +178,27 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 				    			long lLengthInFrames = TEMP_FILE.length() / AudioRecorder.AUDIO_FORMAT.getFrameSize();
 				    			AudioInputStream ais = new AudioInputStream(inputStream,AudioRecorder.AUDIO_FORMAT,lLengthInFrames);
 				    			AudioSystem.write(ais, m_targetType, m_outputFile);
-				    			fireProcessUpdate(RECORDING_COMPLETE); // thread may keep going though
+				    			fireProcessUpdate(RECORDING_COMPLETE); // thread keeps going though
 				    			bos = null;
 				    			TEMP_FILE.delete();
+		    				} else {
+		    					logger.info("No audio file to save because nothing was ever read from the line...");
+		    					fireProcessUpdate(RECORDING_COMPLETE); // thread keeps going though
 		    				}
 							m_saveFile = false;
 						}
 		    			// are we destroying this thread?
 		    			if(m_line == null) {
+		    				logger.info("Audio line is null, so closing the thread.");
 		    				break;
 		    			}
-		    			// sample audio
+		    			// sample the audio
+		    			if(!(m_line.available() > 0)) {
+		    				continue; // else call to read() will block
+		    			}
 		    			audioData = new byte[m_line.getBufferSize() / 5];
-		    			m_line.read(audioData, 0, audioData.length);
+		    			// this is a blocking call (http://www.jsresources.org/faq_audio.html#read_blocking)
+		    			numBytesRead = m_line.read(audioData, 0, audioData.length);
 		    			// calculate the volume (RMS: http://en.wikipedia.org/wiki/Root_mean_square)
 		    			double sumMeanSquare = 0;
 				        for(int j=0; j<audioData.length; j++) {
@@ -197,10 +208,10 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 						// write the audio
 						if(m_captureToFile) {
 							if(bos == null) {
+								logger.info("Opening temp file to write audio to...");
 					    		bos = new BufferedOutputStream(new FileOutputStream(TEMP_FILE));
-					    		System.out.println("Writing audio...");
 							}
-							bos.write(audioData);
+							bos.write(audioData,0,numBytesRead);
 						}
 					}
 				}
@@ -243,10 +254,10 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
      */
     public void update(LineEvent event) {
 		if(event.getType().equals(LineEvent.Type.OPEN)) {
-			//System.out.println("Audio Line Opened...");
+			logger.info("Audio Line Opened...");
 		} 
 		else if(event.getType().equals(LineEvent.Type.START)) {
-			//System.out.println("Audio Recording Started...");
+			logger.info("Audio Line Started...");
 			//fireProcessUpdate(RECORDING_STARTED); // moved to run() because line is already started
 		} 
 		else if(event.getType().equals(LineEvent.Type.STOP)) {

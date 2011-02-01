@@ -69,9 +69,10 @@ public class AudioSelector extends JComboBox implements MouseListener, ItemListe
 		removeAllItems();
 		
 		// find all audio inputs that have target outputs 
-		// (excluding those with 'port' is a Linux hack, possibly temporary)
+		// (excluding those with 'port' and 'PulseAudio' is a Linux hack, possibly temporary)
 		for(Mixer.Info info : AudioSystem.getMixerInfo())
         	if(!info.getName().toLowerCase().contains("port")
+        	//		&& !info.getName().toLowerCase().contains("PulseAudio")
         			&& AudioSystem.getMixer(info).getTargetLineInfo().length != 0)
         		addItem(info.getName());
 		

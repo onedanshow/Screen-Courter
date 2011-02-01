@@ -115,7 +115,7 @@ public class LinuxController extends AbstractController {
         	audio.addProcessListener(this);
         	audio.startRecording();
         } else {
-        	System.out.println("No audio source specified.");
+        	logger.info("No audio source specified.");
         	audio = null;
         }
 		// start up ffmpeg
@@ -128,7 +128,7 @@ public class LinuxController extends AbstractController {
             audio.stopRecording();
 		else
 			recordingDone = true; // if no audio, queue the post process
-		System.out.println("About to stop screen recording...");
+		logger.info("About to stop screen recording...");
 		screen.stopRecording();
 		super.stopRecording(); // call after (has nothing but GUI updates)
 	}

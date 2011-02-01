@@ -229,7 +229,6 @@ public class ScreenRecorder extends ProcessWrapper implements ActionListener {
 	}
 	
 	public void stopRecording() {  
-		logger.info("Screen recording stopped...");
 		if(Applet.IS_LINUX || Applet.IS_WINDOWS) {
 	    	PrintWriter pw = new PrintWriter(recordingProcess.getOutputStream());
 	    	pw.print("q");
@@ -239,6 +238,7 @@ public class ScreenRecorder extends ProcessWrapper implements ActionListener {
 	    	pw.println("stop");
 	    	pw.flush();
 		}
+		logger.info("Screen recording should be stopped.");
 	}
 	
 	public void closeDown() {
