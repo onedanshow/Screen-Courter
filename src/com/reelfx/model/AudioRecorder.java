@@ -142,7 +142,6 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 	/** Stops the recording. */
 	public void stopRecording()
 	{
-		m_captureToFile = false;
 		m_saveFile = true;
 		logger.info("Audio recording should be stopped.");
 	}
@@ -181,10 +180,11 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
 				    			fireProcessUpdate(RECORDING_COMPLETE); // thread keeps going though
 				    			bos = null;
 				    			TEMP_FILE.delete();
-		    				} else {
+		    				} else if(m_captureToFile) {
 		    					logger.info("No audio file to save because nothing was ever read from the line...");
 		    					fireProcessUpdate(RECORDING_COMPLETE); // thread keeps going though
 		    				}
+		    				m_captureToFile = false;
 							m_saveFile = false;
 						}
 		    			// are we destroying this thread?
@@ -234,15 +234,15 @@ public class AudioRecorder extends ProcessWrapper implements LineListener
     
     @Override
     public void destroy() {
-    	System.out.println("Destroying AudioRecorder...");
+    	logger.info("Destroying AudioRecorder...");
     	stopRecording();
     	if(m_line != null) {
-			System.out.println("Starting to the stop the line...");
+			logger.info("Starting to the stop the line...");
 			m_line.flush();
 			m_line.stop();
-			System.out.println("Starting to close the line...");
+			logger.info("Starting to close the line...");
 			m_line.close();
-			System.out.println("Done closing and stopping the audio line");
+			logger.info("Done closing and stopping the audio line");
 			m_line = null;
 		}
     	m_audioInputStream = null;
