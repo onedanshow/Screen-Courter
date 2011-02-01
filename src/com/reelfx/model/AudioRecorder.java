@@ -34,38 +34,28 @@ package com.reelfx.model;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.File;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.List;
 
-import javax.sound.sampled.Control;
+import javax.sound.sampled.AudioFileFormat;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
-import javax.sound.sampled.FloatControl;
 import javax.sound.sampled.LineEvent;
 import javax.sound.sampled.LineListener;
-import javax.sound.sampled.Mixer;
-import javax.sound.sampled.Port;
-import javax.sound.sampled.SourceDataLine;
-import javax.sound.sampled.TargetDataLine;
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.AudioFileFormat;
-import javax.sound.sampled.spi.AudioFileWriter;
+import javax.sound.sampled.Mixer;
+import javax.sound.sampled.TargetDataLine;
 
 import org.apache.log4j.Logger;
 
 import com.reelfx.Applet;
 import com.reelfx.model.util.ProcessWrapper;
-import com.sun.media.sound.JDK13Services;
 
 public class AudioRecorder extends ProcessWrapper implements LineListener
 {

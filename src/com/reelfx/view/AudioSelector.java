@@ -72,7 +72,7 @@ public class AudioSelector extends JComboBox implements MouseListener, ItemListe
 		// (excluding those with 'port' and 'PulseAudio' is a Linux hack, possibly temporary)
 		for(Mixer.Info info : AudioSystem.getMixerInfo())
         	if(!info.getName().toLowerCase().contains("port")
-        	//		&& !info.getName().toLowerCase().contains("PulseAudio")
+        			&& !info.getName().toLowerCase().contains("pulse") // hopefully temporary
         			&& AudioSystem.getMixer(info).getTargetLineInfo().length != 0)
         		addItem(info.getName());
 		
@@ -110,7 +110,9 @@ public class AudioSelector extends JComboBox implements MouseListener, ItemListe
 	public static Mixer getDefaultMixer() {
 		Mixer result = null;
 		for(Mixer.Info info : AudioSystem.getMixerInfo()) {
-        	if(!info.getName().toLowerCase().contains("port") && AudioSystem.getMixer(info).getTargetLineInfo().length != 0) {
+        	if(!info.getName().toLowerCase().contains("port") 
+        			&& !info.getName().toLowerCase().contains("pulse") // hopefully temporary
+        			&& AudioSystem.getMixer(info).getTargetLineInfo().length != 0) {
         		result = AudioSystem.getMixer(info);
         		break;
         	}
